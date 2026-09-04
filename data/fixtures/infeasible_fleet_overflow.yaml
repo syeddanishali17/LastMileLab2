@@ -1,0 +1,32 @@
+scenario_id: INFEASIBLE_FLEET_OVERFLOW
+scenario_name: Aggregate demand exceeds fleet capacity
+depot_id: DEPOT_FO
+depot_name: Infeasible Overflow Depot
+has_geographic_coordinates: false
+distance_source: fixed_matrix
+internal_distance_unit: metres
+split_deliveries: false
+all_customers_mandatory: true
+vehicle_count: 2
+vehicle_capacity_totes: 10
+total_fleet_capacity_totes: 20
+vehicles:
+  - {vehicle_id: V01, capacity_totes: 10}
+  - {vehicle_id: V02, capacity_totes: 10}
+customers:
+  - {customer_id: C1, demand_totes: 8}
+  - {customer_id: C2, demand_totes: 8}
+  - {customer_id: C3, demand_totes: 8}
+total_customer_demand_totes: 24
+distance_matrix_metres:
+  nodes: [DEPOT_FO, C1, C2, C3]
+  rows:
+    - [0, 1000, 1000, 1000]
+    - [1000, 0, 1000, 1000]
+    - [1000, 1000, 0, 1000]
+    - [1000, 1000, 1000, 0]
+expected_status: infeasible
+expected_check_1: pass
+expected_check_2: fail
+reason: aggregate demand 24 exceeds fleet capacity 20
+solver_run: false

@@ -1,0 +1,16 @@
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.env
+data/generated/*
+!data/generated/.gitkeep
+data/runs/*.duckdb
+data/runs/*.duckdb.wal
+!data/runs/.gitkeep
+.DS_Store
+Thumbs.db

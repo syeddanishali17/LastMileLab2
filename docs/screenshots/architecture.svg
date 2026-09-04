@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640">
+  <rect width="1280" height="640" fill="#f6f8fb"/>
+  <text x="48" y="48" font-family="Segoe UI, Arial, sans-serif" font-size="28" fill="#0f2744">LastMile Lab architecture</text>
+  <text x="48" y="80" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#465466">Streamlit never solves. FastAPI never owns KPI formulae. Core is testable without either process.</text>
+  <rect x="48" y="120" width="240" height="120" rx="16" fill="#0f2744"/>
+  <text x="168" y="172" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="18" fill="#d4a017">Streamlit UI</text>
+  <text x="168" y="198" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="13" fill="#e8eef4">port 8501</text>
+  <rect x="368" y="120" width="240" height="120" rx="16" fill="#1f4e79"/>
+  <text x="488" y="172" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="18" fill="#ffffff">FastAPI /api/v1</text>
+  <text x="488" y="198" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="13" fill="#d9e6f2">port 8000</text>
+  <rect x="688" y="88" width="544" height="184" rx="16" fill="#ffffff" stroke="#c6d0dc"/>
+  <text x="960" y="124" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="18" fill="#0f2744">backend/app/core</text>
+  <rect x="716" y="148" width="150" height="88" rx="12" fill="#2e7d4f"/>
+  <text x="791" y="188" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#ffffff">Validation</text>
+  <text x="791" y="208" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#e7f5ec">matrix / checks</text>
+  <rect x="884" y="148" width="150" height="88" rx="12" fill="#b85c38"/>
+  <text x="959" y="188" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#ffffff">NN baseline</text>
+  <text x="959" y="208" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#f8ece6">sequential</text>
+  <rect x="1052" y="148" width="150" height="88" rx="12" fill="#6b4c9a"/>
+  <text x="1127" y="188" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#ffffff">OR-Tools</text>
+  <text x="1127" y="208" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#f3edf8">RoutingModel</text>
+  <rect x="368" y="360" width="544" height="120" rx="16" fill="#ffffff" stroke="#c6d0dc"/>
+  <text x="640" y="412" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="18" fill="#0f2744">DuckDB run history</text>
+  <text x="640" y="440" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="13" fill="#465466">data/runs/lastmile.duckdb  ·  JSON and CSV export</text>
+  <rect x="48" y="360" width="240" height="120" rx="16" fill="#ffffff" stroke="#c6d0dc"/>
+  <text x="168" y="412" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="18" fill="#0f2744">Pytest</text>
+  <text x="168" y="440" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="13" fill="#465466">calls core directly</text>
+  <path d="M288 180 H368" stroke="#0f2744" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  <path d="M608 180 H688" stroke="#0f2744" stroke-width="3" fill="none"/>
+  <path d="M488 240 V360" stroke="#0f2744" stroke-width="3" fill="none"/>
+  <path d="M168 280 V360" stroke="#0f2744" stroke-width="3" fill="none"/>
+  <text x="48" y="560" font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#465466">OR-Tools does not solve the documented three-index MILP. The inspector reconstructs x, y, u and cumulative tote loads from returned routes.</text>
+  <text x="48" y="584" font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#465466">Displayed kilometres are synthetic Haversine estimates, not live Vienna road distances.</text>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 z" fill="#0f2744"/>
+    </marker>
+  </defs>
+</svg>

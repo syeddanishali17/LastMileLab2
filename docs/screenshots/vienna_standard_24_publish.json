@@ -1,0 +1,162 @@
+{
+  "scenario_id": "VIENNA_STANDARD_24",
+  "computed_at": "2026-09-04",
+  "ortools_version": "9.11.4210",
+  "solver_time_limit_seconds": 5,
+  "first_solution_strategy": "PATH_CHEAPEST_ARC",
+  "local_search": "GUIDED_LOCAL_SEARCH",
+  "baseline": {
+    "status": "feasible",
+    "comparison_eligible": true,
+    "objective_distance_metres": 122394,
+    "objective_distance_km": 122.394,
+    "vehicles_used": 4,
+    "routes": [
+      {
+        "vehicle_id": "V01",
+        "is_used": true,
+        "assigned_demand_totes": 29,
+        "distance_metres": 34174,
+        "sequence": [
+          "DEPOT_01",
+          "C022",
+          "C020",
+          "C019",
+          "C024",
+          "C021",
+          "C023",
+          "C009",
+          "C007",
+          "DEPOT_01"
+        ]
+      },
+      {
+        "vehicle_id": "V02",
+        "is_used": true,
+        "assigned_demand_totes": 28,
+        "distance_metres": 32572,
+        "sequence": [
+          "DEPOT_01",
+          "C017",
+          "C014",
+          "C013",
+          "C015",
+          "C018",
+          "C016",
+          "C005",
+          "DEPOT_01"
+        ]
+      },
+      {
+        "vehicle_id": "V03",
+        "is_used": true,
+        "assigned_demand_totes": 29,
+        "distance_metres": 24503,
+        "sequence": [
+          "DEPOT_01",
+          "C003",
+          "C001",
+          "C002",
+          "C004",
+          "C012",
+          "DEPOT_01"
+        ]
+      },
+      {
+        "vehicle_id": "V04",
+        "is_used": true,
+        "assigned_demand_totes": 22,
+        "distance_metres": 31145,
+        "sequence": [
+          "DEPOT_01",
+          "C006",
+          "C008",
+          "C010",
+          "C011",
+          "DEPOT_01"
+        ]
+      }
+    ]
+  },
+  "optimised": {
+    "status": "feasible",
+    "comparison_eligible": true,
+    "solver_termination": "success",
+    "objective_distance_metres": 97193,
+    "objective_distance_km": 97.193,
+    "vehicles_used": 4,
+    "solver_runtime_seconds": 5.0005,
+    "routes": [
+      {
+        "vehicle_id": "V01",
+        "is_used": true,
+        "assigned_demand_totes": 29,
+        "distance_metres": 30101,
+        "sequence": [
+          "DEPOT_01",
+          "C009",
+          "C011",
+          "C010",
+          "C008",
+          "C007",
+          "C012",
+          "DEPOT_01"
+        ]
+      },
+      {
+        "vehicle_id": "V02",
+        "is_used": true,
+        "assigned_demand_totes": 29,
+        "distance_metres": 29930,
+        "sequence": [
+          "DEPOT_01",
+          "C017",
+          "C014",
+          "C013",
+          "C016",
+          "C018",
+          "C015",
+          "C003",
+          "DEPOT_01"
+        ]
+      },
+      {
+        "vehicle_id": "V03",
+        "is_used": true,
+        "assigned_demand_totes": 20,
+        "distance_metres": 15466,
+        "sequence": [
+          "DEPOT_01",
+          "C022",
+          "C020",
+          "C023",
+          "C021",
+          "C024",
+          "C019",
+          "DEPOT_01"
+        ]
+      },
+      {
+        "vehicle_id": "V04",
+        "is_used": true,
+        "assigned_demand_totes": 30,
+        "distance_metres": 21696,
+        "sequence": [
+          "DEPOT_01",
+          "C005",
+          "C001",
+          "C002",
+          "C004",
+          "C006",
+          "DEPOT_01"
+        ]
+      }
+    ]
+  },
+  "distance_improvement_percentage": 20.59006160432701,
+  "distance_improvement_display": "20.6%",
+  "total_demand_totes": 108,
+  "total_fleet_capacity_totes": 120,
+  "used_fleet_utilisation": 0.9,
+  "note": "Ordinary OR-Tools output is the best feasible plan found within the search limit. It is not globally optimal. Guided local search is not bit-deterministic; re-runs may differ slightly."
+}

@@ -1,0 +1,43 @@
+scenario_id: INFEASIBLE_BIN_PACKING
+scenario_name: Unsplit packing infeasible after pre-checks pass
+depot_id: DEPOT_BP
+depot_name: Bin Packing Depot
+has_geographic_coordinates: false
+distance_source: fixed_matrix
+internal_distance_unit: metres
+split_deliveries: false
+all_customers_mandatory: true
+vehicle_count: 2
+vehicle_capacity_totes: 10
+total_fleet_capacity_totes: 20
+vehicles:
+  - {vehicle_id: V01, capacity_totes: 10}
+  - {vehicle_id: V02, capacity_totes: 10}
+customers:
+  - {customer_id: C1, demand_totes: 6}
+  - {customer_id: C2, demand_totes: 6}
+  - {customer_id: C3, demand_totes: 6}
+total_customer_demand_totes: 18
+distance_matrix_metres:
+  nodes: [DEPOT_BP, C1, C2, C3]
+  note: all off-diagonal cells 1000 metres; diagonal 0
+  rows:
+    - [0, 1000, 1000, 1000]
+    - [1000, 0, 1000, 1000]
+    - [1000, 1000, 0, 1000]
+    - [1000, 1000, 1000, 0]
+expected_precheck_status: passed
+expected_check_1: pass   # 6 <= 10
+expected_check_2: pass   # 18 <= 20
+expected_check_3_minimum_vehicles: 2
+independent_packing_result: infeasible
+independent_packing_reason: >
+  Two six-tote orders cannot share a ten-tote van, and three such orders
+  exceed two vans. At most two of three customers can be served without
+  split deliveries.
+expected_solver_status: no_solution_found
+reason: >
+  Pre-checks passed. No complete unsplit assignment exists. Aggregate fleet
+  capacity is necessary but not sufficient when orders cannot be split.
+  The MVP does not include an exact bin-packing pre-check, so the optimiser
+  reports no_solution_found, not infeasible.

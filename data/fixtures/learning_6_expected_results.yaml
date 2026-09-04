@@ -1,0 +1,74 @@
+scenario_id: LEARNING_6
+depot_id: DEPOT_L6
+has_geographic_coordinates: false
+distance_source: fixed_matrix
+internal_distance_unit: metres
+
+demand_audit:
+  customers:
+    C1: 4
+    C2: 2
+    C3: 3
+    C4: 5
+    C5: 2
+    C6: 4
+  total_customer_demand_totes: 20
+  vehicle_capacity_totes: 10
+  vehicle_count: 2
+  total_fleet_capacity_totes: 20
+  check_1: pass
+  check_2: pass
+  check_3_minimum_vehicles: 2
+
+matrix_spot_check:
+  from: DEPOT_L6
+  to: C1
+  distance_metres: 3000
+  display_km: "3.000"
+
+sequential_nearest_neighbour:
+  status: heuristic_incomplete
+  comparison_eligible: false
+  unserved_customer_ids: [C4]
+  partial_distance_metres: 27000
+  objective_distance_metres: null
+  customers_served: 5
+  demand_served_totes: 15
+  routes:
+    - vehicle_id: V01
+      sequence: [DEPOT_L6, C1, C2, C3, DEPOT_L6]
+      load_totes: 9
+      distance_metres: 16000
+    - vehicle_id: V02
+      sequence: [DEPOT_L6, C6, C5, DEPOT_L6]
+      load_totes: 6
+      distance_metres: 11000
+
+reference_packing_34km:
+  note: Teaching comparison only. Not the sequential NN output.
+  total_distance_metres: 34000
+  routes:
+    - vehicle_id: V01
+      pack: [C1, C2, C6]
+      sequence: [DEPOT_L6, C1, C2, C6, DEPOT_L6]
+      load_totes: 10
+      distance_metres: 14000
+    - vehicle_id: V02
+      pack: [C5, C4, C3]
+      sequence: [DEPOT_L6, C5, C4, C3, DEPOT_L6]
+      load_totes: 10
+      distance_metres: 20000
+
+verified_optimum:
+  total_distance_metres: 31000
+  display_km: "31.000"
+  independent_enumeration: docs/learning_6_enumeration.md
+  routes:
+    - vehicle_id: V01
+      sequence: [DEPOT_L6, C1, C5, C6, DEPOT_L6]
+      load_totes: 10
+      distance_metres: 13000
+    - vehicle_id: V02
+      sequence: [DEPOT_L6, C2, C3, C4, DEPOT_L6]
+      load_totes: 10
+      distance_metres: 18000

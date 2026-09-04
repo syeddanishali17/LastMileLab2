@@ -1,0 +1,56 @@
+scenario_id: VIENNA_STANDARD_24
+scenario_name: Vienna Standard Dispatch
+random_seed: 42
+depot_id: DEPOT_01
+has_geographic_coordinates: true
+distance_source: haversine_detour
+detour_factor: 1.25
+earth_radius_m: 6371000
+internal_distance_unit: metres
+is_synthetic: true
+
+demand_audit:
+  customer_count: 24
+  total_customer_demand_totes: 108
+  vehicle_count: 4
+  vehicle_capacity_totes: 30
+  total_fleet_capacity_totes: 120
+  aggregate_capacity_utilisation: 0.90
+  zone_demand_totes:
+    Z1: 35
+    Z2: 29
+    Z3: 24
+    Z4: 20
+  check_1: pass
+  check_2: pass
+  check_3_minimum_vehicles: 4
+  modelling_note: >
+    Z1 demand is 35 totes, which exceeds one van capacity of 30.
+    A feasible plan cannot assign one vehicle to each geographic zone.
+
+sequential_nearest_neighbour:
+  source: specification Section 12.4
+  independent_recompute: deferred_to_phase_3
+  status: feasible
+  comparison_eligible: true
+  unserved_customer_ids: []
+  customers_served: 24
+  demand_served_totes: 108
+  routes:
+    - vehicle_id: V01
+      load_totes: 29
+      sequence: [DEPOT_01, C022, C020, C019, C024, C021, C023, C009, C007, DEPOT_01]
+    - vehicle_id: V02
+      load_totes: 28
+      sequence: [DEPOT_01, C017, C014, C013, C015, C018, C016, C005, DEPOT_01]
+    - vehicle_id: V03
+      load_totes: 29
+      sequence: [DEPOT_01, C003, C001, C002, C004, C012, DEPOT_01]
+    - vehicle_id: V04
+      load_totes: 22
+      sequence: [DEPOT_01, C006, C008, C010, C011, DEPOT_01]
+
+optimiser:
+  note: >
+    Do not freeze the Vienna 24 objective distance in automated tests.
+    Assert invariants, not a claimed kilometre total.

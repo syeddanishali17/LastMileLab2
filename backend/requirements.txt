@@ -1,0 +1,10 @@
+# Runtime dependencies for the FastAPI backend and later OR-Tools solver.
+# Install inside the project virtual environment only. Do not install globally.
+
+fastapi==0.115.8
+uvicorn==0.34.0
+pydantic==2.10.6
+python-dotenv==1.0.1
+PyYAML==6.0.2
+ortools==9.11.4210
+duckdb==1.2.2

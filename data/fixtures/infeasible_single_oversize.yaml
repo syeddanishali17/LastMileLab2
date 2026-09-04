@@ -1,0 +1,28 @@
+scenario_id: INFEASIBLE_SINGLE_OVERSIZE
+scenario_name: Single order exceeds van capacity
+depot_id: DEPOT_IO
+depot_name: Infeasible Oversize Depot
+has_geographic_coordinates: false
+distance_source: fixed_matrix
+internal_distance_unit: metres
+split_deliveries: false
+all_customers_mandatory: true
+vehicle_count: 2
+vehicle_capacity_totes: 10
+total_fleet_capacity_totes: 20
+vehicles:
+  - {vehicle_id: V01, capacity_totes: 10}
+  - {vehicle_id: V02, capacity_totes: 10}
+customers:
+  - {customer_id: C1, demand_totes: 11}
+total_customer_demand_totes: 11
+distance_matrix_metres:
+  nodes: [DEPOT_IO, C1]
+  rows:
+    - [0, 1000]
+    - [1000, 0]
+expected_status: infeasible
+expected_check_1: fail
+expected_check_2: pass
+reason: individual demand exceeds vehicle capacity
+solver_run: false
