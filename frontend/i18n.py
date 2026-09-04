@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from typing import Any
 
-import streamlit as st
-
 STRINGS: dict[str, dict[str, str]] = {
     "en": {
         "lang.label": "Language / Sprache",
@@ -1616,6 +1614,8 @@ STRINGS: dict[str, dict[str, str]] = {
 def current_language() -> str:
     lang = "en"
     try:
+        import streamlit as st
+
         lang = st.session_state.get("ui_language", "en")
     except Exception:
         lang = "en"
