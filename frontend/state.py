@@ -13,6 +13,7 @@ SESSION_DEFAULTS = {
     "solver_time_limit_seconds": 5,
     "learning_baseline_run_id": None,
     "learning_optimised_run_id": None,
+    "ui_language": "en",
     "_baseline_summary": None,
     "_optimised_summary": None,
 }

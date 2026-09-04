@@ -88,16 +88,18 @@ def route_matrix(
 
 
 def cumulative_loads(stops: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    from i18n import t
+
     rows = []
     for stop in sorted(stops, key=lambda item: (item["vehicle_id"], item["sequence_number"])):
         rows.append(
             {
-                "vehicle_id": stop["vehicle_id"],
-                "sequence": stop["sequence_number"],
-                "node": display_node(stop["node_id"]),
-                "demand_totes": stop["demand_totes"],
-                "reconstructed load after service (totes)": stop["load_after_service_totes"],
-                "leg_distance": format_km(stop.get("leg_distance_metres")),
+                t("table.vehicle"): stop["vehicle_id"],
+                t("inspect.cum.sequence"): stop["sequence_number"],
+                t("inspect.cum.node"): display_node(stop["node_id"]),
+                t("inspect.cum.demand"): stop["demand_totes"],
+                t("inspect.cum.served"): stop["load_after_service_totes"],
+                t("inspect.col.leg"): format_km(stop.get("leg_distance_metres")),
             }
         )
     return rows

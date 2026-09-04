@@ -74,6 +74,19 @@ def _map_camera(lats: list[float], lons: list[float]) -> dict[str, Any]:
     }
 
 
+def _legend_layout() -> dict[str, Any]:
+    return {
+        "orientation": "h",
+        "y": -0.14,
+        "x": 0,
+        "yanchor": "top",
+        "bgcolor": "rgba(244,247,250,0.96)",
+        "bordercolor": "#D7E0E8",
+        "borderwidth": 1,
+        "font": {"size": 12, "color": "#172B3A"},
+    }
+
+
 def _add_depot_marker(fig: go.Figure, latitude: float, longitude: float) -> None:
     """OSM Scattermapbox only reliably draws circles. Keep the depot dark, not white."""
     fig.add_trace(
@@ -140,9 +153,9 @@ def customer_map(scenario: dict[str, Any]) -> go.Figure:
     _add_depot_marker(fig, depot["latitude"], depot["longitude"])
     fig.update_layout(
         mapbox=_map_camera(lats, lons),
-        margin={"l": 0, "r": 0, "t": 8, "b": 8},
+        margin={"l": 0, "r": 0, "t": 8, "b": 88},
         height=520,
-        legend={"orientation": "h", "y": 1.02, "x": 0},
+        legend=_legend_layout(),
         hovermode="closest",
         paper_bgcolor="rgba(0,0,0,0)",
         template="none",
@@ -305,9 +318,9 @@ def route_map(
     _add_depot_marker(fig, depot["latitude"], depot["longitude"])
     fig.update_layout(
         mapbox=_map_camera(lats, lons),
-        margin={"l": 0, "r": 0, "t": 8, "b": 8},
-        height=620,
-        legend={"orientation": "h", "y": 1.02, "x": 0, "traceorder": "normal"},
+        margin={"l": 0, "r": 0, "t": 8, "b": 96},
+        height=640,
+        legend=_legend_layout(),
         hovermode="closest",
         uirevision="route-map",
         paper_bgcolor="rgba(0,0,0,0)",
@@ -439,10 +452,10 @@ def learning_schematic(
         xaxis={"visible": False, "range": [-1.9, 1.9]},
         yaxis={"visible": False, "scaleanchor": "x", "range": [-1.7, 1.6]},
         height=460,
-        margin={"l": 20, "r": 20, "t": 20, "b": 20},
-        legend={"orientation": "h"},
-        plot_bgcolor="#f6f5f2",
-        paper_bgcolor="#f6f5f2",
+        margin={"l": 20, "r": 20, "t": 16, "b": 80},
+        legend=_legend_layout(),
+        plot_bgcolor="#F4F7FA",
+        paper_bgcolor="#F4F7FA",
         template="none",
         uirevision="learning-schematic",
     )

@@ -17,4 +17,7 @@ src = ["backend", "tests", "frontend"]
 select = ["E", "F", "I", "UP"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["app", "api_client", "components", "display", "inspector", "maps", "state"]
+known-first-party = ["app", "api_client", "components", "display", "i18n", "inspector", "maps", "state"]
+
+[tool.ruff.lint.per-file-ignores]
+"frontend/i18n.py" = ["E501"]

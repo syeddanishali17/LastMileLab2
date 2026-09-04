@@ -5,17 +5,47 @@ from __future__ import annotations
 from typing import Any
 
 VEHICLE_COLOURS = [
-    "#1f4e79",
-    "#2e7d4f",
-    "#b85c38",
-    "#6b4c9a",
-    "#0f7a8c",
-    "#8a1c3c",
-    "#5c4a32",
-    "#3d5a40",
-    "#7a5c00",
-    "#2c3e50",
+    "#0F2744",
+    "#2E6B4F",
+    "#B85C38",
+    "#6B4C9A",
+    "#0F7A8C",
+    "#8A1C3C",
+    "#5C4A32",
+    "#3D5A40",
+    "#7A5C00",
+    "#2C3E50",
 ]
+
+
+def format_decimal(value: int | float, decimals: int) -> str:
+    from i18n import current_language
+
+    formatted = f"{float(value):.{decimals}f}"
+    return formatted.replace(".", ",") if current_language() == "de" else formatted
+
+
+def scenario_label(scenario_id: str) -> str:
+    from i18n import t
+
+    key = f"scenario.{scenario_id}.label"
+    label = t(key)
+    if label == key:
+        return scenario_id
+    return label
+
+
+def scenario_help(scenario_id: str) -> str:
+    from i18n import t
+
+    key = f"scenario.{scenario_id}.help"
+    text = t(key)
+    if text != key:
+        return text
+    if scenario_id.startswith("GEN_"):
+        return t("scenario.generated.help")
+    return t("scenario.fallback.help")
+
 
 MAP_CAPTION = (
     "Schematic connections based on synthetic estimated distances. "
@@ -45,20 +75,29 @@ def display_node(node_id: str) -> str:
 
 def format_km(metres: int | float | None) -> str:
     if metres is None:
-        return "—"
-    return f"{float(metres) / 1000:.3f} km"
+        from i18n import t
+
+        return t("common.na")
+    return f"{format_decimal(float(metres) / 1000, 3)} km"
 
 
 def format_km_value(km: float | None) -> str:
     if km is None:
-        return "—"
-    return f"{float(km):.3f} km"
+        from i18n import t
+
+        return t("common.na")
+    return f"{format_decimal(float(km), 3)} km"
 
 
 def format_pct(fraction: float | None) -> str:
     if fraction is None:
-        return "—"
-    return f"{float(fraction) * 100:.1f}%"
+        from i18n import t
+
+        return t("common.na")
+    value = format_decimal(float(fraction) * 100, 1)
+    from i18n import current_language
+
+    return f"{value} %" if current_language() == "de" else f"{value}%"
 
 
 def format_sequence(node_ids: list[str]) -> str:
@@ -83,84 +122,120 @@ def reconstructed_arcs(sequence: list[str]) -> list[tuple[str, str]]:
 
 
 def incomplete_baseline_note(summary: dict[str, Any]) -> str | None:
+    from i18n import t
+
     if summary.get("status") != "heuristic_incomplete":
         return None
     unserved = ", ".join(summary.get("unserved_customer_ids") or [])
     if summary.get("scenario_id") == "LEARNING_6":
-        return (
-            "This is the expected LEARNING_6 nearest-neighbour result, not a failed run. "
-            f"Sequential construction leaves {unserved or 'C4'} unserved, so total distance "
-            "stays empty and the kilometres shown are a partial plan only. "
-            "This is not the 34.000 km teaching packing. Run OR-Tools on LEARNING_6 "
-            "for the 31.000 km complete plan, or open Learning Lab."
-        )
-    return (
-        "Nearest neighbour built some routes but could not serve every customer. "
-        "The plan is not comparison-eligible."
-        + (f" Unserved: {unserved}." if unserved else "")
-    )
+        return t("note.learning", unserved=unserved or "C4")
+    extra = t("note.unserved", ids=unserved) if unserved else ""
+    return t("note.incomplete", unserved=extra)
+
+
+def status_label(status: str | None) -> str:
+    from i18n import t
+
+    if not status:
+        return t("status.none")
+    key = f"status.{status}.label"
+    label = t(key)
+    if label == key:
+        return status.replace("_", " ")
+    return label
+
+
+def distance_source_label(source: str | None) -> str:
+    from i18n import t
+
+    if not source:
+        return t("common.na")
+    key = f"dist.{source}"
+    label = t(key)
+    return source if label == key else label
+
+
+def humanize_check_message(check: dict[str, Any]) -> str:
+    from i18n import t
+
+    code = check.get("code")
+    message = str(check.get("message") or "")
+    passed = bool(check.get("passed"))
+    if code == "CHECK_4" and passed:
+        return t("check.msg.integrity_ok")
+    if code == "CHECK_1":
+        return t("check.msg.demand_ok") if passed else t("check.msg.demand_fail")
+    if code == "CHECK_2":
+        return t("check.msg.fleet_ok") if passed else t("check.msg.fleet_fail")
+    if code == "CHECK_3":
+        digits = "".join(char for char in message if char.isdigit())
+        number = digits or t("common.na")
+        return t("check.msg.minvans", n=number)
+    return message
 
 
 def format_improvement(percentage: float | None) -> str:
     if percentage is None:
-        return "—"
-    return f"{float(percentage):.1f}%"
+        from i18n import t
+
+        return t("common.na")
+    value = format_decimal(float(percentage), 1)
+    from i18n import current_language
+
+    return f"{value} %" if current_language() == "de" else f"{value}%"
 
 
 def matrix_km_rows(matrix: dict[str, Any]) -> list[dict[str, Any]]:
+    from i18n import t
+
     node_ids: list[str] = matrix["node_ids"]
     distances: list[list[int]] = matrix["distances_metres"]
     labels = [display_node(node_id) for node_id in node_ids]
+    origin_label = t("inspect.col.from")
     rows: list[dict[str, Any]] = []
     for origin, row_metres in zip(node_ids, distances, strict=True):
-        row: dict[str, Any] = {"from": display_node(origin)}
+        row: dict[str, Any] = {origin_label: display_node(origin)}
         for label, metres in zip(labels, row_metres, strict=True):
-            row[label] = f"{metres / 1000:.3f}"
+            row[label] = format_decimal(metres / 1000, 3)
         rows.append(row)
     return rows
 
 
 def operational_summary(baseline: dict[str, Any], optimised: dict[str, Any]) -> str:
-    baseline_status = baseline.get("status")
-    optimised_status = optimised.get("status")
+    from i18n import t
+
+    baseline_status = status_label(baseline.get("status"))
+    optimised_status = status_label(optimised.get("status"))
     if not baseline.get("comparison_eligible"):
         unserved = baseline.get("unserved_customer_ids") or []
-        parts = [
-            f"The baseline is `{baseline_status}` and is not comparison-eligible, "
-            "so no distance-improvement percentage is shown."
-        ]
+        parts = [t("summary.ineligible", status=baseline_status)]
         if unserved:
-            parts.append("Unserved customers: " + ", ".join(unserved) + ".")
+            parts.append(t("summary.unserved", ids=", ".join(unserved)))
         partial = baseline.get("partial_distance_metres")
         if partial is not None:
-            parts.append(
-                "The constructed baseline routes cover "
-                f"{format_km(partial)} as a partial plan only."
-            )
+            parts.append(t("summary.partial", km=format_km(partial)))
         if optimised.get("comparison_eligible"):
             parts.append(
-                "The optimiser returned a complete plan of "
-                f"{format_km(optimised.get('objective_distance_metres'))}."
+                t("summary.opt_ok", km=format_km(optimised.get("objective_distance_metres")))
             )
         else:
-            parts.append(f"The optimiser status is `{optimised_status}`.")
+            parts.append(t("summary.opt_bad", status=optimised_status))
         return " ".join(parts)
 
     if not optimised.get("comparison_eligible"):
-        return (
-            f"The baseline is complete at {format_km(baseline.get('objective_distance_metres'))}, "
-            f"but the optimiser is `{optimised_status}` and cannot be compared on total distance."
+        return t(
+            "summary.opt_incomplete",
+            km=format_km(baseline.get("objective_distance_metres")),
+            status=optimised_status,
         )
 
-    baseline_km = format_km(baseline.get("objective_distance_metres"))
-    optimised_km = format_km(optimised.get("objective_distance_metres"))
-    improvement = optimised.get("distance_improvement_percentage")
-    return (
-        f"The nearest-neighbour baseline covers {baseline_km} "
-        f"with {baseline.get('vehicles_used')} vans. OR-Tools returns "
-        f"{optimised_km} using "
-        f"{optimised.get('vehicles_used')} vans. Distance improvement: "
-        f"{format_improvement(improvement)}."
+    return t(
+        "summary.ok",
+        base_km=format_km(baseline.get("objective_distance_metres")),
+        base_vans=baseline.get("vehicles_used"),
+        opt_km=format_km(optimised.get("objective_distance_metres")),
+        opt_vans=optimised.get("vehicles_used"),
+        improve=format_improvement(optimised.get("distance_improvement_percentage")),
     )
 
 

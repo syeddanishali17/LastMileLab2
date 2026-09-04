@@ -12,17 +12,33 @@ from api_client import (
     run_optimise,
     validate_scenario,
 )
-from components import call_api, inject_theme, render_sidebar, status_badge
-from display import format_km, format_pct, incomplete_baseline_note, matrix_km_rows
+from components import (
+    boot_page,
+    call_api,
+    callout,
+    page_header,
+    render_check_table,
+    render_footer,
+    section,
+    static_table,
+    status_badge,
+)
+from display import (
+    distance_source_label,
+    format_km,
+    format_pct,
+    incomplete_baseline_note,
+    matrix_km_rows,
+    scenario_help,
+    scenario_label,
+)
+from i18n import t
 from maps import PLOTLY_CHART_KWARGS, customer_map
-from state import ensure_session, set_scenario, summary_for_current
+from state import set_scenario, summary_for_current
 
-ensure_session()
-inject_theme()
-render_sidebar()
+boot_page()
 
-st.title("Dispatch Setup")
-st.caption("Understand demand, capacity, and feasibility before solving.")
+page_header(t("dispatch.title"), t("dispatch.subtitle"), kicker=t("dispatch.kicker"))
 
 FIXED = ["LEARNING_6", "VIENNA_STANDARD_24"]
 TEACHING = [
@@ -43,41 +59,69 @@ current = st.session_state.scenario_id
 if current not in choices:
     choices = [current, *choices]
 
+section(t("dispatch.pick"), t("dispatch.pick.cap"))
 selected = st.selectbox(
-    "Scenario",
+    t("dispatch.pick"),
     options=choices,
     index=choices.index(current) if current in choices else 0,
+    format_func=scenario_label,
+    help=t("dispatch.pick.help"),
 )
+st.caption(scenario_help(selected))
 if selected != st.session_state.scenario_id:
-    st.warning(
-        f"`{selected}` is selected but not loaded. Click Load Scenario before solving."
+    st.warning(t("dispatch.need_load"))
+
+col_a, col_b = st.columns(2)
+with col_a:
+    load_clicked = st.button(
+        t("dispatch.load"),
+        type="primary" if selected != st.session_state.scenario_id else "secondary",
+        help=t("dispatch.load.help"),
+        use_container_width=True,
+    )
+with col_b:
+    validate_clicked = st.button(
+        t("dispatch.validate"),
+        help=t("dispatch.validate.help"),
+        use_container_width=True,
     )
 
+section(t("dispatch.solve"), t("dispatch.solve.cap"))
 if st.session_state.solver_time_limit_seconds not in (1, 5, 10):
     st.session_state.solver_time_limit_seconds = 5
-st.selectbox(
-    "OR-Tools time limit (seconds)",
-    options=[1, 5, 10],
-    key="solver_time_limit_seconds",
-    help="The API accepts 1, 5, or 10 seconds.",
-)
+with st.expander(t("dispatch.settings")):
+    st.selectbox(
+        t("dispatch.time"),
+        options=[1, 5, 10],
+        key="solver_time_limit_seconds",
+        format_func=lambda seconds: t(f"dispatch.time.{seconds}"),
+        help=t("dispatch.time.help"),
+    )
 
-col_a, col_b, col_c, col_d = st.columns(4)
-with col_a:
-    load_clicked = st.button("Load Scenario", type="primary")
-with col_b:
-    validate_clicked = st.button("Validate Scenario")
+col_c, col_d = st.columns(2)
+scenario_not_active = selected != st.session_state.scenario_id
 with col_c:
-    baseline_clicked = st.button("Run Baseline")
+    baseline_clicked = st.button(
+        t("dispatch.baseline"),
+        help=t("dispatch.baseline.help"),
+        disabled=scenario_not_active,
+        use_container_width=True,
+    )
 with col_d:
-    optimise_clicked = st.button("Run Optimisation")
+    optimise_clicked = st.button(
+        t("dispatch.optimise"),
+        type="primary",
+        help=t("dispatch.optimise.help"),
+        disabled=scenario_not_active,
+        use_container_width=True,
+    )
 
 if load_clicked:
     payload = call_api(get_scenario, selected)
     if payload is not None:
         set_scenario(selected)
         st.session_state["_scenario_payload"] = payload
-        st.success(f"Loaded `{selected}`.")
+        st.success(t("dispatch.loaded", id=selected))
 
 payload = st.session_state.get("_scenario_payload")
 loaded_id = None if payload is None else payload.get("scenario", {}).get("scenario_id")
@@ -107,24 +151,79 @@ if optimise_clicked:
         st.session_state.optimised_run_id = result["run_id"]
         st.session_state["_optimised_summary"] = result
 
-with st.expander("Generate a synthetic geographic scenario"):
-    st.caption("The generator stores the scenario in the running API process only.")
-    seed = st.number_input("random_seed", min_value=0, max_value=2147483647, value=42, step=1)
-    n_customers = st.number_input("customer_count", min_value=1, max_value=50, value=24, step=1)
-    n_vehicles = st.number_input("vehicle_count", min_value=1, max_value=10, value=4, step=1)
+with st.expander(t("dispatch.gen")):
+    st.caption(t("dispatch.gen.cap"))
+    seed = st.number_input(
+        t("dispatch.gen.seed"),
+        min_value=0,
+        max_value=2147483647,
+        value=42,
+        step=1,
+        help=t("dispatch.gen.seed.help"),
+    )
+    n_customers = st.number_input(
+        t("dispatch.gen.customers"),
+        min_value=1,
+        max_value=50,
+        value=24,
+        step=1,
+    )
+    n_vehicles = st.number_input(
+        t("dispatch.gen.vans"),
+        min_value=1,
+        max_value=10,
+        value=4,
+        step=1,
+    )
     capacity = st.number_input(
-        "vehicle_capacity_totes",
+        t("dispatch.gen.capacity"),
         min_value=1,
         max_value=100,
         value=30,
         step=1,
+        help=t("dispatch.gen.capacity.help"),
     )
-    detour = st.number_input("detour_factor", min_value=1.00, max_value=2.00, value=1.25, step=0.01)
-    z1 = st.number_input("Z1 weight", min_value=0.0, max_value=1.0, value=0.25, step=0.01)
-    z2 = st.number_input("Z2 weight", min_value=0.0, max_value=1.0, value=0.25, step=0.01)
-    z3 = st.number_input("Z3 weight", min_value=0.0, max_value=1.0, value=0.25, step=0.01)
-    z4 = st.number_input("Z4 weight", min_value=0.0, max_value=1.0, value=0.25, step=0.01)
-    if st.button("Generate scenario"):
+    detour = st.number_input(
+        t("dispatch.gen.detour"),
+        min_value=1.00,
+        max_value=2.00,
+        value=1.25,
+        step=0.01,
+        help=t("dispatch.gen.detour.help"),
+    )
+    z1 = st.number_input(
+        t("dispatch.gen.z1"),
+        min_value=0.0,
+        max_value=1.0,
+        value=0.25,
+        step=0.01,
+        help=t("dispatch.gen.zone.help"),
+    )
+    z2 = st.number_input(
+        t("dispatch.gen.z2"),
+        min_value=0.0,
+        max_value=1.0,
+        value=0.25,
+        step=0.01,
+        help=t("dispatch.gen.zone.help"),
+    )
+    z3 = st.number_input(
+        t("dispatch.gen.z3"),
+        min_value=0.0,
+        max_value=1.0,
+        value=0.25,
+        step=0.01,
+        help=t("dispatch.gen.zone.help"),
+    )
+    z4 = st.number_input(
+        t("dispatch.gen.z4"),
+        min_value=0.0,
+        max_value=1.0,
+        value=0.25,
+        step=0.01,
+        help=t("dispatch.gen.zone.help"),
+    )
+    if st.button(t("dispatch.gen.button"), help=t("dispatch.gen.button.help")):
         generated = call_api(
             generate_scenario,
             {
@@ -141,7 +240,7 @@ with st.expander("Generate a synthetic geographic scenario"):
             loaded = call_api(get_scenario, generated["scenario_id"])
             if loaded is not None:
                 st.session_state["_scenario_payload"] = loaded
-            st.success(f"Generated `{generated['scenario_id']}`.")
+            st.success(t("dispatch.gen.ok", id=generated["scenario_id"]))
             st.rerun()
 
 if payload is None:
@@ -149,113 +248,125 @@ if payload is None:
 
 scenario = payload["scenario"]
 customers = payload["customers"]
-vehicles = payload["vehicles"]
 precheck = payload["precheck"]
 total_demand = sum(customer["demand_totes"] for customer in customers)
 fleet_capacity = scenario["vehicle_count"] * scenario["vehicle_capacity_totes"]
 ratio = total_demand / fleet_capacity if fleet_capacity else None
 
+section(t("dispatch.demand"), t("dispatch.demand.cap"))
 metrics = st.columns(4)
-metrics[0].metric("Customers", scenario["customer_count"])
-metrics[1].metric("Total demand", f"{total_demand} totes")
-metrics[2].metric(
-    "Fleet",
-    f"{scenario['vehicle_count']} × {scenario['vehicle_capacity_totes']} totes",
+metrics[0].metric(
+    t("dispatch.m.customers"),
+    scenario["customer_count"],
+    help=t("dispatch.m.customers.help"),
 )
-metrics[3].metric("Fleet capacity", f"{fleet_capacity} totes")
+metrics[1].metric(
+    t("dispatch.m.demand"),
+    t("unit.totes", n=total_demand),
+    help=t("tote.help"),
+)
+metrics[2].metric(
+    t("dispatch.m.fleet"),
+    t(
+        "unit.fleet",
+        vans=scenario["vehicle_count"],
+        cap=scenario["vehicle_capacity_totes"],
+    ),
+    help=t("dispatch.m.fleet.help"),
+)
+metrics[3].metric(
+    t("dispatch.m.capacity"),
+    t("unit.totes", n=fleet_capacity),
+    help=t("dispatch.m.capacity.help"),
+)
 
 metrics2 = st.columns(3)
 metrics2[0].metric(
-    "Theoretical minimum vans",
-    precheck.get("minimum_vehicles_by_demand") or "—",
+    t("dispatch.m.minvans"),
+    precheck.get("minimum_vehicles_by_demand") or t("common.na"),
+    help=t("dispatch.m.minvans.help"),
 )
-metrics2[1].metric("Demand / capacity", format_pct(ratio))
-metrics2[2].metric("Distance source", scenario["distance_source"])
+metrics2[1].metric(
+    t("dispatch.m.ratio"),
+    format_pct(ratio),
+    help=t("dispatch.m.ratio.help"),
+)
+metrics2[2].metric(
+    t("dispatch.m.source"),
+    distance_source_label(scenario["distance_source"]),
+    help=t("dispatch.m.source.help"),
+)
 st.caption(payload.get("synthetic_distance_label", ""))
 
+section(t("dispatch.checks"), t("dispatch.checks.cap"))
 status_badge(precheck.get("status"))
-st.markdown("**Feasibility pre-checks**")
-check_rows = []
-for check in precheck.get("checks", []):
-    label = check["code"]
-    if check["code"] == "CHECK_3":
-        label = "CHECK_3 (informational)"
-    check_rows.append(
-        {
-            "check": label,
-            "name": check["name"],
-            "passed": check["passed"],
-            "hard_fail": check.get("hard_fail"),
-            "message": check["message"],
-        }
-    )
-st.dataframe(check_rows, use_container_width=True, hide_index=True)
-st.caption("Check 3 is informational. A tight theoretical minimum is not a feasibility proof.")
+render_check_table(precheck.get("checks", []))
+st.caption(t("dispatch.checks.note"))
 
 if st.session_state.get("_validate_result"):
-    with st.expander("Last validation response", expanded=False):
+    with st.expander(t("dispatch.last_validate"), expanded=False):
         st.json(st.session_state["_validate_result"])
 
-st.markdown("**Customer demand**")
-st.dataframe(
-    [
-        {
-            "customer_id": customer["customer_id"],
-            "zone_id": customer.get("zone_id"),
-            "demand_totes": customer["demand_totes"],
-            "latitude": customer.get("latitude"),
-            "longitude": customer.get("longitude"),
-        }
-        for customer in customers
-    ],
-    use_container_width=True,
-    hide_index=True,
+section(t("dispatch.orders"))
+order_rows = [
+    {
+        t("dispatch.col.customer"): customer["customer_id"],
+        t("dispatch.col.zone"): customer.get("zone_id"),
+        t("dispatch.col.demand"): customer["demand_totes"],
+        t("dispatch.col.lat"): customer.get("latitude"),
+        t("dispatch.col.lon"): customer.get("longitude"),
+    }
+    for customer in customers
+]
+static_table(
+    order_rows,
+    row_header=t("dispatch.col.customer"),
 )
 
 if scenario.get("has_geographic_coordinates"):
-    st.markdown("**Customer map**")
+    section(t("dispatch.map"), t("dispatch.map.cap"))
     st.plotly_chart(customer_map(payload), **PLOTLY_CHART_KWARGS)
-    st.caption(
-        "Customer locations are synthetic. Marker size follows tote demand. "
-        "This is not a live operations map."
-    )
+    st.caption(t("map.schematic"))
 elif scenario["scenario_id"] == "LEARNING_6":
-    st.markdown("**Matrix-first view**")
-    st.info(
-        "LEARNING_6 has no geographic coordinates. Distances are shown from the "
-        "backend matrix. No map is drawn."
-    )
-    st.dataframe(
-        matrix_km_rows(payload["distance_matrix"]),
-        use_container_width=True,
-        hide_index=True,
+    section(t("dispatch.matrix"), t("dispatch.matrix.cap"))
+    callout(t("scenario.LEARNING_6.help"))
+    learning_matrix_rows = matrix_km_rows(payload["distance_matrix"])
+    from_label = t("inspect.col.from")
+    static_table(
+        learning_matrix_rows,
+        numeric_columns=set(learning_matrix_rows[0]) - {from_label},
+        row_header=from_label,
     )
 else:
-    st.info("This fixture has no geographic coordinates. No map is drawn.")
+    st.info(t("dispatch.nogeo"))
 
-with st.expander("Full distance matrix (kilometres to 3 d.p.)"):
+with st.expander(t("dispatch.matrix.full")):
+    st.caption(t("dispatch.matrix.full.cap"))
     st.dataframe(
         matrix_km_rows(payload["distance_matrix"]),
         use_container_width=True,
         hide_index=True,
     )
 
+section(t("dispatch.runs"), t("dispatch.runs.cap"))
 run_cols = st.columns(2)
 with run_cols[0]:
-    st.markdown("**Baseline run**")
+    st.markdown(f"**{t('dispatch.simple')}**")
     summary = summary_for_current("baseline")
     if summary:
         status_badge(summary.get("status"))
-        st.write(f"Run: `{summary['run_id']}`")
-        st.caption(f"Scenario: `{summary.get('scenario_id')}`")
+        st.write(t("dispatch.run", id=summary["run_id"]))
+        st.caption(f"{t('nav.scenario')}: `{summary.get('scenario_id')}`")
         if summary.get("comparison_eligible"):
-            st.write(f"Total distance: {format_km(summary.get('objective_distance_metres'))}")
+            st.write(t("dispatch.total", km=format_km(summary.get("objective_distance_metres"))))
         else:
-            st.write("Total distance: —")
+            st.write(t("dispatch.total", km=t("common.na")))
             if summary.get("partial_distance_metres") is not None:
                 st.write(
-                    "Partial constructed distance: "
-                    f"{format_km(summary.get('partial_distance_metres'))}"
+                    t(
+                        "dispatch.partial",
+                        km=format_km(summary.get("partial_distance_metres")),
+                    )
                 )
         note = incomplete_baseline_note(summary)
         if note:
@@ -263,16 +374,30 @@ with run_cols[0]:
         else:
             st.write(summary.get("message") or "")
     else:
-        st.caption("Not run for this scenario in this session.")
+        st.caption(t("dispatch.norun"))
 with run_cols[1]:
-    st.markdown("**Optimised run**")
+    st.markdown(f"**{t('dispatch.or')}**")
     summary = summary_for_current("optimised")
     if summary:
         status_badge(summary.get("status"))
-        st.write(f"Run: `{summary['run_id']}`")
-        st.caption(f"Scenario: `{summary.get('scenario_id')}`")
-        st.write(f"Total distance: {format_km(summary.get('objective_distance_metres'))}")
-        st.write(f"Solver termination: `{summary.get('solver_termination')}`")
+        st.write(t("dispatch.run", id=summary["run_id"]))
+        st.caption(f"{t('nav.scenario')}: `{summary.get('scenario_id')}`")
+        st.write(t("dispatch.total", km=format_km(summary.get("objective_distance_metres"))))
+        st.write(t("dispatch.term", term=summary.get("solver_termination")))
         st.write(summary.get("message") or "")
+        if summary.get("comparison_eligible") and summary.get("scenario_id") != "LEARNING_6":
+            st.caption(t("dispatch.not_optimal"))
     else:
-        st.caption("Not run for this scenario in this session.")
+        st.caption(t("dispatch.norun"))
+
+nav_a, nav_b = st.columns(2)
+with nav_a:
+    st.page_link("pages/2_Route_Plan.py", label=t("dispatch.next.routes"), icon="🗺️")
+with nav_b:
+    st.page_link(
+        "pages/3_Baseline_vs_Optimised.py",
+        label=t("dispatch.next.compare"),
+        icon="📊",
+    )
+
+render_footer()
