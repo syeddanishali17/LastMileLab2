@@ -1,6 +1,8 @@
 """HTTP client for the FastAPI backend. No optimisation logic lives here."""
 
+import atexit
 import os
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -30,6 +32,13 @@ def backend_url() -> str:
     return os.getenv("BACKEND_URL", DEFAULT_BACKEND_URL).rstrip("/")
 
 
+@lru_cache(maxsize=1)
+def _client() -> httpx.Client:
+    client = httpx.Client()
+    atexit.register(client.close)
+    return client
+
+
 def _parse_error(response: httpx.Response) -> str:
     try:
         payload = response.json()
@@ -52,7 +61,7 @@ def request_json(
 ) -> Any:
     url = f"{backend_url()}{path}"
     try:
-        response = httpx.request(
+        response = _client().request(
             method,
             url,
             json=json,
@@ -143,7 +152,7 @@ def get_checks(run_id: str) -> dict[str, Any]:
 def export_run(run_id: str, fmt: str = "json") -> tuple[bytes, str, str]:
     url = f"{backend_url()}/api/v1/runs/{run_id}/export"
     try:
-        response = httpx.get(url, params={"format": fmt}, timeout=60.0)
+        response = _client().get(url, params={"format": fmt}, timeout=60.0)
     except httpx.ConnectError as exc:
         raise ApiError(
             "Cannot reach the FastAPI backend. Start Uvicorn on port 8000 first. "

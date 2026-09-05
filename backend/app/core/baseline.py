@@ -47,9 +47,7 @@ def build_nearest_neighbour(dataset: ScenarioDataset, run_id: str | None = None)
         sequence = [depot_id]
         while True:
             candidates = [
-                customer_id
-                for customer_id in unserved
-                if demand[customer_id] <= remaining
+                customer_id for customer_id in unserved if demand[customer_id] <= remaining
             ]
             if not candidates:
                 break
@@ -65,9 +63,7 @@ def build_nearest_neighbour(dataset: ScenarioDataset, run_id: str | None = None)
     if unserved_ids:
         status = RunStatus.heuristic_incomplete
         comparison_eligible = False
-        message = (
-            "Baseline constructed a partial plan. Improvement percentage is not defined."
-        )
+        message = "Baseline constructed a partial plan. Improvement percentage is not defined."
     else:
         status = RunStatus.feasible
         comparison_eligible = True
@@ -86,8 +82,18 @@ def build_nearest_neighbour(dataset: ScenarioDataset, run_id: str | None = None)
     )
 
 
-def plan_baseline(scenario_id: str, run_id: str | None = None) -> PlanResult:
-    precheck, dataset = load_and_precheck(scenario_id)
+def plan_baseline(
+    scenario_id: str,
+    run_id: str | None = None,
+    *,
+    dataset: ScenarioDataset | None = None,
+) -> PlanResult:
+    from app.core.validation import precheck_dataset
+
+    if dataset is None:
+        precheck, dataset = load_and_precheck(scenario_id)
+    else:
+        precheck = precheck_dataset(dataset)
     if precheck.status is PrecheckStatus.invalid:
         return empty_plan(
             scenario_id=scenario_id,

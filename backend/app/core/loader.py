@@ -58,6 +58,18 @@ YAML_SCENARIOS = {
     "INFEASIBLE_BIN_PACKING": "infeasible_bin_packing.yaml",
 }
 
+# Fixed variants isolate capacity pressure and geographic spread from the published demo.
+CSV_SCENARIOS["VIENNA_TIGHT_24"] = {
+    **CSV_SCENARIOS["VIENNA_STANDARD_24"],
+    "scenario_name": "Vienna Tight Capacity 24",
+    "vehicles_file": "vienna_tight_24_vehicles.csv",
+}
+CSV_SCENARIOS["VIENNA_WIDE_24"] = {
+    **CSV_SCENARIOS["VIENNA_STANDARD_24"],
+    "scenario_name": "Vienna Wide Geography 24",
+    "customers_file": "vienna_wide_24_customers.csv",
+}
+
 
 def fixtures_dir() -> Path:
     return Path(__file__).resolve().parents[3] / "data" / "fixtures"

@@ -28,6 +28,12 @@ While developing on this machine:
 
 Deployment steps: [`docs/deployment.md`](docs/deployment.md).
 
+### Application journey
+
+**Overview → Scenarios → Plan.** Overview explains the delivery problem and distinguishes its published Vienna example from a live run. Scenarios offers exactly three presets: Standard 24, Tight Capacity 24 and Wide Geography 24, plus a custom tote-demand editor with live capacity checks. **Run comparison** executes the nearest-neighbour baseline and OR-Tools search, then opens Plan with both maps, API result metrics, route tables and JSON/CSV ZIP downloads.
+
+Methodology and Model validation are secondary pages. The six-customer teaching example remains in the documentation and regression tests, outside the normal application journey. The sidebar starts collapsed and contains the single navigation and English/Deutsch control. The current page is also named above its heading. The UI still starts with `streamlit run frontend/Home.py`. [UX research and file map](docs/ux_rewrite.md).
+
 ## Contents
 
 1. [Business problem](#business-problem)
@@ -98,7 +104,7 @@ Vienna Standard 24:
 
 Z1 (35 totes) does not fit on one 30-tote van. The planner cannot assign one van per geographic zone; at least one Z1 customer must ride with another route. That is the intended CVRP challenge.
 
-LEARNING_6 uses 6 customers, 20 totes of demand, and 2 vans × 10 totes. Total demand equals fleet capacity, so both vans must load exactly 10 totes.
+The Scenarios page also offers two further curated presets with the same 108-tote demand: **Tight Capacity 24** (4 vans × 28 totes, 4 totes spare) and **Wide Geography 24** (same fleet as Standard, stops spread farther across Vienna). LEARNING_6 remains a six-customer teaching fixture in tests and docs (20 totes, 2 vans × 10); it is not in the primary UI selector.
 
 ## Vienna Standard 24 demo
 
@@ -178,7 +184,7 @@ Walkthrough: [`docs/learning_6_sequential_nn.md`](docs/learning_6_sequential_nn.
 
 *Streamlit never solves. FastAPI never owns KPI formulae. Pytest calls `backend/app/core` directly.*
 
-The live Streamlit pages (Home, Dispatch Setup, Route Plan, Baseline vs Optimised, Model Inspector, Learning Lab) are the interactive screenshots. Capture those from the running UI after deploy if a recruiter walkthrough needs browser chrome.
+The live Streamlit pages (Overview, Scenarios, Plan, plus optional Methodology and Model validation) are the interactive screenshots. Capture those from the running UI after deploy if a recruiter walkthrough needs browser chrome.
 
 Regenerate schematic figures:
 

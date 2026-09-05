@@ -1,6 +1,7 @@
 """Pydantic request bodies for /api/v1."""
 
 from decimal import Decimal
+from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -36,3 +37,4 @@ class GenerateRequest(BaseModel):
     vehicle_capacity_totes: int
     detour_factor: Decimal = Field(default=Decimal("1.25"))
     geographic_zone_weights: ZoneWeights | None = None
+    customer_demands: list[Annotated[int, Field(strict=True, ge=1, le=100)]] | None = None

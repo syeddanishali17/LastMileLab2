@@ -27,6 +27,7 @@ def ensure_session() -> None:
 
 
 def clear_planner_runs() -> None:
+    st.session_state.pop("_plan_bundle", None)
     st.session_state.baseline_run_id = None
     st.session_state.optimised_run_id = None
     st.session_state["_baseline_summary"] = None

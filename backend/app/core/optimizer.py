@@ -91,9 +91,7 @@ def run_ortools(
     run_id: str | None = None,
 ) -> PlanResult:
     if time_limit_seconds not in SUPPORTED_TIME_LIMITS:
-        raise ValueError(
-            f"solver_time_limit_seconds must be one of {SUPPORTED_TIME_LIMITS}"
-        )
+        raise ValueError(f"solver_time_limit_seconds must be one of {SUPPORTED_TIME_LIMITS}")
 
     node_ids = dataset.distance_matrix.node_ids
     demands = [0] * len(node_ids)
@@ -159,9 +157,7 @@ def run_ortools(
                 vehicle.vehicle_id: unused_vehicle_sequence(dataset.depot.depot_id)
                 for vehicle in vehicles
             },
-            unserved_customer_ids=[
-                customer.customer_id for customer in dataset.customers
-            ],
+            unserved_customer_ids=[customer.customer_id for customer in dataset.customers],
             solver_termination=termination,
             solver_time_limit_seconds=time_limit_seconds,
             solver_runtime_seconds=runtime,
@@ -231,8 +227,14 @@ def plan_optimise(
     *,
     time_limit_seconds: int = DEFAULT_TIME_LIMIT_SECONDS,
     run_id: str | None = None,
+    dataset: ScenarioDataset | None = None,
 ) -> PlanResult:
-    precheck, dataset = load_and_precheck(scenario_id)
+    from app.core.validation import precheck_dataset
+
+    if dataset is None:
+        precheck, dataset = load_and_precheck(scenario_id)
+    else:
+        precheck = precheck_dataset(dataset)
     if precheck.status is PrecheckStatus.invalid:
         return empty_plan(
             scenario_id=scenario_id,

@@ -8,6 +8,7 @@ from typing import Any
 import plotly.graph_objects as go
 
 from display import display_node, vehicle_colour
+from i18n import t
 
 LEARNING_DIAGRAM_POSITIONS = {
     "DEPOT_L6": (0.0, 0.0),
@@ -25,8 +26,8 @@ DIAGRAM_CAPTION = (
 )
 
 _VIENNA_COS_LAT = math.cos(math.radians(48.2))
-DEPOT_FILL = "#0f2744"
-DEPOT_RING = "#d4a017"
+DEPOT_FILL = "#173B57"
+DEPOT_RING = "#FFFFFF"
 
 
 def _finite_coords(
@@ -58,15 +59,11 @@ def _map_camera(lats: list[float], lons: list[float]) -> dict[str, Any]:
     west, east = min(lons), max(lons)
     lat_span = max(north - south, 0.02)
     lon_span = max(east - west, 0.02)
-    span = max(lat_span, lon_span * _VIENNA_COS_LAT)
-    if span > 0.30:
-        zoom = 9.8
-    elif span > 0.15:
-        zoom = 10.5
-    elif span > 0.08:
-        zoom = 11.2
-    else:
-        zoom = 12.0
+    # Fit every stop even in a narrow paired map. Same camera for both plans.
+    zoom = min(
+        math.log2(360 * 260 / (512 * lon_span)),
+        math.log2(360 * 340 * _VIENNA_COS_LAT / (512 * lat_span)),
+    )
     return {
         "style": "open-street-map",
         "center": {"lat": (south + north) / 2, "lon": (west + east) / 2},
@@ -77,12 +74,12 @@ def _map_camera(lats: list[float], lons: list[float]) -> dict[str, Any]:
 def _legend_layout() -> dict[str, Any]:
     return {
         "orientation": "h",
-        "y": -0.14,
+        "y": 1.01,
         "x": 0,
-        "yanchor": "top",
+        "yanchor": "bottom",
         "bgcolor": "rgba(244,247,250,0.96)",
         "bordercolor": "#D7E0E8",
-        "borderwidth": 1,
+        "borderwidth": 0,
         "font": {"size": 12, "color": "#172B3A"},
     }
 
@@ -135,8 +132,8 @@ def customer_map(scenario: dict[str, Any]) -> go.Figure:
             lon=[customer["longitude"] for customer in customers],
             mode="markers",
             marker={
-                "size": [11 + customer["demand_totes"] * 1.3 for customer in customers],
-                "color": "#1f4e79",
+                "size": 11,
+                "color": "#64748B",
                 "opacity": 1,
             },
             customdata=[
@@ -144,18 +141,18 @@ def customer_map(scenario: dict[str, Any]) -> go.Figure:
                 for customer in customers
             ],
             hovertemplate=(
-                "<b>%{customdata[0]}</b><br>Demand: %{customdata[1]} totes"
+                "<b>%{customdata[0]}</b><br>" + t("ux.map.demand") + ": %{customdata[1]} totes"
                 "<br>Zone: %{customdata[2]}<extra></extra>"
             ),
-            name="Customers",
+            name=t("ux.map.customers"),
         )
     )
     _add_depot_marker(fig, depot["latitude"], depot["longitude"])
     fig.update_layout(
         mapbox=_map_camera(lats, lons),
-        margin={"l": 0, "r": 0, "t": 8, "b": 88},
-        height=520,
-        legend=_legend_layout(),
+        margin={"l": 0, "r": 0, "t": 4, "b": 0},
+        height=400,
+        showlegend=False,
         hovermode="closest",
         paper_bgcolor="rgba(0,0,0,0)",
         template="none",
@@ -213,13 +210,13 @@ def route_map(
                 lon=[row["longitude"] for row in served],
                 mode="markers",
                 marker={
-                    "size": [9 + row["demand_totes"] for row in served],
-                    "color": "#6b7280",
+                    "size": 8,
+                    "color": "#64748B",
                     "opacity": 1,
                 },
                 customdata=[[row["customer_id"], row["demand_totes"]] for row in served],
                 hovertemplate="<b>%{customdata[0]}</b><br>%{customdata[1]} totes<extra></extra>",
-                name="Customers",
+                name=t("ux.map.customers"),
             )
         )
     if leftover:
@@ -228,18 +225,20 @@ def route_map(
                 lat=[row["latitude"] for row in leftover],
                 lon=[row["longitude"] for row in leftover],
                 mode="markers+text",
-                marker={"size": 14, "color": "#c2410c"},
+                marker={"size": 14, "color": "#B42318"},
                 text=[row["customer_id"] for row in leftover],
                 textposition="top right",
                 customdata=[[row["customer_id"], row["demand_totes"]] for row in leftover],
                 hovertemplate=(
-                    "<b>%{customdata[0]} unserved</b><br>%{customdata[1]} totes<extra></extra>"
+                    "<b>%{customdata[0]} "
+                    + t("ux.map.unserved")
+                    + "</b><br>%{customdata[1]} totes<extra></extra>"
                 ),
-                name="Unserved",
+                name=t("ux.map.unserved"),
             )
         )
 
-    for index, vehicle in enumerate(used):
+    for vehicle in used:
         sequence: list[str] = vehicle.get("sequence") or []
         points = [
             coords[node_id]
@@ -250,7 +249,7 @@ def route_map(
         ]
         if len(points) < 2:
             continue
-        dlat, dlon = _fan_offset_index(index, len(used))
+        dlat, dlon = 0.0, 0.0
         route_lats = [lat + dlat for lat, _lon in points]
         route_lons = [lon + dlon for _lat, lon in points]
         colour = vehicle_colour(vehicle["vehicle_id"])
@@ -264,7 +263,7 @@ def route_map(
                 lat=route_lats,
                 lon=route_lons,
                 mode="lines",
-                line={"width": 8, "color": "rgba(15, 23, 42, 0.75)"},
+                line={"width": 6, "color": "rgba(255, 255, 255, 0.85)"},
                 hoverinfo="skip",
                 showlegend=False,
             )
@@ -274,7 +273,7 @@ def route_map(
                 lat=route_lats,
                 lon=route_lons,
                 mode="lines",
-                line={"width": 4.5, "color": colour},
+                line={"width": 3.6, "color": colour},
                 name=vehicle["vehicle_id"],
                 hovertext=hover,
                 hoverinfo="text",
@@ -295,7 +294,7 @@ def route_map(
             stop_lons.append(lon)
             stop_text.append(str(customer_order))
             stop_hover.append(
-                f"{vehicle['vehicle_id']} stop {customer_order}: {node_id} "
+                f"{vehicle['vehicle_id']} {t('ux.map.stop')} {customer_order}: {node_id} "
                 f"({customers[node_id]['demand_totes']} totes)"
             )
         if stop_lats:
@@ -304,23 +303,23 @@ def route_map(
                     lat=stop_lats,
                     lon=stop_lons,
                     mode="markers+text",
-                    marker={"size": 18, "color": colour},
+                    marker={"size": 13, "color": colour},
                     text=stop_text,
                     textfont={"size": 11, "color": "white"},
                     textposition="middle center",
                     hovertext=stop_hover,
                     hoverinfo="text",
                     showlegend=False,
-                    name=f"{vehicle['vehicle_id']} stops",
+                    name=f"{vehicle['vehicle_id']} {t('ux.stops')}",
                 )
             )
 
     _add_depot_marker(fig, depot["latitude"], depot["longitude"])
     fig.update_layout(
         mapbox=_map_camera(lats, lons),
-        margin={"l": 0, "r": 0, "t": 8, "b": 96},
-        height=640,
-        legend=_legend_layout(),
+        margin={"l": 0, "r": 0, "t": 4, "b": 0},
+        height=430,
+        showlegend=False,
         hovermode="closest",
         uirevision="route-map",
         paper_bgcolor="rgba(0,0,0,0)",
@@ -432,9 +431,7 @@ def learning_schematic(
         )
     )
     if unserved:
-        leftover = [
-            node_id for node_id in unserved if node_id in LEARNING_DIAGRAM_POSITIONS
-        ]
+        leftover = [node_id for node_id in unserved if node_id in LEARNING_DIAGRAM_POSITIONS]
         if leftover:
             fig.add_trace(
                 go.Scatter(
@@ -462,7 +459,7 @@ def learning_schematic(
     return fig
 
 
-PLOTLY_MAP_CONFIG = {"scrollZoom": True, "displaylogo": False}
+PLOTLY_MAP_CONFIG = {"scrollZoom": False, "displaylogo": False}
 PLOTLY_CHART_KWARGS = {
     "use_container_width": True,
     "config": PLOTLY_MAP_CONFIG,

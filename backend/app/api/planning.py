@@ -27,7 +27,7 @@ def run_baseline(payload: ScenarioIdRequest, request: Request):
     dataset = repo.get_dataset(payload.scenario_id)
     if dataset is None:
         return unknown_scenario(payload.scenario_id)
-    plan = plan_baseline(payload.scenario_id)
+    plan = plan_baseline(payload.scenario_id, dataset=dataset)
     if plan.run.status.value == "invalid":
         return error_response(
             http_status=400,
@@ -69,6 +69,7 @@ def run_optimise(payload: OptimiseRequest, request: Request):
     plan = plan_optimise(
         payload.scenario_id,
         time_limit_seconds=payload.solver_time_limit_seconds,
+        dataset=dataset,
     )
     if plan.run.status.value == "invalid":
         return error_response(

@@ -12,16 +12,16 @@ or imprecise.
 
 ## Files to review
 
-- `frontend/components.py`: design tokens, CSS, shared layout, header, navigation,
-  status indicators, language control, and vehicle cards
-- `frontend/i18n.py`: all English and German interface copy
-- `frontend/Home.py`: landing-page information architecture
-- `frontend/pages/1_Dispatch_Setup.py`: scenario selection, feasibility pre-checks,
-  and solution controls
-- `frontend/pages/2_Route_Plan.py`: route and vehicle review
-- `frontend/pages/3_Baseline_vs_Optimised.py`: solution comparison
-- `frontend/pages/4_Model_Inspector.py`: route reconstruction and model validation
-- `frontend/pages/5_Learning_Lab.py`: six-customer worked example
+- `frontend/Home.py`: page registry (Overview, Scenarios, Plan, Methodology, Model validation)
+- `frontend/pages/0_Overview.py`: VRP to CVRP story and published Vienna proof
+- `frontend/pages/1_Dispatch_Setup.py`: three presets, custom demand editor, run comparison
+- `frontend/pages/3_Baseline_vs_Optimised.py`: paired KPIs, both route maps, export
+- `frontend/pages/6_Methodology.py`: short method notes
+- `frontend/pages/4_Model_Inspector.py`: optional reconstructed-model audit
+- `frontend/components.py`: design tokens, CSS, text-only navigation, badges, tables
+- `frontend/workflow_copy.py`: English/German copy for the three-page journey
+- `frontend/i18n.py`: remaining strings; workflow_copy overrides overlapping keys
+- `frontend/scenario_builder.py`: live Check 1/2 input meters (not run KPIs)
 - `.streamlit/config.toml`: native Streamlit colour configuration
 
 ## Current design direction
@@ -34,7 +34,7 @@ or imprecise.
 - Muted text: `#526477`
 - Borders: `#D7E0E8`
 - Inter typeface with a restrained enterprise hierarchy
-- Compact globe menu for English and German
+- Compact English / Deutsch control; no sidebar page icons
 - No em dashes in user-facing text
 - Sentence-case labels and headings
 

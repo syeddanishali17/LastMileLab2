@@ -13,7 +13,7 @@ This dictionary defines fields, units, allowed values, and validation rules for 
 
 | Identifier | Pattern | Notes |
 |---|---|---|
-| `scenario_id` | string | Fixed: `LEARNING_6`, `VIENNA_STANDARD_24`, `INFEASIBLE_SINGLE_OVERSIZE`, `INFEASIBLE_FLEET_OVERFLOW`, `INFEASIBLE_BIN_PACKING`. Generated: `GEN_{seed}_{customer_count}_{vehicle_count}` |
+| `scenario_id` | string | Fixed: `LEARNING_6`, `VIENNA_STANDARD_24`, `VIENNA_TIGHT_24`, `VIENNA_WIDE_24`, `INFEASIBLE_SINGLE_OVERSIZE`, `INFEASIBLE_FLEET_OVERFLOW`, `INFEASIBLE_BIN_PACKING`. Generated: `GEN_{20-hex sha256 of all generation parameters}` |
 | `depot_id` | string | LEARNING_6: `DEPOT_L6`. Vienna and generated geographic scenarios: `DEPOT_01`. Bin-packing fixture: `DEPOT_BP` |
 | `customer_id` | string | LEARNING_6 and infeasible fixtures: `C1`, `C2`, … Vienna and generated: `C001`, `C002`, … zero-padded to three digits |
 | `vehicle_id` | string | `V01`, `V02`, … zero-padded to two digits |
@@ -23,7 +23,7 @@ This dictionary defines fields, units, allowed values, and validation rules for 
 
 ### LEARNING_6 depot label convention
 
-Fixture files store the depot node as `DEPOT_L6`, matching `depot_id`. The specification teaching table labels that node `Depot`. The Learning Lab and other UI copy may display `Depot`; stored identifiers remain `DEPOT_L6`.
+Fixture files store the depot node as `DEPOT_L6`, matching `depot_id`. The specification teaching table labels that node `Depot`. UI copy may display `Depot`; stored identifiers remain `DEPOT_L6`.
 
 ---
 
@@ -292,8 +292,10 @@ service count per customer = 1
 
 | Fixture | Role | Demand | Fleet | Expected Phase 0 record |
 |---|---|---|---|---|
-| `LEARNING_6` | teaching CVRP | 20 totes | 2 × 10 | NN `heuristic_incomplete` with C4 unserved; verified optimum 31000 m |
+| `LEARNING_6` | teaching CVRP (tests/docs, not primary UI) | 20 totes | 2 × 10 | NN `heuristic_incomplete` with C4 unserved; verified optimum 31000 m |
 | `VIENNA_STANDARD_24` | public demo | 108 totes | 4 × 30 | NN complete, loads 29, 28, 29, 22 |
+| `VIENNA_TIGHT_24` | curated preset | 108 totes | 4 × 28 | Same stops as Standard; 4 totes spare |
+| `VIENNA_WIDE_24` | curated preset | 108 totes | 4 × 30 | Same demand/fleet as Standard; wider coordinates |
 | `INFEASIBLE_SINGLE_OVERSIZE` | Check 1 | 11 | 2 × 10 | `infeasible` |
 | `INFEASIBLE_FLEET_OVERFLOW` | Check 2 | 24 | 2 × 10 | `infeasible` |
 | `INFEASIBLE_BIN_PACKING` | unsplit packing | 18 | 2 × 10 | Checks 1 and 2 pass; independent packing infeasible; solver later `no_solution_found` |
@@ -302,6 +304,8 @@ Files under `data/fixtures/`:
 
 - `learning_6_customers.csv`, `learning_6_vehicles.csv`, `learning_6_distance_matrix.csv`, `learning_6_depot.csv`, `learning_6_expected_results.yaml`
 - `vienna_standard_24_customers.csv`, `vienna_standard_24_depot.csv`, `vienna_standard_24_vehicles.csv`, `vienna_standard_24_expected_baseline.yaml`
+- `vienna_tight_24_vehicles.csv` (Standard customers and depot; 28-tote vans)
+- `vienna_wide_24_customers.csv` (Standard depot and vehicles; wider WGS84 stops)
 - `infeasible_single_oversize.yaml`, `infeasible_fleet_overflow.yaml`, `infeasible_bin_packing.yaml`
 
 `learning_6_depot.csv` is an additive fixture so the teaching scenario has an explicit depot row with null coordinates, matching Check 4 (“depot exists”) and the Vienna depot file. Stored node id is `DEPOT_L6`.

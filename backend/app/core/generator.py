@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 import random
 from datetime import UTC, datetime
 from decimal import Decimal
@@ -94,8 +96,13 @@ def generate_scenario(
     vehicle_capacity_totes: int,
     detour_factor: Decimal = DEFAULT_DETOUR_FACTOR,
     geographic_zone_weights: dict[str, float] | None = None,
+    customer_demands: list[int] | None = None,
 ) -> tuple[str | None, ScenarioDataset | None]:
-    weights = geographic_zone_weights or {zone: 0.25 for zone in ZONE_ORDER}
+    weights = (
+        geographic_zone_weights
+        if geographic_zone_weights is not None
+        else {zone: 0.25 for zone in ZONE_ORDER}
+    )
     error = validate_generator_request(
         random_seed=random_seed,
         customer_count=customer_count,
@@ -107,7 +114,26 @@ def generate_scenario(
     if error:
         return error, None
 
-    scenario_id = f"GEN_{random_seed}_{customer_count}_{vehicle_count}"
+    if customer_demands is not None:
+        if len(customer_demands) != customer_count:
+            return "customer_demands must contain one value per customer", None
+        if any(type(demand) is not int or not 1 <= demand <= 100 for demand in customer_demands):
+            return "customer_demands must be positive integers between 1 and 100", None
+
+    parameters = {
+        "version": 1,
+        "seed": random_seed,
+        "customers": customer_count,
+        "vehicles": vehicle_count,
+        "capacity": vehicle_capacity_totes,
+        "detour": str(detour_factor.normalize()),
+        "zones": {zone: float(weights[zone]) for zone in ZONE_ORDER},
+        "demands": customer_demands,
+    }
+    fingerprint = hashlib.sha256(
+        json.dumps(parameters, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()[:20]
+    scenario_id = f"GEN_{fingerprint}"
     rng = random.Random(random_seed)
     customers: list[Customer] = []
     for index in range(1, customer_count + 1):
@@ -124,7 +150,11 @@ def generate_scenario(
                 zone_id=zone_id,
                 latitude=clip(centre_lat + u_lat, *LAT_BOUNDS),
                 longitude=clip(centre_lon + u_lon, *LON_BOUNDS),
-                demand_totes=_demand_from_u(u_demand),
+                demand_totes=(
+                    customer_demands[index - 1]
+                    if customer_demands is not None
+                    else _demand_from_u(u_demand)
+                ),
             )
         )
     vehicles = [

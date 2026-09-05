@@ -5,16 +5,16 @@ from __future__ import annotations
 from typing import Any
 
 VEHICLE_COLOURS = [
-    "#0F2744",
-    "#2E6B4F",
-    "#B85C38",
-    "#6B4C9A",
-    "#0F7A8C",
-    "#8A1C3C",
-    "#5C4A32",
-    "#3D5A40",
-    "#7A5C00",
-    "#2C3E50",
+    "#2563EB",
+    "#EA580C",
+    "#7C3AED",
+    "#C026D3",
+    "#0891B2",
+    "#CA8A04",
+    "#0F766E",
+    "#B42318",
+    "#4F46E5",
+    "#64748B",
 ]
 
 
@@ -264,10 +264,7 @@ def packing_from_matrix(
     matrix: dict[str, Any],
     customers: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
-    demand = {
-        customer["customer_id"]: customer["demand_totes"]
-        for customer in customers or []
-    }
+    demand = {customer["customer_id"]: customer["demand_totes"] for customer in customers or []}
     routes = []
     total = 0
     for route in REFERENCE_PACKING_34KM["routes"]:

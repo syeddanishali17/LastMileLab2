@@ -6,7 +6,6 @@ import streamlit as st
 
 from api_client import get_checks, get_routes, get_run, get_scenario
 from components import (
-    boot_page,
     call_api,
     callout,
     empty_state,
@@ -26,9 +25,7 @@ from inspector import (
 )
 from state import summary_for_current
 
-boot_page()
-
-page_header(t("inspect.title"), t("inspect.subtitle"), kicker=t("inspect.kicker"))
+page_header(t("nav.inspect"), t("inspect.subtitle"))
 
 options = []
 optimised = summary_for_current("optimised")
@@ -57,16 +54,17 @@ scenario_payload = call_api(get_scenario, st.session_state.scenario_id)
 if None in (run_payload, routes_payload, checks_payload, scenario_payload):
     st.stop()
 
-status_badge(run_payload.get("status"))
+status_badge(run_payload.get("status"), run_type=run_payload.get("run_type"))
 callout(t("inspect.how"))
 
-section(t("inspect.solver"), t("inspect.solver.cap"))
-st.write(t("inspect.solver.strategy"))
-st.write(t("inspect.solver.time", n=st.session_state.solver_time_limit_seconds))
-st.write(t("inspect.solver.term", term=run_payload.get("solver_termination")))
-st.write(t("inspect.solver.runtime", n=run_payload.get("solver_runtime_seconds") or t("common.na")))
-if run_payload.get("comparison_eligible") and st.session_state.scenario_id != "LEARNING_6":
-    st.caption(t("dispatch.not_optimal"))
+if run_payload.get("run_type") == "optimised":
+    section(t("inspect.solver"), t("inspect.solver.cap"))
+    st.write(t("inspect.solver.strategy"))
+    st.write(t("inspect.solver.time", n=run_payload.get("solver_time_limit_seconds")))
+    st.write(t("inspect.solver.term", term=run_payload.get("solver_termination")))
+    st.write(t("inspect.solver.runtime", n=run_payload.get("solver_runtime_seconds")))
+else:
+    st.caption(t("ux.inspect.baseline"))
 
 section(t("inspect.demand"), t("inspect.demand.cap"))
 st.dataframe(
@@ -153,12 +151,10 @@ else:
             use_container_width=True,
             hide_index=True,
         )
-    st.markdown(t("inspect.dist.compact"))
-    st.dataframe(compact_rows, use_container_width=True, hide_index=True)
 
 depot_id = scenario_payload["depot"]["depot_id"]
 st.caption(t("inspect.depot", id=depot_id, label=display_node(depot_id)))
 st.caption(t("inspect.obj", km=format_km(run_payload.get("objective_distance_metres"))))
 
-st.page_link("pages/5_Learning_Lab.py", label=t("inspect.next"), icon="🎓")
+st.page_link("pages/3_Baseline_vs_Optimised.py", label=t("nav.compare"))
 render_footer()

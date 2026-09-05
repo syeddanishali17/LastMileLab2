@@ -8,8 +8,7 @@ STRINGS: dict[str, dict[str, str]] = {
     "en": {
         "lang.label": "Language / Sprache",
         "lang.help": (
-            "Switch the whole interface to German. "
-            "Die gesamte Oberfläche gibt es auch auf Deutsch."
+            "Switch the whole interface to German. Die gesamte Oberfläche gibt es auch auf Deutsch."
         ),
         "lang.hint": "Deutsch verfügbar",
         "lang.sidebar": "Need German? Use Language / Sprache at the top right.",
@@ -30,7 +29,7 @@ STRINGS: dict[str, dict[str, str]] = {
         "nav.glossary": "Terminology",
         "nav.scenario": "Scenario",
         "nav.baseline": "Baseline solution",
-        "nav.optimised": "Optimised solution",
+        "nav.optimised": "Optimized solution",
         "tech.endpoint": "Service URL",
         "tech.endpoint.hint": "Address used by this interface to request scenario and route results.",
         "tech.scenario": "Active dataset",
@@ -55,7 +54,7 @@ STRINGS: dict[str, dict[str, str]] = {
             "**Nearest-neighbour baseline.** A transparent construction method that selects "
             "the nearest feasible customer at each step. It provides a reference solution, "
             "not a guarantee of minimum distance.\n\n"
-            "**Optimised solution.** The best feasible solution returned by Google OR-Tools "
+            "**Optimized solution.** The best feasible solution returned by Google OR-Tools "
             "within the selected search time.\n\n"
             "**Feasible solution.** Every customer is served exactly once and no vehicle "
             "exceeds capacity.\n\n"
@@ -311,7 +310,7 @@ STRINGS: dict[str, dict[str, str]] = {
         "dispatch.runs": "Plans in this session",
         "dispatch.runs.cap": "After a run, open See routes.",
         "dispatch.simple": "Nearest-neighbour baseline",
-        "dispatch.or": "OR-Tools solution",
+        "dispatch.or": "Optimized solution (OR-Tools)",
         "dispatch.norun": "Not run for this dataset yet.",
         "dispatch.total": "Total distance: {km}",
         "dispatch.partial": "Partial distance (not a full plan): {km}",
@@ -362,7 +361,7 @@ STRINGS: dict[str, dict[str, str]] = {
         ),
         "routes.pick": "Which plan?",
         "routes.pick.help": "Switching only reloads saved results. It does not run the optimiser again.",
-        "routes.opt": "Optimised solution",
+        "routes.opt": "Optimized solution",
         "routes.base": "Nearest-neighbour baseline",
         "routes.empty.title": "No plan yet",
         "routes.empty.body": (
@@ -382,7 +381,7 @@ STRINGS: dict[str, dict[str, str]] = {
         ),
         "compare.nn": "Nearest-neighbour baseline",
         "compare.nn.cap": "Deterministic greedy construction used as a transparent reference.",
-        "compare.or": "OR-Tools solution",
+        "compare.or": "Optimized solution (OR-Tools)",
         "compare.or.cap": "Best feasible solution returned within the selected search time.",
         "compare.need_both": (
             "A distance improvement is shown only when both plans serve every customer. "
@@ -1609,6 +1608,12 @@ STRINGS: dict[str, dict[str, str]] = {
         ),
     },
 }
+
+
+from workflow_copy import WORKFLOW_STRINGS  # noqa: E402
+
+for _language, _copy in WORKFLOW_STRINGS.items():
+    STRINGS[_language].update(_copy)
 
 
 def current_language() -> str:

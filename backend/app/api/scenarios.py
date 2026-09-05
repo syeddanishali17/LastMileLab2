@@ -74,6 +74,7 @@ def generate(payload: GenerateRequest, request: Request):
         vehicle_capacity_totes=payload.vehicle_capacity_totes,
         detour_factor=Decimal(str(payload.detour_factor)),
         geographic_zone_weights=weights,
+        customer_demands=payload.customer_demands,
     )
     if error or dataset is None:
         return invalid_request(error or "Scenario generation request is invalid.")

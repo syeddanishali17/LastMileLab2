@@ -29,7 +29,7 @@ DuckDBRepository  (data/runs/lastmile.duckdb)
 ```mermaid
 flowchart TD
   user[Recruiter or planner]
-  ui[Streamlit pages<br/>Home, Dispatch Setup,<br/>Route Plan, Baseline vs Optimised,<br/>Model Inspector, Learning Lab]
+  ui[Streamlit pages<br/>Overview, Scenarios, Plan,<br/>Methodology, Model validation]
   api[FastAPI<br/>GET /health<br/>/api/v1/scenarios<br/>/api/v1/plans<br/>/api/v1/runs]
   core[Core planning package]
   val[Validation and pre-checks]
@@ -69,16 +69,15 @@ Phase 6 used an in-memory repository. Phase 8 swapped in DuckDB behind the same 
 
 | Page | Role |
 |---|---|
-| Home | Product story, API health, synthetic-data notice |
-| Dispatch Setup | Load scenario, demand/capacity, pre-checks, run baseline and optimiser |
-| Route Plan | Vehicle sequences, reconstructed loads, OSM schematic map |
-| Baseline vs Optimised | Comparison KPIs only when both runs are `comparison_eligible` |
-| Model Inspector | Reconstruct `x_ijk`, `y_ik`, `u_k` and cumulative tote loads from stops |
-| Learning Lab | LEARNING_6 incomplete NN, 34.000 km named packing, 31.000 km verified optimum |
+| Overview | Last-mile story, VRP then CVRP, published Vienna 24 proof |
+| Scenarios | Three curated presets or guided custom demand; one run-comparison action |
+| Plan | Baseline and OR-Tools KPIs, both schematic maps, van tables, JSON/CSV export |
+| Methodology | Short assumptions and solver notes (secondary) |
+| Model validation | Reconstruct `x_ijk`, `y_ik`, and `u_k` from returned stops (secondary) |
 
-Session state keeps `scenario_id`, `baseline_run_id`, and `optimised_run_id`. Changing scenario drops stale run IDs so a LEARNING_6 baseline cannot be compared with a Vienna optimiser run.
+`Home.py` registers those pages with `st.navigation`. LEARNING_6 remains a fixture and test suite; it is not in the primary UI. Session state keeps `scenario_id`, `baseline_run_id`, `optimised_run_id`, and `_plan_bundle`. Changing scenario drops stale run IDs so plans from different datasets cannot be compared.
 
-OpenStreetMap tiles are schematic. Route lines are synthetic connections, not road geometry. LEARNING_6 has no geographic map.
+OpenStreetMap tiles are schematic. Route lines are synthetic connections, not road geometry.
 
 ## Documented MILP versus OR-Tools
 

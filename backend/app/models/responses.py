@@ -31,11 +31,13 @@ class CheckPayload(BaseModel):
 
 class PlanSummaryResponse(BaseModel):
     run_id: str
+    run_type: str
     scenario_id: str
     status: str
     comparison_eligible: bool
     solver_termination: str | None = None
     solver_runtime_seconds: float | None = None
+    solver_time_limit_seconds: int | None = None
     customers_total: int
     customers_served: int
     unserved_customer_ids: list[str]

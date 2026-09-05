@@ -158,7 +158,9 @@ def test_csv_export_zip_contains_required_files() -> None:
 
 
 def test_solver_timeout_returns_no_solution_found(monkeypatch) -> None:
-    def fake_optimise(scenario_id: str, time_limit_seconds: int = 5, run_id=None) -> PlanResult:
+    def fake_optimise(
+        scenario_id: str, time_limit_seconds: int = 5, run_id=None, *, dataset=None,
+    ) -> PlanResult:
         return empty_plan(
             scenario_id=scenario_id,
             run_type=RunType.optimised,
