@@ -14,6 +14,7 @@ SESSION_DEFAULTS = {
     "learning_baseline_run_id": None,
     "learning_optimised_run_id": None,
     "ui_language": "en",
+    "plan_view": "comparison",
     "_baseline_summary": None,
     "_optimised_summary": None,
 }
@@ -28,6 +29,7 @@ def ensure_session() -> None:
 
 def clear_planner_runs() -> None:
     st.session_state.pop("_plan_bundle", None)
+    st.session_state.plan_view = "comparison"
     st.session_state.baseline_run_id = None
     st.session_state.optimised_run_id = None
     st.session_state["_baseline_summary"] = None

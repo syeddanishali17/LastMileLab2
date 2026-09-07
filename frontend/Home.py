@@ -4,7 +4,7 @@ from pathlib import Path
 
 import streamlit as st
 
-from components import boot_page, inject_theme, render_brand
+from components import boot_page, inject_theme
 from i18n import t
 from state import ensure_session
 
@@ -17,9 +17,7 @@ ensure_session()
 inject_theme()
 brand_mark = Path(__file__).resolve().parent / "assets" / "brand.svg"
 if brand_mark.exists():
-    st.logo(str(brand_mark), size="large")
-with st.sidebar:
-    render_brand()
+    st.logo(str(brand_mark), size="medium")
 page = st.navigation(
     {
         t("nav.workflow"): [

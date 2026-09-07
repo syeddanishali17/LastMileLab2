@@ -68,9 +68,6 @@ html_write(
 )
 st.write(t("ux.method.baseline.limit"))
 
-section(t("ux.method.opensolver.title"))
-st.write(t("ux.method.opensolver"))
-
 section(t("ux.method.solver.title"))
 st.write(t("ux.method.solver"))
 html_write(
@@ -85,6 +82,9 @@ html_write(
     )
 )
 st.write(t("ux.method.solver.none"))
+
+section(t("ux.method.opensolver.title"))
+st.write(t("ux.method.opensolver"))
 
 section(t("ux.method.impl.title"))
 st.write(t("ux.method.impl"))

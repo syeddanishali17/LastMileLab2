@@ -28,6 +28,8 @@ def format_decimal(value: int | float, decimals: int) -> str:
 def scenario_label(scenario_id: str) -> str:
     from i18n import t
 
+    if scenario_id.startswith("GEN_"):
+        return t("scenario.generated.label")
     key = f"scenario.{scenario_id}.label"
     label = t(key)
     if label == key:
@@ -45,6 +47,17 @@ def scenario_help(scenario_id: str) -> str:
     if scenario_id.startswith("GEN_"):
         return t("scenario.generated.help")
     return t("scenario.fallback.help")
+
+
+def scenario_caption(scenario_id: str) -> str:
+    from i18n import t
+
+    meta_key = f"scenario.{scenario_id}.meta"
+    meta = t(meta_key)
+    help_text = scenario_help(scenario_id)
+    if meta == meta_key:
+        return help_text
+    return f"{meta}\n\n{help_text}"
 
 
 MAP_CAPTION = (
@@ -101,7 +114,7 @@ def format_pct(fraction: float | None) -> str:
 
 
 def format_sequence(node_ids: list[str]) -> str:
-    return " -> ".join(display_node(node_id) for node_id in node_ids)
+    return " → ".join(display_node(node_id) for node_id in node_ids)
 
 
 def matrix_lookup(matrix: dict[str, Any], origin: str, destination: str) -> int:
@@ -199,6 +212,61 @@ def matrix_km_rows(matrix: dict[str, Any]) -> list[dict[str, Any]]:
             row[label] = format_decimal(metres / 1000, 3)
         rows.append(row)
     return rows
+
+
+def plan_run_status(run: dict[str, Any]) -> str:
+    from i18n import t
+
+    status = str(run.get("status") or "")
+    if run.get("comparison_eligible") or status == "feasible":
+        return t("ux.plan.feasible")
+    labels = {
+        "heuristic_incomplete": "ux.plan.incomplete",
+        "no_solution_found": "ux.plan.no_solution",
+    }
+    return t(labels.get(status, "ux.plan.incomplete"))
+
+
+def plans_comparable(baseline: dict[str, Any], optimised: dict[str, Any]) -> bool:
+    if not (baseline.get("comparison_eligible") and optimised.get("comparison_eligible")):
+        return False
+    if baseline.get("scenario_id") != optimised.get("scenario_id"):
+        return False
+    baseline_total = baseline.get("customers_total")
+    optimised_total = optimised.get("customers_total")
+    return (
+        baseline_total is not None
+        and optimised_total is not None
+        and baseline_total == optimised_total
+    )
+
+
+def plan_comparison_summary(
+    baseline: dict[str, Any], optimised: dict[str, Any]
+) -> tuple[str, str | None]:
+    from i18n import t
+
+    served_line = t(
+        "ux.plan.served.each",
+        baseline_served=baseline.get("customers_served"),
+        baseline_total=baseline.get("customers_total"),
+        optimised_served=optimised.get("customers_served"),
+        optimised_total=optimised.get("customers_total"),
+        baseline_status=plan_run_status(baseline),
+        optimised_status=plan_run_status(optimised),
+    )
+    if not plans_comparable(baseline, optimised):
+        return t("ux.plan.ineligible"), served_line
+    return (
+        t(
+            "ux.plan.result",
+            baseline_km=format_km(baseline.get("objective_distance_metres")),
+            optimized_km=format_km(optimised.get("objective_distance_metres")),
+            reduction=format_improvement(optimised.get("distance_improvement_percentage")),
+            customer_count=optimised.get("customers_total"),
+        ),
+        None,
+    )
 
 
 def operational_summary(baseline: dict[str, Any], optimised: dict[str, Any]) -> str:

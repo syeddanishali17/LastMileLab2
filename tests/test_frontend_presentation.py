@@ -1,9 +1,16 @@
 """Presentation regressions, independent of mathematical expectations."""
 
+from pathlib import Path
 from unittest.mock import MagicMock
 
 import components
-from display import VEHICLE_COLOURS
+from display import (
+    VEHICLE_COLOURS,
+    format_sequence,
+    plan_comparison_summary,
+    plans_comparable,
+    scenario_label,
+)
 from maps import PLOTLY_MAP_CONFIG, _map_camera
 
 
@@ -42,26 +49,256 @@ def test_numeric_table_formats_and_vehicle_key(monkeypatch):
     assert 'scope="row"' in markup
 
 
+def test_plan_sequence_uses_readable_arrows_and_depot_label():
+    assert format_sequence(["DEPOT", "C022", "DEPOT"]) == "Depot → C022 → Depot"
+
+
+def test_plan_page_does_not_hardcode_vienna_standard_figures() -> None:
+    source = Path("frontend/pages/3_Baseline_vs_Optimised.py").read_text(encoding="utf-8")
+    helper = Path("frontend/display.py").read_text(encoding="utf-8")
+    assert "122.394" not in source
+    assert "97.193" not in source
+    assert "20.6" not in source
+    assert 't("ux.optimised")' not in source
+    assert "Optimized solution (OR-Tools)" not in source
+    summary_src = helper.split("def plan_comparison_summary")[1].split("def operational_summary")[0]
+    assert "122.394" not in summary_src
+
+
+def test_custom_scenario_label_is_friendly() -> None:
+    assert scenario_label("GEN_abc123") == "Custom scenario"
+    assert scenario_label("VIENNA_STANDARD_24") == "Vienna Standard"
+    assert scenario_label("VIENNA_TIGHT_24") == "Vienna Tight Capacity"
+
+
+def _run(**fields):
+    payload = {
+        "scenario_id": "DEMO",
+        "comparison_eligible": True,
+        "status": "feasible",
+        "objective_distance_metres": 80000,
+        "customers_served": 12,
+        "customers_total": 12,
+        "distance_improvement_percentage": None,
+    }
+    payload.update(fields)
+    return payload
+
+
+def test_plan_comparison_summary_interpolates_run_values() -> None:
+    lead, detail = plan_comparison_summary(
+        _run(),
+        _run(objective_distance_metres=64000, distance_improvement_percentage=20.0),
+    )
+    assert detail is None
+    assert lead == (
+        "The optimized route plan reduces total fleet distance travelled from 80.000 km "
+        "to 64.000 km, a 20.0% reduction. Both plans serve all 12 customers while "
+        "respecting vehicle-capacity limits."
+    )
+    assert "122.394" not in lead
+    assert "97.193" not in lead
+    assert "OR-Tools" not in lead
+
+
+def test_plan_comparison_summary_incomplete_baseline_omits_reduction() -> None:
+    lead, detail = plan_comparison_summary(
+        _run(
+            comparison_eligible=False,
+            status="heuristic_incomplete",
+            objective_distance_metres=None,
+            customers_served=5,
+            customers_total=6,
+        ),
+        _run(
+            objective_distance_metres=31000,
+            customers_served=6,
+            customers_total=6,
+        ),
+    )
+    assert "one or both route plans are incomplete" in lead
+    assert "baseline route plan is incomplete" not in lead
+    assert "Both plans serve all" not in lead
+    assert "%" not in lead
+    assert detail is not None
+    assert "Baseline: 5 / 6 customers served · Incomplete plan" in detail
+    assert "Optimized: 6 / 6 customers served · Feasible plan" in detail
+    assert "heuristic_incomplete" not in detail
+    assert not plans_comparable(
+        _run(comparison_eligible=False, status="heuristic_incomplete"),
+        _run(),
+    )
+
+
+def test_plan_comparison_summary_optimized_incomplete_uses_generic_fallback() -> None:
+    lead, detail = plan_comparison_summary(
+        _run(),
+        _run(
+            comparison_eligible=False,
+            status="no_solution_found",
+            objective_distance_metres=None,
+            customers_served=0,
+            distance_improvement_percentage=None,
+        ),
+    )
+    assert "one or both route plans are incomplete" in lead
+    assert "baseline route plan is incomplete" not in lead
+    assert detail is not None
+    assert "Baseline: 12 / 12 customers served · Feasible plan" in detail
+    assert "Optimized: 0 / 12 customers served · No complete solution found" in detail
+    assert "no_solution_found" not in detail
+    assert "heuristic_incomplete" not in f"{lead}\n{detail}"
+
+
+def test_plan_comparison_summary_both_incomplete_shows_both_statuses() -> None:
+    lead, detail = plan_comparison_summary(
+        _run(
+            comparison_eligible=False,
+            status="heuristic_incomplete",
+            customers_served=5,
+            customers_total=6,
+        ),
+        _run(
+            comparison_eligible=False,
+            status="no_solution_found",
+            customers_served=0,
+            customers_total=6,
+        ),
+    )
+    assert "complete route comparison is not available" in lead
+    assert detail is not None
+    assert "Incomplete plan" in detail
+    assert "No complete solution found" in detail
+    assert "%" not in lead
+
+
+def test_plan_comparison_summary_rejects_mismatched_runs() -> None:
+    lead, detail = plan_comparison_summary(
+        _run(scenario_id="A", customers_total=12),
+        _run(
+            scenario_id="B",
+            customers_total=12,
+            objective_distance_metres=64000,
+            distance_improvement_percentage=20.0,
+        ),
+    )
+    assert "reduces total fleet distance" not in lead
+    assert "one or both route plans are incomplete" in lead
+    assert detail is not None
+    mismatched = plan_comparison_summary(
+        _run(customers_total=12),
+        _run(customers_total=24, distance_improvement_percentage=20.0),
+    )
+    assert "reduces total fleet distance" not in mismatched[0]
+    assert not plans_comparable(_run(customers_total=12), _run(customers_total=24))
+
+
 def test_overview_animation_teaches_baseline_versus_optimized():
     markup = components.cvrp_animation_html(
         "122.4 km → 97.2 km · 20.6% shorter",
         "diagram",
     )
     assert "lm-cvrp-panel" in markup
+    assert "lm-cvrp-compare" in markup
+    assert markup.count('class="lm-cvrp-pane"') == 2
+    assert markup.count("<svg") == 2
     assert "Nearest-neighbour baseline" in markup
     assert "Optimized solution" in markup
     assert "122.4 km" in markup
+    assert "97.2 km · 20.6% shorter" in markup
+    assert "Total distance: 122.4 km" in markup
+    assert "Total distance: 97.2 km · 20.6% shorter" in markup
     assert ">1</text>" in markup
     assert ">2</text>" in markup
     assert ">3</text>" in markup
-    assert "lm-cvrp-dot-nn" in markup
+    assert markup.count(">C1</text>") == 2
+    assert markup.count(">C12</text>") == 2
+    assert "lm-cvrp-ids" in markup
+    assert "lm-cvrp-dot-nn" not in markup
+    assert "lm-cvrp-dot-opt" not in markup
+    assert "lm-nn-track" not in markup
+    assert "lm-opt-track" not in markup
     assert "◂" not in components.THEME_CSS
-    assert "lm-loop-depot" in components.THEME_CSS
+    assert "lm-cvrp-route-tracks" in markup
+    assert "5s linear infinite" in components.THEME_CSS
     assert ".lm-num" in components.THEME_CSS
     assert "text-align: right" in components.THEME_CSS
     assert "animation: none" in components.THEME_CSS
-    assert "10s" in components.THEME_CSS
     assert ".lm-route-motif::before" not in components.THEME_CSS
+    assert "lm-hero-mark" in components.THEME_CSS
+    assert "width: 123px" in components.THEME_CSS
+    assert "margin-left: 0" in components.THEME_CSS
+    assert "padding: 0 24px" in components.THEME_CSS
+    assert "max-width: none" in components.THEME_CSS
+    assert "text-align: justify" not in components.THEME_CSS
+    assert "font-size: 18px" in components.THEME_CSS
+    assert markup.find("<svg") < markup.find('class="lm-cvrp-pane-title"')
+    assert "padding-top: 0" in components.THEME_CSS
+    assert ".lm-proof-kicker" in components.THEME_CSS
+    assert ".lm-overview-flag" in components.THEME_CSS
+    assert ".lm-concept-grid .lm-card > p" in components.THEME_CSS
+    assert ".lm-concept-grid .lm-card .lm-info-text" in components.THEME_CSS
+    assert "clamp(28px, 2.4vw, 34px)" in components.THEME_CSS
+    assert "clamp(27px, 2.6vw, 35px)" not in components.THEME_CSS
+    assert "clamp(1.75rem, 2.6vw, 2.25rem)" not in components.THEME_CSS
+    assert "lm-cvrp-note" not in markup
+    assert "Illustrative published reference only" not in markup
+    assert "st-key-scenario_presets" in components.THEME_CSS
+    assert ".lm-check-title" in components.THEME_CSS
+    assert 'stSidebar"][aria-expanded="true"]' in components.THEME_CSS
+    assert "272px" in components.THEME_CSS
+    assert ".lm-preview-surface" in components.THEME_CSS
+    assert ".lm-custom-secondary" in components.THEME_CSS
+    assert ".lm-offline-title" in components.THEME_CSS
+    assert ".lm-feas-card.is-pass" in components.THEME_CSS
+    assert ".lm-feas-card.is-fail" in components.THEME_CSS
+    assert "st-key-scenario-preview" in components.THEME_CSS
+    assert 'stElementContainer"]:has(.lm-scenarios-flag)' not in components.THEME_CSS
+    assert ".st-key-custom-configure { margin-top: 0; }" in components.THEME_CSS
+    assert ".lm-custom-configure-gap" in components.THEME_CSS
+    assert "font-size: 19px" in components.THEME_CSS
+    assert ".st-key-plan-inspect button" in components.THEME_CSS
+    assert ".lm-plan-matrix" in components.THEME_CSS
+    assert ".st-key-plan_view" in components.THEME_CSS
+    assert "stBaseButton-segmented_controlActive" in components.THEME_CSS
+    assert ".lm-plan-heading" in components.THEME_CSS
+    assert ".lm-plan-method-break" not in components.THEME_CSS
+    assert "ux.plan.excel" not in components.THEME_CSS
+    assert ".st-key-plan-pair .lm-table" in components.THEME_CSS
+    assert "st-key-demand-editor" in components.THEME_CSS
+    assert "max-width: 580px" in components.THEME_CSS
+
+
+def test_hero_author_stays_inside_html_without_blank_gaps(monkeypatch):
+    ui = MagicMock()
+    monkeypatch.setattr(components, "st", ui)
+    components.page_header(
+        "Title",
+        "Intro paragraph.",
+        kicker="CVRP",
+        extra=["Objective paragraph."],
+        author="A portfolio project by Syed Danish Ali",
+        compact=False,
+    )
+    markup = ui.markdown.call_args.args[0]
+    assert '<p class="lm-hero-author">A portfolio project by Syed Danish Ali</p>' in markup
+    assert "</p>\n" not in markup.split('class="lm-hero-copy">', 1)[1]
+    assert markup.count("<p class=") + markup.count("<p>") >= 3
+    assert markup.strip().endswith("</div>")
+    ui = MagicMock()
+    monkeypatch.setattr(components, "st", ui)
+    components.concept_cards(
+        [("Routing objective", "Minimize distance.", "The model minimizes distance.")]
+    )
+    markup = ui.markdown.call_args.args[0]
+    assert 'class="lm-info"' in markup
+    assert "<svg" in markup
+    assert "ⓘ" not in markup
+    assert 'aria-label="Routing objective"' in markup
+    assert '<details class="lm-info">' in markup
+    assert "The model minimizes distance." in markup
+    assert "<abbr" not in markup
+    assert "lm-tip" not in markup
 
 
 def test_term_placeholders_do_not_nest_inside_titles():

@@ -2,10 +2,16 @@
 
 # Keeping each pair together makes reviews of new product copy straightforward.
 COPY = {
+    "ux.motion.pause": ("Pause animations", "Animationen pausieren"),
     "ux.export.prepare": ("Prepare JSON and CSV", "JSON und CSV vorbereiten"),
     "ux.preview.empty": (
-        "Generate the scenario to preview customer locations here.",
-        "Szenario erzeugen, um hier die Kundenstandorte zu sehen.",
+        "Select a preset and generate the scenario to preview customer locations and fleet capacity.",
+        "Wählen Sie ein Vorgabeszenario und erzeugen Sie es, um Kundenstandorte und Flottenkapazität "
+        "anzuzeigen.",
+    ),
+    "ux.preview.empty.custom": (
+        "Generate the scenario to preview customer locations and fleet capacity.",
+        "Szenario generieren, um Kundenstandorte und Flottenkapazität anzuzeigen.",
     ),
     "ux.map.legend": (
         "Numbers show customer-stop order. Depot start and return are not numbered.",
@@ -17,32 +23,26 @@ COPY = {
         "Illustrative CVRP-Struktur: mehrere Fahrzeugtouren verlassen ein Depot, jeder "
         "Kunde wird genau einmal bedient, und jedes genutzte Fahrzeug kehrt zum Depot zurück.",
     ),
-    "ux.over.diagram.note": (
-        "Illustrative published reference only. The browser is not solving a routing model, "
-        "and the figure is not road geometry.",
-        "Nur eine illustrative veröffentlichte Referenz. Der Browser löst kein Tourenmodell, "
-        "und die Abbildung ist keine Straßengeometrie.",
-    ),
     "check.audit.DEMAND_SATISFACTION": (
         "Every customer served exactly once",
         "Jeder Kunde genau einmal bedient",
     ),
     "check.audit.CAPACITY": ("Vehicle capacities respected", "Fahrzeugkapazitäten eingehalten"),
     "check.audit.DISTANCE": (
-        "Distances reconciled with the matrix",
-        "Distanzen mit der Matrix abgeglichen",
+        "Route distances reconciled",
+        "Tourdistanzen abgeglichen",
     ),
     "check.audit.DEPOT_CONNECTIVITY": (
         "Routes return to the depot",
         "Touren kehren zum Depot zurück",
     ),
     "check.audit.INVARIANTS": (
-        "All feasible-solution invariants passed",
-        "Alle Invarianten zulässiger Lösungen erfüllt",
+        "Solution consistency checks passed",
+        "Konsistenzprüfungen der Lösung erfüllt",
     ),
-    "nav.home": ("01  Overview", "01  Überblick"),
-    "nav.dispatch": ("02  Scenarios", "02  Szenarien"),
-    "nav.compare": ("03  Plan", "03  Plan"),
+    "nav.home": ("Overview", "Überblick"),
+    "nav.dispatch": ("Scenarios", "Szenarien"),
+    "nav.compare": ("Plan", "Plan"),
     "nav.method": ("Methodology", "Methodik"),
     "nav.inspect": ("Model validation", "Modellprüfung"),
     "nav.workflow": ("WORKFLOW", "ABLAUF"),
@@ -55,129 +55,155 @@ COPY = {
     ),
     "lang.label": ("Language / Sprache", "Language / Sprache"),
     "ux.over.kicker": (
-        "Capacitated Vehicle Routing Problem (CVRP)",
-        "Capacitated Vehicle Routing Problem (CVRP)",
+        "CAPACITATED VEHICLE ROUTING PROBLEM (CVRP)",
+        "CAPACITATED VEHICLE ROUTING PROBLEM (CVRP)",
     ),
     "ux.over.title": (
-        "Optimize last-mile delivery routes under vehicle-capacity constraints",
-        "Last-Mile-Touren unter Fahrzeugkapazitätsgrenzen optimieren",
+        "Optimize fleet routing to minimize travel distance under capacity constraints",
+        "Flottentouren unter Kapazitätsgrenzen optimieren, um die Fahrdistanz zu minimieren",
     ),
     "ux.over.intro": (
         "LastMile Lab models a static, single-depot Capacitated Vehicle Routing Problem "
-        "(CVRP). Each customer order must be assigned to one vehicle, every route must "
-        "respect vehicle capacity, and the stop sequence is selected with the objective of "
-        "minimizing total estimated fleet distance.",
+        "(CVRP) for last-mile delivery. It determines how customer demand is assigned across "
+        "vehicles and the sequence in which each route serves its customers.",
         "LastMile Lab modelliert ein statisches Capacitated Vehicle Routing Problem (CVRP) "
-        "mit einem Depot. Jede Kundenbestellung wird einem Fahrzeug zugeordnet, jede Tour "
-        "muss die Fahrzeugkapazität einhalten, und die Stoppfolge wird so gewählt, dass die "
-        "geschätzte Gesamtdistanz der Flotte minimiert wird.",
+        "mit einem Depot für die Last-Mile-Zustellung. Es bestimmt, wie der Kundenbedarf auf "
+        "Fahrzeuge verteilt wird und in welcher Reihenfolge jede Tour ihre Kunden bedient.",
+    ),
+    "ux.over.feas.hero": (
+        "The objective is to minimize total estimated fleet distance while serving every "
+        "customer exactly once, respecting vehicle-capacity constraints, and returning each "
+        "active vehicle to the depot.",
+        "Das Ziel ist, die geschätzte Gesamtdistanz der Flotte zu minimieren, jeden Kunden "
+        "genau einmal zu bedienen, die Fahrzeugkapazität einzuhalten und jedes aktive "
+        "Fahrzeug zum Depot zurückzuführen.",
     ),
     "ux.over.compare.body": (
-        "The application compares a deterministic nearest-neighbour baseline with an "
-        "optimized solution returned by Google OR-Tools within a configurable search limit.",
-        "Die Anwendung vergleicht eine deterministische Nächster-Nachbar-Baseline mit einer "
-        "optimierten Lösung, die Google OR-Tools innerhalb eines wählbaren Suchlimits zurückgibt.",
+        "The application compares a transparent nearest-neighbour baseline with an optimized "
+        "route plan to show how routing decisions affect total fleet distance.",
+        "Die Anwendung vergleicht eine transparente Nächster-Nachbar-Baseline mit einem "
+        "optimierten Tourenplan, um zu zeigen, wie Tourenentscheidungen die Gesamtdistanz der "
+        "Flotte beeinflussen.",
     ),
-    "ux.over.context": (
-        "Synthetic Vienna scenario · One depot · Unsplit customer orders · Distance-minimization objective",
-        "Synthetisches Wien-Szenario · Ein Depot · Ungeteilte Kundenaufträge · Distanzminimierung",
+    "ux.over.author": (
+        "A portfolio project by Syed Danish Ali",
+        "Ein Portfolio-Projekt von Syed Danish Ali",
     ),
-    "ux.over.vrp.title": ("01  Routing objective", "01  Tourenziel"),
+    "ux.over.vrp.title": ("Routing objective", "Tourenziel"),
     "ux.over.vrp": (
-        "Serve every customer while minimizing total estimated fleet distance.",
-        "Jeden Kunden bedienen und die geschätzte Gesamtdistanz der Flotte minimieren.",
+        "Minimize the total estimated distance travelled across all active vehicle routes "
+        "while serving every customer.",
+        "Die geschätzte Gesamtdistanz über alle aktiven Fahrzeugtouren minimieren und dabei "
+        "jeden Kunden bedienen.",
     ),
-    "ux.over.cvrp.title": ("02  Capacity constraints", "02  Kapazitätsbedingungen"),
+    "ux.over.vrp.tip": (
+        "The objective is to reduce combined fleet travel while satisfying the model's routing "
+        "and capacity requirements.",
+        "Das Ziel ist, die kombinierte Flottenfahrt zu reduzieren und dabei die Touren- und "
+        "Kapazitätsanforderungen des Modells zu erfüllen.",
+    ),
+    "ux.over.cvrp.title": ("Capacity constraints", "Kapazitätsbedingungen"),
     "ux.over.cvrp": (
-        "The Capacitated Vehicle Routing Problem (CVRP) adds vehicle-capacity limits. "
-        "Customer demand is measured in totes (standard reusable delivery containers), "
-        "and each unsplit customer order must fit within the capacity of its assigned vehicle.",
-        "Das Capacitated Vehicle Routing Problem (CVRP) ergänzt Fahrzeugkapazitätsgrenzen. "
-        "Der Kundenbedarf wird in Totes (standardisierte Mehrweg-Lieferbehälter) gemessen, "
-        "und jede ungeteilte Bestellung muss in die Kapazität des zugeordneten Fahrzeugs passen.",
+        "Each customer has an unsplit tote demand, and the total demand assigned to a vehicle "
+        "cannot exceed its available capacity.",
+        "Jeder Kunde hat einen ungeteilten Tote-Bedarf, und der einem Fahrzeug zugeordnete "
+        "Gesamtbedarf darf dessen verfügbare Kapazität nicht überschreiten.",
     ),
-    "ux.over.feas.title": ("03  Route feasibility", "03  Tourenzulässigkeit"),
+    "ux.over.cvrp.tip": (
+        "Each customer order remains on one vehicle, and the combined tote demand on that "
+        "route must stay within vehicle capacity.",
+        "Jeder Kundenauftrag bleibt auf einem Fahrzeug, und der kombinierte Tote-Bedarf dieser "
+        "Tour muss innerhalb der Fahrzeugkapazität bleiben.",
+    ),
+    "ux.over.feas.title": ("Feasibility requirements", "Zulässigkeitsanforderungen"),
     "ux.over.feas": (
-        "Every used vehicle starts at the depot, visits its assigned customers, and returns "
-        "to the depot. Each customer must be served exactly once.",
-        "Jedes genutzte Fahrzeug startet am Depot, besucht die zugeordneten Kunden und kehrt "
-        "zum Depot zurück. Jeder Kunde muss genau einmal bedient werden.",
+        "Every customer must be served exactly once, and every active vehicle route starts and "
+        "returns to the depot.",
+        "Jeder Kunde muss genau einmal bedient werden, und jede aktive Fahrzeugtour startet am "
+        "Depot und kehrt dorthin zurück.",
     ),
-    "ux.over.compare.title": ("04  Solution comparison", "04  Lösungsvergleich"),
+    "ux.over.feas.tip": (
+        "Depot: The common start and return location for all vehicle routes.",
+        "Depot: Der gemeinsame Start- und Rückkehrort aller Fahrzeugtouren.",
+    ),
+    "ux.over.compare.title": ("Solution comparison", "Lösungsvergleich"),
     "ux.over.compare": (
-        "The application compares a deterministic nearest-neighbour baseline with the "
-        "time-limited optimized solution returned by Google OR-Tools.",
-        "Die Anwendung vergleicht eine deterministische Nächster-Nachbar-Baseline mit der "
-        "zeitlich begrenzten optimierten Lösung von Google OR-Tools.",
+        "Compare a deterministic nearest-neighbour baseline with an optimized route plan to "
+        "evaluate the reduction in total fleet distance.",
+        "Eine deterministische Nächster-Nachbar-Baseline mit einem optimierten Tourenplan "
+        "vergleichen, um die Reduktion der Gesamtdistanz der Flotte zu bewerten.",
     ),
-    "ux.over.proof": (
-        "Vienna Standard 24 · Published reference",
-        "Wien Standard 24 · Veröffentlichte Referenz",
+    "ux.over.compare.tip": (
+        "The baseline provides a transparent reference point for assessing the improvement "
+        "achieved by the optimized plan.",
+        "Die Baseline liefert einen transparenten Referenzpunkt, um die Verbesserung durch den "
+        "optimierten Plan zu bewerten.",
     ),
-    "ux.over.proof.cap": (
-        "Reference result published 4 September 2026. The deterministic nearest-neighbour "
-        "baseline covers 122.394 km. With a 5-second search limit, Google OR-Tools returned "
-        "a feasible 97.193 km solution, representing a 20.6% reduction in estimated total "
-        "distance. Global optimality is not claimed, and later OR-Tools runs may differ.",
-        "Referenzergebnis veröffentlicht am 4. September 2026. Die deterministische "
-        "Nächster-Nachbar-Baseline umfasst 122,394 km. Mit einem Suchlimit von 5 Sekunden "
-        "lieferte Google OR-Tools eine zulässige Lösung von 97,193 km, also 20,6 % weniger "
-        "geschätzte Gesamtdistanz. Globale Optimalität wird nicht behauptet; spätere "
-        "OR-Tools-Läufe können abweichen.",
+    "ux.over.proof.kicker": (
+        "Vienna Standard 24 · Route comparison",
+        "Wien Standard 24 · Tourenvergleich",
     ),
-    "ux.over.disclosure": (
-        "Synthetic portfolio scenario. Customer locations, demands and distances are "
-        "illustrative. No retailer data or live traffic information is used.",
-        "Synthetisches Portfolio-Szenario. Kundenstandorte, Bedarfe und Distanzen sind "
-        "illustrativ. Es werden keine Händlerdaten und keine Live-Verkehrsdaten verwendet.",
-    ),
-    "ux.over.future": (
-        "Current optimization objective: minimize total estimated fleet distance. Carbon "
-        "emissions are outside the current model scope and may be considered in a future extension.",
-        "Aktuelles Optimierungsziel: Minimierung der geschätzten Gesamtdistanz der Flotte. "
-        "CO₂-Emissionen liegen außerhalb des aktuellen Modellumfangs und können in einer "
-        "späteren Erweiterung betrachtet werden.",
+    "ux.over.proof.tech": (
+        "This comparison shows a feasible optimized plan for Vienna Standard 24; global "
+        "optimality is not claimed.",
+        "Dieser Vergleich zeigt einen zulässigen optimierten Plan für Wien Standard 24; "
+        "globale Optimalität wird nicht behauptet.",
     ),
     "ux.over.cta": ("Choose a scenario", "Szenario auswählen"),
     "ux.over.result": ("122.4 km → 97.2 km · 20.6% shorter", "122,4 km → 97,2 km · 20,6 % kürzer"),
     "ux.over.anim.baseline": ("Nearest-neighbour baseline", "Nächster-Nachbar-Baseline"),
     "ux.over.anim.optimized": ("Optimized solution", "Optimierte Lösung"),
     "ux.over.anim.km": ("122.4 km", "122,4 km"),
-    "ux.over.anim.what": (
-        "What is optimized: total estimated fleet distance",
-        "Was optimiert wird: geschätzte Gesamtdistanz der Flotte",
-    ),
+    "ux.over.anim.total": ("Total distance", "Gesamtdistanz"),
     "ux.over.anim.depot": ("Depot", "Depot"),
     "empty.open": ("Go to Scenarios", "Zu Szenarien"),
     "empty.plan.title": ("No route comparison yet", "Noch kein Tourenvergleich"),
-    "ux.scenarios.title": ("Choose a planning scenario", "Planungsszenario auswählen"),
+    "ux.scenarios.title": ("Scenarios", "Szenarien"),
     "ux.scenarios.subtitle": (
-        "Select a curated preset or build a delivery wave, then run the comparison.",
-        "Vordefiniertes Szenario wählen oder eine Lieferwelle erstellen und den Vergleich starten.",
+        "Choose a preset scenario, review its demand and fleet configuration, then run a "
+        "route comparison.",
+        "Vorgabeszenario wählen, Bedarf und Flotte prüfen und anschließend einen Tourenvergleich starten.",
     ),
-    "ux.source": ("Scenario source", "Szenarioquelle"),
-    "ux.presets": ("Curated presets", "Vordefinierte Szenarien"),
+    "ux.source": ("Scenario Selection", "Szenarioauswahl"),
+    "ux.presets": ("Scenario presets", "Szenariovorgaben"),
     "ux.custom": ("Custom scenario", "Eigenes Szenario"),
-    "scenario.VIENNA_STANDARD_24.label": ("Vienna Standard 24", "Wien Standard 24"),
+    "scenario.generated.label": ("Custom scenario", "Eigenes Szenario"),
+    "ux.custom.intro": (
+        "Build a delivery wave with your own customer, demand and fleet settings.",
+        "Eine Lieferwelle mit eigenen Kunden-, Bedarfs- und Flotteneinstellungen erstellen.",
+    ),
+    "ux.custom.configure": ("Configure custom scenario", "Eigenes Szenario konfigurieren"),
+    "ux.custom.back": ("Use a preset scenario", "Vorgabeszenario verwenden"),
+    "ux.custom.fleet": ("Fleet setup", "Flotteneinrichtung"),
+    "ux.custom.checks": ("Pre-run feasibility checks", "Zulässigkeitsprüfungen vor dem Lauf"),
+    "ux.custom.reset": ("Reset to defaults", "Auf Standardwerte zurücksetzen"),
+    "ux.custom.stale": ("Changes not yet generated", "Änderungen noch nicht generiert"),
+    "scenario.VIENNA_STANDARD_24.label": ("Vienna Standard", "Wien Standard"),
+    "scenario.VIENNA_STANDARD_24.meta": (
+        "24 customers · 108 totes · 4 vehicles · 30 totes/vehicle",
+        "24 Kunden · 108 Totes · 4 Fahrzeuge · 30 Totes/Fahrzeug",
+    ),
     "scenario.VIENNA_STANDARD_24.help": (
-        "The published reference: 24 customers, 108 totes and four vehicles of 30 totes. "
-        "A balanced starting point with 12 totes of spare capacity.",
-        "Veröffentlichte Referenz: 24 Kunden, 108 Totes und vier Fahrzeuge mit je 30 Totes. "
-        "Ausgewogener Einstieg mit 12 Totes Reserve.",
+        "Balanced-capacity scenario with 12 totes of spare fleet capacity.",
+        "Szenario mit ausgewogener Kapazität und 12 Totes Reserve in der Flotte.",
     ),
-    "scenario.VIENNA_TIGHT_24.label": ("Vienna Tight Capacity 24", "Wien Knappe Kapazität 24"),
+    "scenario.VIENNA_TIGHT_24.label": ("Vienna Tight Capacity", "Wien Knappe Kapazität"),
+    "scenario.VIENNA_TIGHT_24.meta": (
+        "24 customers · 108 totes · 4 vehicles · 28 totes/vehicle",
+        "24 Kunden · 108 Totes · 4 Fahrzeuge · 28 Totes/Fahrzeug",
+    ),
     "scenario.VIENNA_TIGHT_24.help": (
-        "Same 24 orders and locations, but only 28 totes per vehicle. Just four totes of "
-        "fleet reserve: unsplit order packing becomes the main challenge.",
-        "Dieselben 24 Bestellungen und Standorte, aber nur 28 Totes je Fahrzeug. Die Flotte "
-        "hat nur vier Totes Reserve: Die Verteilung ungeteilter Bestellungen steht im Mittelpunkt.",
+        "Same demand and locations, with only 4 totes of spare fleet capacity.",
+        "Gleicher Bedarf und gleiche Standorte, mit nur 4 Totes Reserve in der Flotte.",
     ),
-    "scenario.VIENNA_WIDE_24.label": ("Vienna Wide Geography 24", "Wien Weite Wege 24"),
+    "scenario.VIENNA_WIDE_24.label": ("Vienna Wide Geography", "Wien Weite Wege"),
+    "scenario.VIENNA_WIDE_24.meta": (
+        "24 customers · 108 totes · 4 vehicles · 30 totes/vehicle",
+        "24 Kunden · 108 Totes · 4 Fahrzeuge · 30 Totes/Fahrzeug",
+    ),
     "scenario.VIENNA_WIDE_24.help": (
-        "Same demand and fleet as Standard 24, with stops spread farther across Vienna. "
-        "Longer depot legs make geographic grouping more consequential.",
-        "Gleicher Bedarf und gleiche Flotte wie bei Standard 24, mit weiter verteilten Stopps "
-        "in Wien. Längere Depotfahrten erhöhen die Bedeutung geografischer Gruppierung.",
+        "Same demand and fleet as Vienna Standard, with customer locations spread farther across Vienna.",
+        "Gleicher Bedarf und gleiche Flotte wie Wien Standard, mit weiter über Wien verteilten Kundenstandorten.",
     ),
     "ux.custom.help": (
         "Set the fleet, then edit each order's tote demand. Locations are generated in the "
@@ -191,77 +217,123 @@ COPY = {
     "ux.custom.orders": ("Order demand", "Bestellbedarf"),
     "ux.customer": ("Customer", "Kunde"),
     "ux.totes": ("Totes", "Totes"),
-    "ux.custom.advanced": ("Location generation settings", "Einstellungen zur Standortgenerierung"),
+    "ux.custom.advanced": ("Advanced location settings", "Erweiterte Standorteinstellungen"),
     "ux.seed": ("Location seed", "Startwert für Standorte"),
+    "ux.seed.help": (
+        "Controls the reproducible generation of synthetic customer locations.",
+        "Steuert die reproduzierbare Erzeugung synthetischer Kundenstandorte.",
+    ),
     "ux.detour": ("Distance detour factor", "Umwegfaktor für Distanzen"),
+    "ux.detour.help": (
+        "Adjusts straight-line geographic distance to approximate additional travel distance.",
+        "Passt die geradlinige geografische Distanz an, um zusätzlichen Reiseaufwand anzunähern.",
+    ),
     "ux.generate": ("Generate scenario", "Szenario generieren"),
     "ux.custom.changed": (
-        "Your inputs have changed. Generate this scenario before running the comparison.",
-        "Ihre Eingaben wurden geändert. Generieren Sie das Szenario vor dem Vergleich neu.",
+        "Generate this scenario before running the comparison.",
+        "Generieren Sie das Szenario vor dem Vergleich neu.",
     ),
     "ux.custom.ready": (
-        "Scenario generated. Review the map and demand below, then run the comparison.",
-        "Szenario generiert. Prüfen Sie Karte und Bedarf und starten Sie anschließend den Vergleich.",
+        "Scenario generated. Review the map and demand in the preview, then run the comparison.",
+        "Szenario generiert. Prüfen Sie Karte und Bedarf in der Vorschau und starten Sie "
+        "anschließend den Vergleich.",
     ),
-    "ux.check.order": (
-        "Check 1 · Largest order / vehicle capacity",
-        "Prüfung 1 · Größte Bestellung / Fahrzeugkapazität",
+    "ux.check.pass": ("Pass", "Bestanden"),
+    "ux.check.fail": ("Fail", "Nicht bestanden"),
+    "ux.check.order.title": ("Order capacity", "Auftragskapazität"),
+    "ux.check.order.largest": ("Largest order: {n} totes", "Größte Bestellung: {n} Totes"),
+    "ux.check.order.capacity": ("Vehicle capacity: {n} totes", "Fahrzeugkapazität: {n} Totes"),
+    "ux.check.order.tip": (
+        "The largest customer order must fit within a single vehicle because orders are not split.",
+        "Die größte Kundenbestellung muss in ein einzelnes Fahrzeug passen, weil Bestellungen "
+        "nicht aufgeteilt werden.",
     ),
-    "ux.check.fleet": (
-        "Check 2 · Total demand / fleet capacity",
-        "Prüfung 2 · Gesamtbedarf / Flottenkapazität",
+    "ux.check.fleet.title": ("Fleet capacity", "Flottenkapazität"),
+    "ux.check.fleet.demand": ("Total demand: {n} totes", "Gesamtbedarf: {n} Totes"),
+    "ux.check.fleet.capacity": ("Fleet capacity: {n} totes", "Flottenkapazität: {n} Totes"),
+    "ux.check.fleet.tip": (
+        "Total available fleet capacity must be at least as large as total customer demand.",
+        "Die verfügbare Flottenkapazität muss mindestens so groß sein wie der gesamte Kundenbedarf.",
     ),
-    "ux.check.spare": ("Spare capacity (totes)", "Freie Kapazität (Totes)"),
-    "ux.check.min": (
-        "Check 3 · Minimum vehicles by demand",
-        "Prüfung 3 · Mindestfahrzeuge nach Bedarf",
-    ),
+    "ux.check.spare": ("Spare fleet capacity", "Freie Flottenkapazität"),
+    "ux.check.spare.value": ("{n} totes", "{n} Totes"),
+    "ux.check.min": ("Minimum fleet requirement", "Mindestflottenbedarf"),
+    "ux.check.min.required": ("Minimum required: {n}", "Mindestbedarf: {n}"),
+    "ux.check.min.available": ("Available: {n}", "Verfügbar: {n}"),
     "ux.check.min.help": (
-        "ceil(total demand / vehicle capacity). An informational lower bound, not a proof "
-        "that all unsplit orders can be packed.",
-        "Aufgerundeter Quotient aus Gesamtbedarf und Fahrzeugkapazität. Informative "
-        "Untergrenze, kein Nachweis einer passenden Verteilung ungeteilter Bestellungen.",
+        "This is the minimum number of vehicles implied by total demand and vehicle capacity.",
+        "Das ist die Mindestzahl an Fahrzeugen aus Gesamtbedarf und Fahrzeugkapazität.",
     ),
     "ux.check.oversize": (
         "An order exceeds one vehicle's capacity. Reduce that order or increase capacity.",
         "Eine Bestellung überschreitet die Fahrzeugkapazität. Bestellbedarf reduzieren oder "
         "Kapazität erhöhen.",
     ),
+    "ux.check.oversize.row": (
+        "{id} exceeds vehicle capacity ({demand} > {capacity} totes).",
+        "{id} überschreitet die Fahrzeugkapazität ({demand} > {capacity} Totes).",
+    ),
     "ux.check.overflow": (
-        "Total demand exceeds the fleet's capacity. Add vehicles, increase capacity or reduce demand.",
-        "Der Gesamtbedarf überschreitet die Flottenkapazität. Fahrzeuge oder Kapazität ergänzen "
-        "oder den Bedarf reduzieren.",
+        "Fleet capacity is insufficient. Increase the number of vehicles, increase vehicle "
+        "capacity, or reduce customer demand before generating the scenario.",
+        "Die Flottenkapazität reicht nicht aus. Erhöhen Sie die Fahrzeugzahl oder die "
+        "Fahrzeugkapazität, oder reduzieren Sie den Kundenbedarf, bevor Sie das Szenario generieren.",
     ),
     "ux.check.invalid": (
         "Enter a positive whole number of totes for every customer.",
         "Für jeden Kunden eine positive ganze Anzahl Totes eingeben.",
     ),
     "ux.check.packing": (
-        "Checks 1 and 2 are necessary, but unsplit orders may still not pack into the available "
-        "vehicles. The search tests route feasibility.",
-        "Prüfungen 1 und 2 sind notwendig. Ungeteilte Bestellungen lassen sich dennoch "
-        "eventuell nicht auf die verfügbaren Fahrzeuge verteilen. Die Suche prüft die Tourenzulässigkeit.",
+        "Passing these checks does not guarantee a complete feasible route plan. Unsplit customer "
+        "orders may still prevent all demand from being packed into the available vehicles.",
+        "Bestandene Prüfungen garantieren keinen vollständigen zulässigen Tourenplan. Ungeteilte "
+        "Kundenbestellungen können trotzdem verhindern, dass der gesamte Bedarf auf die verfügbaren "
+        "Fahrzeuge verteilt wird.",
     ),
-    "ux.preview": ("Delivery area", "Liefergebiet"),
+    "ux.preview": ("Scenario preview", "Szenariovorschau"),
     "ux.preview.summary": (
         "{n} customers · {demand} totes · {vans} vehicles × {capacity} totes",
         "{n} Kunden · {demand} Totes · {vans} Fahrzeuge × {capacity} Totes",
     ),
+    "ux.preview.customers": ("Customers", "Kunden"),
+    "ux.preview.demand": ("Total demand", "Gesamtbedarf"),
+    "ux.preview.demand.value": ("{n} totes", "{n} Totes"),
+    "ux.preview.fleet": ("Fleet", "Flotte"),
+    "ux.preview.fleet.value": ("{n} vehicles", "{n} Fahrzeuge"),
+    "ux.preview.capacity": ("Capacity", "Kapazität"),
+    "ux.preview.capacity.value": ("{n} totes/vehicle", "{n} Totes/Fahrzeug"),
+    "ux.preview.spare": ("Spare capacity", "Freie Kapazität"),
+    "ux.preview.spare.value": ("{n} totes", "{n} Totes"),
     "ux.run": ("Run comparison", "Vergleich starten"),
     "ux.settings": ("Search settings", "Sucheinstellungen"),
-    "ux.seconds": ("OR-Tools search limit (seconds)", "OR-Tools-Suchlimit (Sekunden)"),
+    "ux.seconds": ("Optimization search limit", "Optimierungs-Suchlimit"),
+    "ux.seconds.opt": ("{n} s", "{n} s"),
+    "ux.seconds.help": (
+        "Sets the maximum search time used to improve the route plan.",
+        "Legt die maximale Suchzeit fest, um den Tourenplan zu verbessern.",
+    ),
+    "ux.api.offline.title": ("Planning service unavailable", "Planungsdienst nicht verfügbar"),
+    "ux.api.offline.body": (
+        "Start the local planning service before generating or comparing scenarios.",
+        "Starten Sie den lokalen Planungsdienst, bevor Sie Szenarien erzeugen oder vergleichen.",
+    ),
+    "ux.api.command": ("Show startup command", "Startbefehl anzeigen"),
     "ux.stage.load": ("Loading scenario", "Szenario wird geladen"),
     "ux.stage.baseline": (
         "Building nearest-neighbour baseline",
         "Nächster-Nachbar-Baseline wird erstellt",
     ),
     "ux.stage.optimise": (
-        "Searching for optimized solution with OR-Tools · Up to {n} seconds",
-        "Suche nach optimierter Lösung mit OR-Tools · Bis zu {n} Sekunden",
+        "Searching for optimized solution with OR-Tools",
+        "Suche nach optimierter Lösung mit OR-Tools",
+    ),
+    "ux.stage.optimise.detail": (
+        "Up to {n} seconds",
+        "Bis zu {n} Sekunden",
     ),
     "ux.stage.reconcile": (
-        "Validating route assignments, capacity and distances",
-        "Tourenzuordnung, Kapazität und Distanzen werden geprüft",
+        "Validating routes, capacity and distances",
+        "Touren, Kapazität und Distanzen werden geprüft",
     ),
     "ux.stage.prepare": ("Preparing comparison", "Vergleich wird vorbereitet"),
     "ux.stage.done": ("Comparison ready", "Vergleich bereit"),
@@ -269,16 +341,102 @@ COPY = {
         "Comparison could not be completed",
         "Vergleich konnte nicht abgeschlossen werden",
     ),
-    "ux.plan.title": ("Plan", "Plan"),
+    "ux.plan.title": ("Route comparison", "Tourenvergleich"),
     "ux.plan.subtitle": (
-        "Nearest-neighbour baseline and optimized solution for the same scenario.",
-        "Nächster-Nachbar-Baseline und optimierte Lösung für dasselbe Szenario.",
+        "Compare a reference route plan with an optimized route plan for the same "
+        "customers, demand, fleet and capacity limits.",
+        "Einen Referenz-Tourenplan mit einem optimierten Tourenplan für dieselben "
+        "Kunden, denselben Bedarf, dieselbe Flotte und dieselben Kapazitätsgrenzen vergleichen.",
     ),
     "ux.plan.summary": ("Comparison summary", "Vergleichsübersicht"),
     "ux.plan.empty": (
         "Choose a scenario and run the comparison first.",
         "Wählen Sie ein Szenario und starten Sie zuerst den Vergleich.",
     ),
+    "ux.plan.scenario": ("Scenario: {name}", "Szenario: {name}"),
+    "ux.plan.tab.comparison": ("Comparison", "Vergleich"),
+    "ux.plan.tab.baseline": ("Baseline details", "Baseline-Details"),
+    "ux.plan.tab.optimised": ("Optimized details", "Optimierte Details"),
+    "ux.plan.why.title": ("Why compare two route plans?", "Warum zwei Tourenpläne vergleichen?"),
+    "ux.plan.why.body": (
+        "The baseline provides a consistent reference route plan built from the same scenario "
+        "inputs. Comparing it with the optimized route plan shows how much total fleet "
+        "distance travelled can be reduced without changing customer demand, fleet size or "
+        "vehicle capacity.",
+        "Die Baseline liefert einen konsistenten Referenz-Tourenplan aus denselben "
+        "Szenarioeingaben. Der Vergleich mit dem optimierten Tourenplan zeigt, wie stark die "
+        "zurückgelegte Gesamtdistanz der Flotte reduziert werden kann, ohne Kundenbedarf, "
+        "Flottengröße oder Fahrzeugkapazität zu ändern.",
+    ),
+    "ux.plan.why.tip": (
+        "A deterministic nearest-neighbour method used as a reference for measuring the "
+        "improvement achieved through optimization.",
+        "Eine deterministische Nächster-Nachbar-Methode als Referenz, um die Verbesserung "
+        "durch die Optimierung zu messen.",
+    ),
+    "ux.plan.result": (
+        "The optimized route plan reduces total fleet distance travelled from {baseline_km} "
+        "to {optimized_km}, a {reduction} reduction. Both plans serve all {customer_count} "
+        "customers while respecting vehicle-capacity limits.",
+        "Der optimierte Tourenplan senkt die zurückgelegte Gesamtdistanz der Flotte von "
+        "{baseline_km} auf {optimized_km}, eine Reduktion um {reduction}. Beide Pläne "
+        "bedienen alle {customer_count} Kunden und halten die Fahrzeugkapazitätsgrenzen ein.",
+    ),
+    "ux.plan.kpi.baseline": ("Baseline distance travelled", "Zurückgelegte Baseline-Distanz"),
+    "ux.plan.kpi.optimised": ("Optimized distance travelled", "Zurückgelegte optimierte Distanz"),
+    "ux.plan.kpi.saving": ("Distance reduction", "Distanzreduktion"),
+    "ux.plan.kpi.served": ("Customers served", "Bediente Kunden"),
+    "ux.plan.map.guide": (
+        "Map lines show the route sequence schematically. They do not represent actual road "
+        "paths or live navigation.",
+        "Kartenlinien zeigen die Tourfolge schematisch. Sie stellen keine echten Straßenwege "
+        "und keine Live-Navigation dar.",
+    ),
+    "ux.plan.map.numbers": (
+        "Numbers indicate the order of customer stops. Depot departure and return are not numbered.",
+        "Zahlen zeigen die Reihenfolge der Kundenstopps. Depotstart und -rückkehr sind nicht nummeriert.",
+    ),
+    "ux.plan.map.depot": (
+        "Depot: The common start and return point for all vehicle routes.",
+        "Depot: Der gemeinsame Start- und Rückkehrpunkt aller Fahrzeugtouren.",
+    ),
+    "ux.plan.baseline.heading": ("Baseline route plan", "Baseline-Tourenplan"),
+    "ux.plan.baseline.method": (
+        "Nearest-neighbour reference method",
+        "Nächster-Nachbar-Referenzmethode",
+    ),
+    "ux.plan.baseline.method.tip": (
+        "A deterministic routing method that repeatedly selects the nearest feasible unserved "
+        "customer.",
+        "Eine deterministische Tourenmethode, die wiederholt den nächsten zulässigen noch "
+        "nicht bedienten Kunden wählt.",
+    ),
+    "ux.plan.baseline.sub": (
+        "Inspect the deterministic reference plan used to measure the effect of route "
+        "optimization.",
+        "Den deterministischen Referenzplan prüfen, mit dem die Wirkung der Tourenoptimierung "
+        "gemessen wird.",
+    ),
+    "ux.plan.opt.heading": ("Optimized route plan", "Optimierter Tourenplan"),
+    "ux.plan.opt.tip": (
+        "The plan is the best feasible result found within the selected search time. Global "
+        "optimality is not claimed.",
+        "Der Plan ist das beste zulässige Ergebnis innerhalb der gewählten Suchzeit. Globale "
+        "Optimalität wird nicht behauptet.",
+    ),
+    "ux.plan.opt.sub": (
+        "Inspect the improved route plan produced for the same customer demand, fleet and "
+        "capacity limits.",
+        "Den verbesserten Tourenplan für denselben Kundenbedarf, dieselbe Flotte und dieselben "
+        "Kapazitätsgrenzen prüfen.",
+    ),
+    "ux.plan.feasible": ("Feasible plan", "Zulässiger Plan"),
+    "ux.plan.feasible.text": (
+        "All customers are served and vehicle-capacity limits are respected.",
+        "Alle Kunden werden bedient und die Fahrzeugkapazitätsgrenzen eingehalten.",
+    ),
+    "ux.plan.incomplete": ("Incomplete plan", "Unvollständiger Plan"),
+    "ux.plan.no_solution": ("No complete solution found", "Keine vollständige Lösung gefunden"),
     "ux.baseline": ("Nearest-neighbour baseline", "Nächster-Nachbar-Baseline"),
     "ux.optimised": ("Optimized solution (OR-Tools)", "Optimierte Lösung (OR-Tools)"),
     "ux.optimised.short": ("Optimized solution", "Optimierte Lösung"),
@@ -288,25 +446,64 @@ COPY = {
     "ux.kpi.served": ("Customers served", "Bediente Kunden"),
     "ux.proof.served": ("Customers served", "Bediente Kunden"),
     "ux.plan.ineligible": (
-        "A distance reduction is shown only when both plans are complete and comparison-eligible. "
-        "A partial baseline distance is not a complete comparison distance.",
-        "Eine Distanzreduktion wird nur für zwei vollständige, vergleichbare Pläne angezeigt. "
-        "Die Teildistanz einer unvollständigen Baseline ist keine Vergleichsdistanz.",
+        "A complete route comparison is not available because one or both route plans are "
+        "incomplete. Review the individual plan results below.",
+        "Ein vollständiger Tourenvergleich ist nicht verfügbar, weil einer oder beide "
+        "Tourenpläne unvollständig sind. Prüfen Sie die einzelnen Planergebnisse unten.",
+    ),
+    "ux.plan.served.each": (
+        "Baseline: {baseline_served} / {baseline_total} customers served · {baseline_status}\n"
+        "Optimized: {optimised_served} / {optimised_total} customers served · {optimised_status}",
+        "Baseline: {baseline_served} / {baseline_total} Kunden bedient · {baseline_status}\n"
+        "Optimiert: {optimised_served} / {optimised_total} Kunden bedient · {optimised_status}",
     ),
     "ux.plan.partial": ("Partial constructed distance: {km}", "Konstruierte Teildistanz: {km}"),
     "ux.plan.unserved": ("Unserved customers: {ids}", "Nicht bediente Kunden: {ids}"),
     "ux.plan.routes": ("Vehicle routes", "Fahrzeugtouren"),
-    "ux.plan.pick": ("Displayed plan", "Angezeigter Plan"),
+    "ux.plan.pick": ("Plan view", "Planansicht"),
     "ux.plan.table": ("Vehicle routes", "Fahrzeugtouren"),
-    "ux.plan.total": ("Total distance: {km}", "Gesamtdistanz: {km}"),
-    "ux.plan.reduction": ("Distance reduction: {value}", "Distanzreduktion: {value}"),
-    "ux.plan.details": ("Stop-by-stop details", "Details je Stopp"),
-    "ux.plan.exports": ("Download for review", "Zur Prüfung herunterladen"),
-    "ux.plan.excel": (
-        "JSON and CSV ZIP contain the recorded run data. A structured Excel review template "
-        "is planned for a later iteration.",
-        "JSON und CSV-ZIP enthalten die gespeicherten Laufdaten. Eine strukturierte "
-        "Excel-Prüfvorlage ist für eine spätere Version vorgesehen.",
+    "ux.plan.total": (
+        "Total fleet distance travelled: {km}",
+        "Zurückgelegte Gesamtdistanz der Flotte: {km}",
+    ),
+    "ux.plan.reduction": ("{reduction} lower than the baseline", "{reduction} niedriger als die Baseline"),
+    "ux.plan.details": ("Detailed route data", "Detaillierte Tourdaten"),
+    "ux.plan.details.cap": (
+        "Inspect the stop sequence, customer demand and distance travelled on each route.",
+        "Stoppfolge, Kundenbedarf und zurückgelegte Distanz je Tour prüfen.",
+    ),
+    "ux.plan.sequences": ("Route sequences", "Tourfolgen"),
+    "ux.plan.load": ("Load / capacity", "Beladung / Kapazität"),
+    "ux.plan.customers": ("Customers served", "Bediente Kunden"),
+    "ux.plan.travelled": ("Distance travelled", "Zurückgelegte Distanz"),
+    "ux.plan.totes": ("totes", "Totes"),
+    "ux.plan.col.stop": ("Stop no.", "Stopp-Nr."),
+    "ux.plan.col.location": ("Location", "Ort"),
+    "ux.plan.col.demand": ("Demand (totes)", "Bedarf (Totes)"),
+    "ux.plan.col.leg": ("Leg distance", "Teilstrecke"),
+    "ux.plan.col.cumulative": ("Cumulative demand (totes)", "Kumulativer Bedarf (Totes)"),
+    "ux.plan.exports": ("Export results", "Ergebnisse exportieren"),
+    "ux.plan.exports.cap": (
+        "Download the recorded route data for further analysis or review.",
+        "Die gespeicherten Tourdaten zur weiteren Analyse oder Prüfung herunterladen.",
+    ),
+    "ux.plan.export.baseline": ("Baseline data", "Baseline-Daten"),
+    "ux.plan.export.optimised": ("Optimized data", "Optimierte Daten"),
+    "ux.plan.validation": ("Validation summary", "Validierungsübersicht"),
+    "ux.plan.validation.intro": (
+        "Both route plans pass the core customer-service, capacity, distance and "
+        "route-continuity checks.",
+        "Beide Tourenpläne bestehen die zentralen Prüfungen zu Kundenbedienung, Kapazität, "
+        "Distanz und Tourkontinuität.",
+    ),
+    "ux.plan.validation.check": ("Validation check", "Validierungsprüfung"),
+    "ux.plan.validation.open": ("View model validation", "Modellprüfung anzeigen"),
+    "ux.plan.review": ("Technical review", "Technische Prüfung"),
+    "ux.plan.review.body": (
+        "Explore how the route plans were validated or review the model formulation, "
+        "assumptions and solution approach.",
+        "Prüfen, wie die Tourenpläne validiert wurden, oder Formulierung, Annahmen und "
+        "Lösungsansatz des Modells nachlesen.",
     ),
     "ux.plan.audit": ("Model checks", "Modellprüfungen"),
     "ux.plan.audit.failed": (
@@ -314,6 +511,7 @@ COPY = {
         "Einige Prüfungen sind fehlgeschlagen. Prüfen Sie die Modellvalidierung vor der "
         "Verwendung dieses Plans.",
     ),
+    "ux.plan.method.open": ("Open methodology", "Methodik öffnen"),
     "ux.van": ("Vehicle", "Fahrzeug"),
     "ux.load": ("Load (totes)", "Beladung (Totes)"),
     "ux.stops": ("Customer stops", "Kundenstopps"),
@@ -435,22 +633,18 @@ COPY = {
         "Tabellenkalkulationsformulierung",
     ),
     "ux.method.opensolver.title": (
-        "From spreadsheet MIP to routing search",
-        "Von der Tabellenkalkulations-MIP zur Tourensuche",
+        "Research lineage",
+        "Forschungslinie",
     ),
     "ux.method.opensolver": (
-        "An earlier version of this last-mile CVRP was solved as a spreadsheet mixed-integer "
-        "programme using the OpenSolver add-in for Excel. LastMile Lab keeps that formulation "
-        "as documentation. The production application now obtains operational routes from "
-        "Google OR-Tools RoutingModel, which constructs a feasible assignment and stop sequence "
-        "and then improves it under a search limit. It does not solve the documented "
-        "three-index MILP with a MIP solver.",
-        "Eine frühere Version dieses Last-Mile-CVRP wurde als gemischt-ganzzahliges Programm "
-        "in einer Tabellenkalkulation mit dem OpenSolver-Add-in für Excel gelöst. LastMile Lab "
-        "bewahrt diese Formulierung als Dokumentation. Die produktive Anwendung ermittelt "
-        "betriebliche Touren jetzt mit dem Google-OR-Tools-RoutingModel, das eine zulässige "
-        "Zuordnung und Stoppfolge konstruiert und sie innerhalb eines Suchlimits verbessert. "
-        "Es löst die dokumentierte Drei-Index-MILP nicht mit einem MIP-Solver.",
+        "Earlier modelling work for this last-mile CVRP was solved as a spreadsheet "
+        "mixed-integer programme using the OpenSolver add-in for Excel. That formulation "
+        "remains in the repository as documentation of the research lineage. OpenSolver is "
+        "not the solver used by this application.",
+        "Frühere Modellierungsarbeit zu diesem Last-Mile-CVRP wurde als gemischt-ganzzahliges "
+        "Programm in einer Tabellenkalkulation mit dem OpenSolver-Add-in für Excel gelöst. "
+        "Diese Formulierung bleibt im Repository als Dokumentation der Forschungslinie. "
+        "OpenSolver ist nicht der Solver dieser Anwendung.",
     ),
     "ux.method.baseline.title": ("Nearest-neighbour baseline", "Nächster-Nachbar-Baseline"),
     "ux.method.baseline": (
@@ -587,8 +781,8 @@ COPY = {
         "Ein standardisierter Mehrweg-Lieferbehälter als gemeinsame Bedarfs- und Kapazitätseinheit in dieser Fallstudie.",
     ),
     "tip.depot": (
-        "The common start and return location for the vehicle routes.",
-        "Der gemeinsame Start- und Rückkehrort der Fahrzeugtouren.",
+        "Depot: The common start and return location for all vehicle routes.",
+        "Depot: Der gemeinsame Start- und Rückkehrort aller Fahrzeugtouren.",
     ),
     "tip.nn": (
         "A greedy construction rule that chooses the nearest currently feasible unserved customer.",

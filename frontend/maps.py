@@ -154,6 +154,7 @@ def customer_map(scenario: dict[str, Any]) -> go.Figure:
         height=400,
         showlegend=False,
         hovermode="closest",
+        uirevision=str(scenario.get("scenario_id") or "customers"),
         paper_bgcolor="rgba(0,0,0,0)",
         template="none",
     )
@@ -263,7 +264,7 @@ def route_map(
                 lat=route_lats,
                 lon=route_lons,
                 mode="lines",
-                line={"width": 6, "color": "rgba(255, 255, 255, 0.85)"},
+                line={"width": 3.2, "color": "rgba(255, 255, 255, 0.75)"},
                 hoverinfo="skip",
                 showlegend=False,
             )
@@ -273,7 +274,7 @@ def route_map(
                 lat=route_lats,
                 lon=route_lons,
                 mode="lines",
-                line={"width": 3.6, "color": colour},
+                line={"width": 2.8, "color": colour},
                 name=vehicle["vehicle_id"],
                 hovertext=hover,
                 hoverinfo="text",
@@ -321,7 +322,7 @@ def route_map(
         height=430,
         showlegend=False,
         hovermode="closest",
-        uirevision="route-map",
+        uirevision=str(scenario.get("scenario_id") or "route-map"),
         paper_bgcolor="rgba(0,0,0,0)",
         template="none",
     )
