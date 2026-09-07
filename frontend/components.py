@@ -594,9 +594,10 @@ section[data-testid="stSidebar"] > div:first-child {
 .lm-footer {
   margin-top: 2rem;
   color: var(--lm-muted);
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   border-top: 1px solid var(--lm-border);
   padding-top: 0.8rem;
+  text-align: center;
 }
 .lm-vehicle-card {
   --vehicle-accent: #0F766E;
@@ -863,9 +864,23 @@ div[data-testid="stDataFrame"] [data-testid="stDataFrameResizable"] td {
 .lm-table-wrap { max-height: 480px; }
 .lm-table thead { position: sticky; top: 0; }
 .lm-inner p { margin-bottom: .5rem; }
-@media (max-width: 1449px) {
-  .st-key-plan-pair [data-testid="stHorizontalBlock"] { flex-direction: column; }
-  .st-key-plan-pair [data-testid="stColumn"] { width: 100% !important; }
+.st-key-plan-pair [data-testid="stHorizontalBlock"] {
+  flex-wrap: nowrap;
+  align-items: stretch;
+}
+.st-key-plan-pair [data-testid="stColumn"] {
+  min-width: 0 !important;
+}
+.st-key-plan-pair .js-plotly-plot,
+.st-key-plan-pair .plot-container {
+  max-width: 100%;
+}
+@media (max-width: 1220px) {
+  .st-key-plan-pair [data-testid="stHorizontalBlock"] {
+    flex-direction: column;
+    flex-wrap: wrap;
+  }
+  .st-key-plan-pair [data-testid="stColumn"] { width: 100% !important; flex: 1 1 100% !important; }
 }
 @media (max-width: 1100px) {
   .lm-concept-grid, .lm-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -1206,7 +1221,7 @@ div[data-testid="stDataFrame"] [data-testid="stDataFrameResizable"] td {
 }
 .stApp .lm-preview-stats dd {
   margin: 6px 0 0 !important;
-  font-size: 19px !important;
+  font-size: 11px !important;
   font-weight: 600 !important;
   color: var(--lm-navy) !important;
   font-variant-numeric: tabular-nums;
@@ -1418,6 +1433,9 @@ div[data-testid="stDataFrame"] [data-testid="stDataFrameResizable"] td {
 .stApp:has(.lm-plan-flag) .st-key-plan-pair .lm-table {
   min-width: 0;
 }
+.stApp:has(.lm-plan-flag) .st-key-plan-route-details [data-testid="stExpander"] {
+  margin-bottom: 0.45rem;
+}
 @media (max-width: 1100px) {
   .lm-preview-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
@@ -1461,6 +1479,23 @@ div[data-testid="stDataFrame"] [data-testid="stDataFrameResizable"] td {
 .lm-cvrp-pane .lm-cvrp-routes path:nth-child(2) { animation-delay: -1.25s; }
 .lm-cvrp-pane .lm-cvrp-routes path:nth-child(3) { animation-delay: -2.5s; }
 .lm-cvrp-pane .lm-cvrp-routes path:nth-child(4) { animation-delay: -3.75s; }
+.lm-cvrp-pane .lm-cvrp-nodes .lm-cvrp-cust {
+  fill: #F8FAFC;
+  stroke: #94A3B8;
+  stroke-width: 1.55;
+  animation-duration: 5s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+.lm-cvrp-pane .lm-cvrp-nodes .lm-cvrp-r1 { --lm-visit: #2563EB; }
+.lm-cvrp-pane .lm-cvrp-nodes .lm-cvrp-r2 { --lm-visit: #EA580C; animation-delay: -1.25s; }
+.lm-cvrp-pane .lm-cvrp-nodes .lm-cvrp-r3 { --lm-visit: #7C3AED; animation-delay: -2.5s; }
+.lm-cvrp-pane .lm-cvrp-nodes .lm-cvrp-r4 { --lm-visit: #C026D3; animation-delay: -3.75s; }
+.lm-cvrp-pane .lm-cvrp-stops {
+  paint-order: stroke;
+  stroke: rgba(23, 59, 87, 0.42);
+  stroke-width: 2.6px;
+}
 .lm-cvrp-pane .lm-cvrp-ids {
   fill: #586879; font-size: 16px; font-weight: 600;
   paint-order: stroke; stroke: white; stroke-width: 3px; pointer-events: none;
@@ -1543,6 +1578,11 @@ div[data-testid="stDataFrame"] [data-testid="stDataFrameResizable"] td {
   .lm-assign-sheet, .lm-assign-sheet-label { opacity: 0 !important; }
   .lm-cvrp-routes path, .lm-assign-routes path {
     stroke-dashoffset: 0 !important;
+  }
+  .lm-cvrp-pane .lm-cvrp-nodes .lm-cvrp-cust {
+    fill: var(--lm-visit) !important;
+    stroke: var(--lm-visit) !important;
+    opacity: 1 !important;
   }
   .lm-assign-orders, .lm-assign-bars, .lm-assign-label { opacity: 1 !important; }
   .lm-assign-fill { transform: scaleX(1) !important; }
@@ -1639,6 +1679,61 @@ abbr.lm-tip {
   font-weight: 600 !important;
 }
 .stApp:has(.lm-overview-flag) .lm-footer { font-size: 13px; }
+.stApp:has(.lm-overview-flag) [data-testid="stMarkdownContainer"]:has(.lm-about),
+.stApp:has(.lm-overview-flag) .stMarkdown:has(.lm-about) {
+  max-width: none !important;
+  width: 100%;
+}
+.stApp:has(.lm-overview-flag) .lm-about {
+  width: 100%;
+  max-width: none;
+  margin: 2.75rem 0 0;
+  padding: 1.85rem 0 0.2rem;
+  border-top: 1px solid var(--lm-border);
+  text-align: center;
+  background: transparent;
+  box-shadow: none;
+}
+.stApp:has(.lm-overview-flag) .lm-about-kicker {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lm-muted);
+  margin: 0 auto 0.85rem;
+  text-align: center;
+  max-width: none;
+}
+.stApp:has(.lm-overview-flag) .lm-about-body {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.55;
+  color: var(--lm-muted);
+  margin: 0 auto;
+  text-align: center;
+  width: 88%;
+  max-width: none;
+  overflow-wrap: break-word;
+}
+.stApp:has(.lm-overview-flag) .stMarkdown .lm-about p,
+.stApp:has(.lm-overview-flag) .stMarkdown .lm-about-body {
+  max-width: none !important;
+  width: 88%;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+@media (max-width: 760px) {
+  .stApp:has(.lm-overview-flag) .lm-about {
+    margin-top: 2rem;
+    padding-top: 1.4rem;
+  }
+  .stApp:has(.lm-overview-flag) .lm-about-body,
+  .stApp:has(.lm-overview-flag) .stMarkdown .lm-about p,
+  .stApp:has(.lm-overview-flag) .stMarkdown .lm-about-body {
+    width: 100%;
+  }
+}
 </style>
 """
 
@@ -1933,6 +2028,52 @@ _CVRP_OPT_ROUTES: list[tuple[str, list[tuple[int, int]]]] = [
 ]
 
 
+def _cvrp_seg_len(start: tuple[int, int], end: tuple[int, int]) -> float:
+    return ((start[0] - end[0]) ** 2 + (start[1] - end[1]) ** 2) ** 0.5
+
+
+def _cvrp_arrival_pcts(stops: list[tuple[int, int]]) -> list[float]:
+    points = [_CVRP_DEPOT, *stops, _CVRP_DEPOT]
+    lengths = [
+        _cvrp_seg_len(points[index], points[index + 1])
+        for index in range(len(points) - 1)
+    ]
+    total = sum(lengths) or 1.0
+    cumulative = 0.0
+    arrivals: list[float] = []
+    for length in lengths[:-1]:
+        cumulative += length
+        arrivals.append(100.0 * cumulative / total)
+    return arrivals
+
+
+def _cvrp_visit_keyframes() -> str:
+    idle_fill = "#F8FAFC"
+    idle_stroke = "#94A3B8"
+    chunks: list[str] = []
+    for pane, routes in enumerate((_CVRP_NN_ROUTES, _CVRP_OPT_ROUTES)):
+        for route_index, (_colour, stops) in enumerate(routes):
+            for stop_index, percent in enumerate(_cvrp_arrival_pcts(stops)):
+                name = f"lm-cvrp-arr-{pane}-{route_index}-{stop_index}"
+                arrival = round(percent, 2)
+                arrival_before = max(round(arrival - 0.01, 2), 0.0)
+                pulse = min(round(arrival + 1.2, 2), 99.2)
+                settled = min(round(arrival + 2.4, 2), 99.6)
+                chunks.append(
+                    f".{name}{{animation-name:{name};}}"
+                    f"@keyframes {name}{{"
+                    f"0%,{arrival_before:.2f}%{{fill:{idle_fill};stroke:{idle_stroke};opacity:1;}}"
+                    f"{arrival:.2f}%{{fill:var(--lm-visit);stroke:var(--lm-visit);opacity:1;}}"
+                    f"{pulse:.2f}%{{fill:var(--lm-visit);stroke:var(--lm-visit);opacity:.75;}}"
+                    f"{settled:.2f}%,100%{{fill:var(--lm-visit);stroke:var(--lm-visit);opacity:1;}}"
+                    f"}}"
+                )
+    return "".join(chunks)
+
+
+THEME_CSS = THEME_CSS.replace("</style>", _cvrp_visit_keyframes() + "\n</style>", 1)
+
+
 def _cvrp_route_path(depot: tuple[int, int], stops: list[tuple[int, int]]) -> str:
     dx, dy = depot
     parts = [f"M{dx} {dy}"]
@@ -1965,10 +2106,21 @@ def _cvrp_pane_svg(
     depot_label: str,
     routes: list[tuple[str, list[tuple[int, int]]]],
     aria: str,
+    pane: int,
 ) -> str:
     dx, dy = _CVRP_DEPOT
     customers = [point for _, stops in routes for point in stops]
-    nodes = "".join(f'<circle cx="{x}" cy="{y}" r="5"/>' for x, y in customers)
+    nodes: list[str] = []
+    marks: list[str] = []
+    for route_index, (_colour, stops) in enumerate(routes):
+        route_class = f"lm-cvrp-r{route_index + 1}"
+        for stop_index, (x, y) in enumerate(stops):
+            name = f"lm-cvrp-arr-{pane}-{route_index}-{stop_index}"
+            nodes.append(
+                f'<circle class="lm-cvrp-cust {route_class} {name}" '
+                f'cx="{x}" cy="{y}" r="10.5"/>'
+            )
+            marks.append(f'<text x="{x}" y="{y + 4}">{stop_index + 1}</text>')
     paths = "".join(
         f'<path pathLength="100" stroke="{colour}" d="{_cvrp_route_path(_CVRP_DEPOT, stops)}"/>'
         for colour, stops in routes
@@ -1978,20 +2130,13 @@ def _cvrp_pane_svg(
         for point in customers
         if point in _CVRP_CUSTOMER_IDS
     )
-    marks: list[str] = []
-    for colour, stops in routes:
-        for index, (x, y) in enumerate(stops, start=1):
-            marks.append(
-                f'<circle cx="{x}" cy="{y}" r="10.5" fill="{colour}"/>'
-                f'<text x="{x}" y="{y + 4}">{index}</text>'
-            )
     return (
         f'<article class="lm-cvrp-pane">'
         f'<svg class="lm-cvrp" viewBox="60 20 540 315" role="img" '
         f'aria-label="{escape(f"{title}. {aria}")}">'
         f'<g class="lm-cvrp-route-tracks" aria-hidden="true">{paths}</g>'
         f'<g class="lm-cvrp-routes" fill="none">{paths}</g>'
-        f'<g class="lm-cvrp-nodes" fill="#64748B">{nodes}</g>'
+        f'<g class="lm-cvrp-nodes">{"".join(nodes)}</g>'
         f'<g class="lm-cvrp-ids">{ids}</g>'
         f'<g class="lm-cvrp-stops" font-size="14" font-weight="700" '
         f'text-anchor="middle" fill="#FFFFFF">{"".join(marks)}</g>'
@@ -2023,12 +2168,14 @@ def cvrp_animation_html(result_label: str, aria_label: str) -> str:
         t("ux.over.anim.depot"),
         _CVRP_NN_ROUTES,
         aria_label,
+        0,
     ) + _cvrp_pane_svg(
         t("ux.over.anim.optimized"),
         f"{total}: {optimized_km}",
         t("ux.over.anim.depot"),
         _CVRP_OPT_ROUTES,
         aria_label,
+        1,
     )
     return (
         f'<div class="lm-cvrp-panel"><div class="lm-cvrp-compare">{panes}</div>'
@@ -2204,6 +2351,18 @@ def render_check_table(checks: list[dict[str, Any]]) -> None:
             }
         )
     static_table(rows, row_header=t("check.col.check"))
+
+
+def render_overview_about() -> None:
+    st.markdown(
+        (
+            '<div class="lm-about">'
+            f'<div class="lm-about-kicker">{escape(t("ux.over.about.kicker"))}</div>'
+            f'<div class="lm-about-body">{escape(t("ux.over.about.body"))}</div>'
+            "</div>"
+        ),
+        unsafe_allow_html=True,
+    )
 
 
 def render_footer() -> None:

@@ -11,7 +11,7 @@ from state import ensure_session
 st.set_page_config(
     page_title="LastMile Lab",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="auto",
 )
 ensure_session()
 inject_theme()

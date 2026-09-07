@@ -90,16 +90,25 @@ def vehicle_summary(routes: dict) -> None:
     )
 
 
-def route_sequences(routes: dict) -> None:
-    with st.expander(t("ux.plan.sequences")):
-        blocks = []
-        for vehicle in routes["vehicle_kpis"]:
-            sequence = format_sequence(vehicle.get("sequence") or [])
-            blocks.append(
-                f"<p class='lm-plan-seq'><strong>{escape(vehicle['vehicle_id'])}</strong><br/>"
-                f"{escape(sequence)}</p>"
-            )
-        st.markdown("".join(blocks), unsafe_allow_html=True)
+def route_sequence_blocks(routes: dict) -> str:
+    blocks = []
+    for vehicle in routes["vehicle_kpis"]:
+        sequence = format_sequence(vehicle.get("sequence") or [])
+        blocks.append(
+            f"<p class='lm-plan-seq'><strong>{escape(vehicle['vehicle_id'])}</strong><br/>"
+            f"{escape(sequence)}</p>"
+        )
+    return "".join(blocks)
+
+
+def route_sequences(routes: dict, *, as_expander: bool = True) -> None:
+    markup = route_sequence_blocks(routes)
+    if as_expander:
+        with st.expander(t("ux.plan.sequences")):
+            st.markdown(markup, unsafe_allow_html=True)
+        return
+    st.caption(t("ux.plan.sequences"))
+    st.markdown(markup, unsafe_allow_html=True)
 
 
 def detailed_route_data(routes: dict) -> None:
@@ -206,7 +215,6 @@ def render_plan_side(
     *,
     kind: str,
     run: dict,
-    routes: dict,
     figure,
     comparable: bool,
     reduction: str,
@@ -228,8 +236,6 @@ def render_plan_side(
     if kind == "optimised" and comparable:
         st.caption(t("ux.plan.reduction", reduction=reduction))
     st.plotly_chart(figure, key=map_key, **PLOTLY_CHART_KWARGS)
-    vehicle_summary(routes)
-    route_sequences(routes)
 
 
 def render_comparison(bundle: dict, figures: dict, comparable: bool) -> None:
@@ -273,7 +279,6 @@ def render_comparison(bundle: dict, figures: dict, comparable: bool) -> None:
             render_plan_side(
                 kind="baseline",
                 run=baseline,
-                routes=bundle["baseline"]["routes"],
                 figure=figures["baseline"],
                 comparable=comparable,
                 reduction=reduction,
@@ -283,12 +288,19 @@ def render_comparison(bundle: dict, figures: dict, comparable: bool) -> None:
             render_plan_side(
                 kind="optimised",
                 run=optimised,
-                routes=bundle["optimised"]["routes"],
                 figure=figures["optimised"],
                 comparable=comparable,
                 reduction=reduction,
                 map_key="map-optimised",
             )
+    with st.container(key="plan-route-details"):
+        section(t("ux.plan.routes"))
+        with st.expander(t("ux.plan.view.baseline"), expanded=False):
+            vehicle_summary(bundle["baseline"]["routes"])
+            route_sequences(bundle["baseline"]["routes"], as_expander=False)
+        with st.expander(t("ux.plan.view.optimised"), expanded=False):
+            vehicle_summary(bundle["optimised"]["routes"])
+            route_sequences(bundle["optimised"]["routes"], as_expander=False)
     section(t("ux.plan.validation"))
     validation_matrix(bundle)
     if st.button(t("ux.plan.validation.open"), type="secondary", key="plan-inspect"):

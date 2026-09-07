@@ -50,8 +50,8 @@ COPY = {
     "nav.language": ("LANGUAGE", "SPRACHE"),
     "brand.sub": ("CVRP route optimization", "CVRP-Tourenoptimierung"),
     "footer": (
-        "LastMile Lab · Vienna · Estimated-distance planning",
-        "LastMile Lab · Wien · Planung mit geschätzten Distanzen",
+        "© 2026 Syed Danish Ali · LastMile Lab",
+        "© 2026 Syed Danish Ali · LastMile Lab",
     ),
     "lang.label": ("Language / Sprache", "Language / Sprache"),
     "ux.over.kicker": (
@@ -85,9 +85,19 @@ COPY = {
         "optimierten Tourenplan, um zu zeigen, wie Tourenentscheidungen die Gesamtdistanz der "
         "Flotte beeinflussen.",
     ),
-    "ux.over.author": (
-        "A portfolio project by Syed Danish Ali",
-        "Ein Portfolio-Projekt von Syed Danish Ali",
+    "ux.over.about.kicker": (
+        "ABOUT THIS PROJECT",
+        "ÜBER DIESES PROJEKT",
+    ),
+    "ux.over.about.body": (
+        "LastMile Lab is an independent portfolio project designed and developed by "
+        "Syed Danish Ali. It applies capacitated vehicle routing concepts to a synthetic "
+        "last-mile delivery case and brings together optimization, API-based planning, "
+        "solution verification, and a bilingual interactive interface.",
+        "LastMile Lab ist ein unabhängiges Portfolio-Projekt, entworfen und entwickelt "
+        "von Syed Danish Ali. Es wendet Konzepte des Capacitated Vehicle Routing auf einen "
+        "synthetischen Last-Mile-Zustellfall an und verbindet Optimierung, API-basierte "
+        "Planung, Lösungsverifikation und eine zweisprachige interaktive Oberfläche.",
     ),
     "ux.over.vrp.title": ("Routing objective", "Tourenziel"),
     "ux.over.vrp": (
@@ -460,6 +470,14 @@ COPY = {
     "ux.plan.partial": ("Partial constructed distance: {km}", "Konstruierte Teildistanz: {km}"),
     "ux.plan.unserved": ("Unserved customers: {ids}", "Nicht bediente Kunden: {ids}"),
     "ux.plan.routes": ("Vehicle routes", "Fahrzeugtouren"),
+    "ux.plan.view.baseline": (
+        "View baseline route details",
+        "Baseline-Tourdetails anzeigen",
+    ),
+    "ux.plan.view.optimised": (
+        "View optimized route details",
+        "Optimierte Tourdetails anzeigen",
+    ),
     "ux.plan.pick": ("Plan view", "Planansicht"),
     "ux.plan.table": ("Vehicle routes", "Fahrzeugtouren"),
     "ux.plan.total": (

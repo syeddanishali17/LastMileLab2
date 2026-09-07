@@ -3,6 +3,8 @@
 from pathlib import Path
 from unittest.mock import MagicMock
 
+import pytest
+
 import components
 from display import (
     VEHICLE_COLOURS,
@@ -63,6 +65,23 @@ def test_plan_page_does_not_hardcode_vienna_standard_figures() -> None:
     assert "Optimized solution (OR-Tools)" not in source
     summary_src = helper.split("def plan_comparison_summary")[1].split("def operational_summary")[0]
     assert "122.394" not in summary_src
+
+
+def test_plan_comparison_maps_precede_route_details() -> None:
+    source = Path("frontend/pages/3_Baseline_vs_Optimised.py").read_text(encoding="utf-8")
+    side_src = source.split("def render_plan_side")[1].split("def render_comparison")[0]
+    compare_src = source.split("def render_comparison")[1].split("def render_detail")[0]
+    assert "vehicle_summary" not in side_src
+    assert "route_sequences" not in side_src
+    assert "plotly_chart" in side_src
+    assert 'key="plan-pair"' in compare_src
+    assert "vehicle_summary" in compare_src
+    assert 't("ux.plan.view.baseline")' in compare_src
+    assert 't("ux.plan.view.optimised")' in compare_src
+    pair_at = compare_src.find('key="plan-pair"')
+    details_at = compare_src.find('key="plan-route-details"')
+    validation_at = compare_src.find('t("ux.plan.validation")')
+    assert pair_at < details_at < validation_at
 
 
 def test_custom_scenario_label_is_friendly() -> None:
@@ -220,6 +239,14 @@ def test_overview_animation_teaches_baseline_versus_optimized():
     assert "lm-opt-track" not in markup
     assert "◂" not in components.THEME_CSS
     assert "lm-cvrp-route-tracks" in markup
+    assert "lm-cvrp-cust" in markup
+    assert "lm-cvrp-arr-0-0-0" in markup
+    assert "lm-cvrp-arr-1-3-2" in markup
+    assert 'fill="#64748B"' not in markup
+    assert "r=\"10.5\" fill=" not in markup
+    assert "@keyframes lm-cvrp-arr-0-0-0" in components.THEME_CSS
+    assert "fill: var(--lm-visit)" in components.THEME_CSS
+    assert markup.count('class="lm-cvrp-cust') == 24
     assert "5s linear infinite" in components.THEME_CSS
     assert ".lm-num" in components.THEME_CSS
     assert "text-align: right" in components.THEME_CSS
@@ -236,6 +263,9 @@ def test_overview_animation_teaches_baseline_versus_optimized():
     assert "padding-top: 0" in components.THEME_CSS
     assert ".lm-proof-kicker" in components.THEME_CSS
     assert ".lm-overview-flag" in components.THEME_CSS
+    assert ".lm-about" in components.THEME_CSS
+    assert ".lm-about-body" in components.THEME_CSS
+    assert "width: 88%" in components.THEME_CSS
     assert ".lm-concept-grid .lm-card > p" in components.THEME_CSS
     assert ".lm-concept-grid .lm-card .lm-info-text" in components.THEME_CSS
     assert "clamp(28px, 2.4vw, 34px)" in components.THEME_CSS
@@ -265,8 +295,100 @@ def test_overview_animation_teaches_baseline_versus_optimized():
     assert ".lm-plan-method-break" not in components.THEME_CSS
     assert "ux.plan.excel" not in components.THEME_CSS
     assert ".st-key-plan-pair .lm-table" in components.THEME_CSS
+    assert ".st-key-plan-route-details" in components.THEME_CSS
+    assert "@media (max-width: 1449px)" not in components.THEME_CSS
+    assert "@media (max-width: 1220px)" in components.THEME_CSS
     assert "st-key-demand-editor" in components.THEME_CSS
     assert "max-width: 580px" in components.THEME_CSS
+    dt_css = components.THEME_CSS.split(".stApp .lm-preview-stats dt {", 1)[1].split("}", 1)[0]
+    dd_css = components.THEME_CSS.split(".stApp .lm-preview-stats dd {", 1)[1].split("}", 1)[0]
+    assert "font-size: 12.5px" in dt_css
+    assert "font-size: 11px" in dd_css
+    assert "var(--lm-muted)" in dt_css
+    assert "var(--lm-navy)" in dd_css
+
+
+def test_overview_visit_keyframes_snap_fill_at_path_arrival():
+    idle = "fill:#F8FAFC;stroke:#94A3B8;opacity:1"
+    active = "fill:var(--lm-visit);stroke:var(--lm-visit);opacity:1"
+    pulse_frame = "fill:var(--lm-visit);stroke:var(--lm-visit);opacity:.75"
+    css = components.THEME_CSS
+    for pane, routes in enumerate((components._CVRP_NN_ROUTES, components._CVRP_OPT_ROUTES)):
+        for route_index, (_colour, stops) in enumerate(routes):
+            arrivals = components._cvrp_arrival_pcts(stops)
+            assert len(arrivals) == len(stops)
+            points = [components._CVRP_DEPOT, *stops, components._CVRP_DEPOT]
+            total_path = sum(
+                components._cvrp_seg_len(start, end)
+                for start, end in zip(points[:-1], points[1:], strict=True)
+            )
+            walked = 0.0
+            for stop_index, percent in enumerate(arrivals):
+                walked += components._cvrp_seg_len(points[stop_index], points[stop_index + 1])
+                assert percent == pytest.approx(100.0 * walked / total_path, abs=1e-9)
+                arrival = round(percent, 2)
+                before = max(round(arrival - 0.01, 2), 0.0)
+                pulse = min(round(arrival + 1.2, 2), 99.2)
+                settled = min(round(arrival + 2.4, 2), 99.6)
+                name = f"lm-cvrp-arr-{pane}-{route_index}-{stop_index}"
+                expected = (
+                    f"@keyframes {name}{{"
+                    f"0%,{before:.2f}%{{{idle};}}"
+                    f"{arrival:.2f}%{{{active};}}"
+                    f"{pulse:.2f}%{{{pulse_frame};}}"
+                    f"{settled:.2f}%,100%{{{active};}}"
+                    f"}}"
+                )
+                assert expected in css, name
+                assert pulse > arrival
+                assert "cx:" not in expected
+                assert "cy:" not in expected
+    assert "opacity:.72" not in css
+    assert "animation: lm-pane-route 5s linear infinite" in css
+    assert (
+        ".lm-cvrp-pane .lm-cvrp-nodes .lm-cvrp-r2 { --lm-visit: #EA580C; animation-delay: -1.25s; }"
+        in css
+    )
+    assert (
+        ".lm-cvrp-pane .lm-cvrp-nodes .lm-cvrp-r3 { --lm-visit: #7C3AED; animation-delay: -2.5s; }"
+        in css
+    )
+    assert (
+        ".lm-cvrp-pane .lm-cvrp-nodes .lm-cvrp-r4 { --lm-visit: #C026D3; animation-delay: -3.75s; }"
+        in css
+    )
+    assert ".lm-cvrp-pane .lm-cvrp-routes path:nth-child(2) { animation-delay: -1.25s; }" in css
+    assert ".lm-cvrp-pane .lm-cvrp-routes path:nth-child(3) { animation-delay: -2.5s; }" in css
+    assert ".lm-cvrp-pane .lm-cvrp-routes path:nth-child(4) { animation-delay: -3.75s; }" in css
+    assert "animation-duration: 5s" in css
+    assert "from { stroke-dashoffset: 100; }" in css
+    assert "to { stroke-dashoffset: 0; }" in css
+
+
+def test_overview_page_puts_animation_and_cta_before_concept_cards():
+    source = Path("frontend/pages/0_Overview.py").read_text(encoding="utf-8")
+    header_at = source.index("page_header(")
+    animation_at = source.index("cvrp_animation_html(")
+    cta_at = source.index('st.button(t("ux.over.cta")')
+    cards_at = source.index("concept_cards(")
+    footer_at = source.index("render_footer()")
+    about_at = source.index("render_overview_about()")
+    assert header_at < animation_at < cta_at < cards_at < about_at < footer_at
+    assert source.count("concept_cards(") == 1
+    assert source.count('st.button(t("ux.over.cta")') == 1
+    assert source.count("cvrp_animation_html(") == 1
+    assert "author=" not in source
+    assert "ux.over.author" not in source
+    assert "kpi_cards" not in source
+    assert "ux.over.proof" not in source
+    assert "Customers served" not in source
+    markup = components.cvrp_animation_html("97.2 km", "diagram")
+    cap_at = markup.index('class="lm-cvrp-cap"')
+    pause_at = markup.index("lm-motion-control")
+    panel_end = markup.index("</div>", pause_at)
+    assert cap_at < pause_at < panel_end
+    assert markup.count("lm-motion-control") == 1
+    assert markup.count('st.button') == 0
 
 
 def test_hero_author_stays_inside_html_without_blank_gaps(monkeypatch):
@@ -276,12 +398,12 @@ def test_hero_author_stays_inside_html_without_blank_gaps(monkeypatch):
         "Title",
         "Intro paragraph.",
         kicker="CVRP",
-        extra=["Objective paragraph."],
-        author="A portfolio project by Syed Danish Ali",
+        extra=["Objective paragraph.", "Comparison paragraph."],
         compact=False,
     )
     markup = ui.markdown.call_args.args[0]
-    assert '<p class="lm-hero-author">A portfolio project by Syed Danish Ali</p>' in markup
+    assert "lm-hero-author" not in markup
+    assert "A portfolio project by Syed Danish Ali" not in markup
     assert "</p>\n" not in markup.split('class="lm-hero-copy">', 1)[1]
     assert markup.count("<p class=") + markup.count("<p>") >= 3
     assert markup.strip().endswith("</div>")
@@ -299,6 +421,34 @@ def test_hero_author_stays_inside_html_without_blank_gaps(monkeypatch):
     assert "The model minimizes distance." in markup
     assert "<abbr" not in markup
     assert "lm-tip" not in markup
+
+
+def test_overview_about_and_footer_markup(monkeypatch):
+    ui = MagicMock()
+    monkeypatch.setattr(components, "st", ui)
+    monkeypatch.setattr(
+        components,
+        "t",
+        lambda key: {
+            "ux.over.about.kicker": "ABOUT THIS PROJECT",
+            "ux.over.about.body": (
+                "LastMile Lab is an independent portfolio project designed and developed by "
+                "Syed Danish Ali."
+            ),
+            "footer": "© 2026 Syed Danish Ali · LastMile Lab",
+        }[key],
+    )
+    components.render_overview_about()
+    markup = ui.markdown.call_args.args[0]
+    assert 'class="lm-about"' in markup
+    assert 'class="lm-about-kicker">ABOUT THIS PROJECT</div>' in markup
+    assert "Syed Danish Ali" in markup
+    assert "lm-card" not in markup
+    assert "lm-hero-author" not in markup
+    assert "</div>\n" not in markup
+    components.render_footer()
+    footer = ui.markdown.call_args.args[0]
+    assert footer == '<div class="lm-footer">© 2026 Syed Danish Ali · LastMile Lab</div>'
 
 
 def test_term_placeholders_do_not_nest_inside_titles():

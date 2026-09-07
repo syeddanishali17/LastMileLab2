@@ -66,10 +66,7 @@ STRINGS: dict[str, dict[str, str]] = {
             "**No solution returned.** The search did not produce a complete assignment. "
             "This is not, by itself, proof that the problem is infeasible."
         ),
-        "footer": (
-            "LastMile Lab is a fictional case study. This interface presents service results; "
-            "it does not recalculate routes."
-        ),
+        "footer": "© 2026 Syed Danish Ali · LastMile Lab",
         "empty.open": "Go to Scenario Setup",
         "status.none": "No plan yet.",
         "status.unknown": "Status returned by the optimisation service.",
@@ -868,10 +865,7 @@ STRINGS: dict[str, dict[str, str]] = {
             "**Keine Lösung zurückgegeben.** Die Suche hat keine vollständige Zuordnung geliefert. "
             "Dies allein beweist nicht, dass das Problem unzulässig ist."
         ),
-        "footer": (
-            "LastMile Lab ist eine fiktive Fallstudie. Diese Oberfläche zeigt Ergebnisse des "
-            "Optimierungsdienstes und rechnet Touren nicht selbst neu."
-        ),
+        "footer": "© 2026 Syed Danish Ali · LastMile Lab",
         "empty.open": "Zu Szenario einrichten",
         "status.none": "Noch kein Plan.",
         "status.unknown": "Status vom Optimierungsdienst.",

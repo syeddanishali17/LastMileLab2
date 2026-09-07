@@ -35,7 +35,23 @@ def test_overview_english_copy_is_locked() -> None:
     assert en["ux.over.cvrp.title"] == "Capacity constraints"
     assert en["ux.over.feas.title"] == "Feasibility requirements"
     assert "01  " not in en["ux.over.vrp.title"]
-    assert en["ux.over.author"] == "A portfolio project by Syed Danish Ali"
+    assert "ux.over.author" not in en
+    assert en["ux.over.about.kicker"] == "ABOUT THIS PROJECT"
+    assert en["ux.over.about.body"] == (
+        "LastMile Lab is an independent portfolio project designed and developed by "
+        "Syed Danish Ali. It applies capacitated vehicle routing concepts to a synthetic "
+        "last-mile delivery case and brings together optimization, API-based planning, "
+        "solution verification, and a bilingual interactive interface."
+    )
+    assert STRINGS["de"]["ux.over.about.kicker"] == "ÜBER DIESES PROJEKT"
+    assert STRINGS["de"]["ux.over.about.body"] == (
+        "LastMile Lab ist ein unabhängiges Portfolio-Projekt, entworfen und entwickelt "
+        "von Syed Danish Ali. Es wendet Konzepte des Capacitated Vehicle Routing auf einen "
+        "synthetischen Last-Mile-Zustellfall an und verbindet Optimierung, API-basierte "
+        "Planung, Lösungsverifikation und eine zweisprachige interaktive Oberfläche."
+    )
+    assert en["footer"] == "© 2026 Syed Danish Ali · LastMile Lab"
+    assert STRINGS["de"]["footer"] == "© 2026 Syed Danish Ali · LastMile Lab"
     assert "ux.over.proof" not in en
     assert "ux.over.proof.cap" not in en
     assert "ux.over.disclosure" not in en
@@ -136,6 +152,10 @@ def test_plan_copy_is_recruiter_facing() -> None:
     assert en["ux.plan.tab.comparison"] == "Comparison"
     assert en["ux.plan.tab.baseline"] == "Baseline details"
     assert en["ux.plan.tab.optimised"] == "Optimized details"
+    assert en["ux.plan.view.baseline"] == "View baseline route details"
+    assert en["ux.plan.view.optimised"] == "View optimized route details"
+    assert de["ux.plan.view.baseline"] == "Baseline-Tourdetails anzeigen"
+    assert de["ux.plan.view.optimised"] == "Optimierte Tourdetails anzeigen"
     assert en["ux.plan.kpi.baseline"] == "Baseline distance travelled"
     assert en["ux.plan.total"].startswith("Total fleet distance travelled")
     assert en["check.audit.INVARIANTS"] == "Solution consistency checks passed"
