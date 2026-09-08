@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import streamlit as st
 
-from api_client import get_checks, get_routes, get_run, get_scenario
 from components import (
-    call_api,
     callout,
     empty_state,
+    expired_result_state,
+    fetch_verification_view,
     page_header,
     render_footer,
     section,
@@ -47,12 +47,17 @@ choice = st.radio(
 )
 run_id = dict(options)[choice]
 
-run_payload = call_api(get_run, run_id)
-routes_payload = call_api(get_routes, run_id)
-checks_payload = call_api(get_checks, run_id)
-scenario_payload = call_api(get_scenario, st.session_state.scenario_id)
-if None in (run_payload, routes_payload, checks_payload, scenario_payload):
+loaded = fetch_verification_view(run_id, st.session_state.scenario_id)
+if loaded.status == "expired":
+    expired_result_state()
+    render_footer()
     st.stop()
+if loaded.status != "ok" or loaded.payload is None:
+    st.stop()
+run_payload = loaded.payload["run"]
+routes_payload = loaded.payload["routes"]
+checks_payload = loaded.payload["checks"]
+scenario_payload = loaded.payload["scenario"]
 
 status_badge(run_payload.get("status"), run_type=run_payload.get("run_type"))
 callout(t("inspect.how"))

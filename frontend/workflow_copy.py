@@ -324,8 +324,17 @@ COPY = {
     ),
     "ux.api.offline.title": ("Planning service unavailable", "Planungsdienst nicht verfügbar"),
     "ux.api.offline.body": (
-        "Start the local planning service before generating or comparing scenarios.",
-        "Starten Sie den lokalen Planungsdienst, bevor Sie Szenarien erzeugen oder vergleichen.",
+        "Scenario generation and comparison cannot run until the planning service is restored.",
+        "Szenarien können erst erzeugt oder verglichen werden, wenn der Planungsdienst wieder erreichbar ist.",
+    ),
+    "ux.api.starting.title": ("Planning service is starting", "Planungsdienst wird gestartet"),
+    "ux.api.starting.body": (
+        "This can take a little longer after a period of inactivity.",
+        "Nach längerer Inaktivität kann dies etwas länger dauern.",
+    ),
+    "ux.api.starting": (
+        "Planning service is starting. This can take a little longer after a period of inactivity.",
+        "Planungsdienst wird gestartet. Nach längerer Inaktivität kann dies etwas länger dauern.",
     ),
     "ux.api.command": ("Show startup command", "Startbefehl anzeigen"),
     "ux.stage.load": ("Loading scenario", "Szenario wird geladen"),
@@ -363,6 +372,14 @@ COPY = {
         "Choose a scenario and run the comparison first.",
         "Wählen Sie ein Szenario und starten Sie zuerst den Vergleich.",
     ),
+    "ux.plan.expired.title": ("Route result expired", "Tourenergebnis abgelaufen"),
+    "ux.plan.expired.body": (
+        "This saved route result is no longer available. "
+        "Run the scenario again to generate a new comparison.",
+        "Dieses gespeicherte Tourenergebnis ist nicht mehr verfügbar. "
+        "Führen Sie das Szenario erneut aus, um einen neuen Vergleich zu erzeugen.",
+    ),
+    "ux.plan.expired.action": ("Run scenario again", "Szenario erneut ausführen"),
     "ux.plan.scenario": ("Scenario: {name}", "Szenario: {name}"),
     "ux.plan.tab.comparison": ("Comparison", "Vergleich"),
     "ux.plan.tab.baseline": ("Baseline details", "Baseline-Details"),
@@ -828,6 +845,7 @@ COPY = {
     ),
     "api.status.on": ("Planning service available", "Planungsdienst verfügbar"),
     "api.status.off": ("Planning service unavailable", "Planungsdienst nicht verfügbar"),
+    "api.status.starting": ("Planning service is starting", "Planungsdienst wird gestartet"),
 }
 
 WORKFLOW_STRINGS = {

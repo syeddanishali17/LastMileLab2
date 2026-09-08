@@ -4,15 +4,15 @@ from html import escape
 
 import streamlit as st
 
-from api_client import get_checks, get_routes, get_run, get_scenario
 from components import (
-    call_api,
     empty_state,
+    expired_result_state,
     export_buttons,
     heading_with_tip,
     kpi_cards,
     page_header,
     render_footer,
+    resolve_plan_bundle,
     section,
     static_table,
     status_badge,
@@ -353,26 +353,14 @@ if baseline is None or optimised is None:
     render_footer()
     st.stop()
 
-bundle = st.session_state.get("_plan_bundle")
-if (
-    bundle is None
-    or bundle["baseline"]["run"]["run_id"] != baseline["run_id"]
-    or bundle["optimised"]["run"]["run_id"] != optimised["run_id"]
-):
-    bundle = {"scenario": call_api(get_scenario, st.session_state.scenario_id)}
-    for kind, summary in (("baseline", baseline), ("optimised", optimised)):
-        run_id = summary["run_id"]
-        bundle[kind] = {
-            "run": call_api(get_run, run_id),
-            "routes": call_api(get_routes, run_id),
-            "checks": call_api(get_checks, run_id),
-        }
-    if bundle["scenario"] is None or any(
-        value is None for kind in ("baseline", "optimised") for value in bundle[kind].values()
-    ):
-        st.stop()
-    st.session_state["_plan_bundle"] = bundle
-    st.session_state.plan_view = "comparison"
+loaded = resolve_plan_bundle(baseline, optimised, st.session_state.scenario_id)
+if loaded.status == "expired":
+    expired_result_state()
+    render_footer()
+    st.stop()
+if loaded.status != "ok" or loaded.payload is None:
+    st.stop()
+bundle = loaded.payload
 
 baseline = bundle["baseline"]["run"]
 optimised = bundle["optimised"]["run"]

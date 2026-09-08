@@ -22,10 +22,26 @@ class ApiError(Exception):
         message: str,
         status_code: int | None = None,
         kind: str = "unknown",
+        code: str | None = None,
     ) -> None:
         super().__init__(message)
         self.status_code = status_code
         self.kind = kind
+        self.code = code
+
+
+def is_missing_run(exc: ApiError) -> bool:
+    """True only for a genuine stored-run 404 (UNKNOWN_RUN), not offline or scenario 404."""
+    if exc.kind != "not_found":
+        return False
+    if exc.code == "UNKNOWN_SCENARIO":
+        return False
+    if exc.code == "UNKNOWN_RUN":
+        return True
+    text = str(exc)
+    if "UNKNOWN_SCENARIO" in text:
+        return False
+    return "UNKNOWN_RUN" in text or ("Run '" in text and "was not found" in text)
 
 
 def backend_url() -> str:
@@ -39,16 +55,36 @@ def _client() -> httpx.Client:
     return client
 
 
-def _parse_error(response: httpx.Response) -> str:
+def _error_parts(response: httpx.Response) -> tuple[str, str | None]:
     try:
         payload = response.json()
     except ValueError:
-        return f"HTTP {response.status_code}: {response.text}"
+        return f"HTTP {response.status_code}: {response.text}", None
+    if not isinstance(payload, dict):
+        return str(payload), None
     message = payload.get("message") or payload.get("detail") or response.text
     code = payload.get("code")
-    if code:
-        return f"{code}: {message}"
-    return str(message)
+    code_text = str(code) if code else None
+    if code_text:
+        return f"{code_text}: {message}", code_text
+    return str(message), None
+
+
+def _raise_http_error(response: httpx.Response) -> None:
+    kind = "unknown"
+    if response.status_code == 404:
+        kind = "not_found"
+    elif response.status_code == 400:
+        kind = "invalid"
+    elif response.status_code >= 500:
+        kind = "server"
+    message, code = _error_parts(response)
+    raise ApiError(
+        message,
+        status_code=response.status_code,
+        kind=kind,
+        code=code,
+    )
 
 
 def request_json(
@@ -69,11 +105,7 @@ def request_json(
             timeout=timeout,
         )
     except httpx.ConnectError as exc:
-        raise ApiError(
-            "Cannot reach the FastAPI backend. Start Uvicorn on port 8000 first. "
-            f"Tried {backend_url()}.",
-            kind="connection",
-        ) from exc
+        raise ApiError("Planning service unavailable.", kind="connection") from exc
     except httpx.TimeoutException as exc:
         raise ApiError(
             "The API did not respond in time. If you just started an optimisation, "
@@ -83,18 +115,7 @@ def request_json(
     except httpx.HTTPError as exc:
         raise ApiError(str(exc), kind="unknown") from exc
     if response.status_code >= 400:
-        kind = "unknown"
-        if response.status_code == 404:
-            kind = "not_found"
-        elif response.status_code == 400:
-            kind = "invalid"
-        elif response.status_code >= 500:
-            kind = "server"
-        raise ApiError(
-            _parse_error(response),
-            status_code=response.status_code,
-            kind=kind,
-        )
+        _raise_http_error(response)
     if response.headers.get("content-type", "").startswith("application/json"):
         return response.json()
     return response.content
@@ -154,11 +175,7 @@ def export_run(run_id: str, fmt: str = "json") -> tuple[bytes, str, str]:
     try:
         response = _client().get(url, params={"format": fmt}, timeout=60.0)
     except httpx.ConnectError as exc:
-        raise ApiError(
-            "Cannot reach the FastAPI backend. Start Uvicorn on port 8000 first. "
-            f"Tried {backend_url()}.",
-            kind="connection",
-        ) from exc
+        raise ApiError("Planning service unavailable.", kind="connection") from exc
     except httpx.TimeoutException as exc:
         raise ApiError(
             "The export request timed out. Retry once the run has finished.",
@@ -167,14 +184,7 @@ def export_run(run_id: str, fmt: str = "json") -> tuple[bytes, str, str]:
     except httpx.HTTPError as exc:
         raise ApiError(str(exc), kind="unknown") from exc
     if response.status_code >= 400:
-        kind = "server" if response.status_code >= 500 else "invalid"
-        if response.status_code == 404:
-            kind = "not_found"
-        raise ApiError(
-            _parse_error(response),
-            status_code=response.status_code,
-            kind=kind,
-        )
+        _raise_http_error(response)
     if fmt == "csv":
         return response.content, "application/zip", f"{run_id}.zip"
     return response.content, "application/json", f"{run_id}.json"

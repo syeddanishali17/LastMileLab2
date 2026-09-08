@@ -19,6 +19,17 @@ SESSION_DEFAULTS = {
     "_optimised_summary": None,
 }
 
+# Comparison/run keys dropped or reset by clear_planner_runs(). Language, scenario_id,
+# solver limit, custom-scenario config, and _planning_offline are left unchanged.
+PLANNER_RUN_KEYS = (
+    "_plan_bundle",
+    "baseline_run_id",
+    "optimised_run_id",
+    "_baseline_summary",
+    "_optimised_summary",
+    "_export_payloads",
+)
+
 
 def ensure_session() -> None:
     for key, value in SESSION_DEFAULTS.items():
@@ -28,7 +39,14 @@ def ensure_session() -> None:
 
 
 def clear_planner_runs() -> None:
+    """Drop stored comparison results after a scenario change or expired run.
+
+    Clears: `_plan_bundle`, `baseline_run_id`, `optimised_run_id`,
+    `_baseline_summary`, `_optimised_summary`, `_export_payloads`.
+    Resets `plan_view` to comparison. Does not reset language or scenario setup.
+    """
     st.session_state.pop("_plan_bundle", None)
+    st.session_state.pop("_export_payloads", None)
     st.session_state.plan_view = "comparison"
     st.session_state.baseline_run_id = None
     st.session_state.optimised_run_id = None

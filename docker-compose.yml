@@ -1,12 +1,17 @@
+# Optional local/self-hosted stack: public Streamlit → internal FastAPI → persistent DuckDB.
+# Free recruiter demo uses Streamlit Community Cloud + Render instead; see docs/deployment.md.
+# FastAPI is not published. Check it from the Compose network:
+#   docker compose exec backend python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8000/health').read().decode())"
+# Optional local API publish (do not use on a public host):
+#   docker compose -f docker-compose.yml -f docker-compose.publish-api.yml up --build
+
 services:
   backend:
     build:
       context: .
       dockerfile: Dockerfile.backend
-    ports:
-      - "8000:8000"
+    restart: unless-stopped
     environment:
-      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8501}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
       DUCKDB_PATH: /app/data/runs/lastmile.duckdb
     volumes:
@@ -23,18 +28,39 @@ services:
       timeout: 5s
       retries: 8
       start_period: 40s
+    networks:
+      - lastmile
 
   frontend:
     build:
       context: .
       dockerfile: Dockerfile.frontend
+    restart: unless-stopped
     ports:
-      - "8501:8501"
+      - "${FRONTEND_PORT:-8501}:8501"
     environment:
       BACKEND_URL: http://backend:8000
     depends_on:
       backend:
         condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8501/_stcore/health', timeout=3)",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 40s
+    networks:
+      - lastmile
 
 volumes:
   duckdb_data:
+
+networks:
+  lastmile:
+    driver: bridge

@@ -1,0 +1,8 @@
+# Optional overlay: publish FastAPI on the host for local debugging only.
+# Usage: docker compose -f docker-compose.yml -f docker-compose.publish-api.yml up --build
+# Do not use this overlay on a public host. The default stack keeps the API internal.
+
+services:
+  backend:
+    ports:
+      - "8000:8000"

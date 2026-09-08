@@ -10,15 +10,16 @@ Inspectable static morning dispatch: assign every unsplit tote order to one homo
 
 ## Live demo
 
-The recruiter-facing demo is a public HTTPS URL. It is **not published yet**. After Compose is running on a VM, replace the two placeholders below. Do not use Streamlit Community Cloud; that host cannot run the FastAPI sidecar.
+Public deployment is in preparation. The final live URL will be added after successful deployment.
+
+The intended free demo is Streamlit Community Cloud for the UI and a Render FastAPI service for planning. Setup is in [`docs/deployment.md`](docs/deployment.md).
 
 | Surface | URL |
 |---|---|
 | Streamlit planner | `_paste HTTPS UI URL after deploy_` |
-| FastAPI OpenAPI | `_paste HTTPS /docs URL after deploy_` |
 | GitHub (source) | https://github.com/syeddanishali17/LastMileLab2 |
 
-While developing on this machine:
+While developing with two local processes on this machine:
 
 | Surface | Local URL |
 |---|---|
@@ -26,7 +27,7 @@ While developing on this machine:
 | API health | http://127.0.0.1:8000/health |
 | OpenAPI `/docs` | http://127.0.0.1:8000/docs |
 
-Deployment steps: [`docs/deployment.md`](docs/deployment.md).
+Docker Compose publishes only Streamlit (`http://localhost:8501` by default). API health from Compose: `docker compose exec backend` as in [`docs/deployment.md`](docs/deployment.md).
 
 ### Application journey
 
@@ -82,7 +83,7 @@ It is decision support for one frozen planning period. It is not live traffic co
 
 If one order exceeds van capacity, or total demand exceeds fleet capacity, the scenario is `infeasible` and the solver is not run. If those checks pass but search returns no complete plan, the status is `no_solution_found` — not a proof of infeasibility. The optimiser never silently drops a customer.
 
-Out of scope for this release: time windows, live traffic, split deliveries, multi-trips, multiple depots, heterogeneous vehicles, optional customers, authentication, Mapbox, and Streamlit Community Cloud. Full list: [`docs/limitations.md`](docs/limitations.md).
+Out of scope for this release: time windows, live traffic, split deliveries, multi-trips, multiple depots, heterogeneous vehicles, optional customers, authentication, and Mapbox. Full list: [`docs/limitations.md`](docs/limitations.md).
 
 ## Demand and capacity
 
@@ -196,7 +197,7 @@ cd c:\Users\danis\Desktop\LastMileLab2
 ## Architecture
 
 ```text
-Browser → Streamlit :8501 → FastAPI /api/v1 :8000
+Browser → Streamlit (published :8501) → FastAPI /api/v1 (internal :8000)
                               ├─ validation, Haversine matrix
                               ├─ sequential nearest neighbour
                               ├─ OR-Tools RoutingModel
@@ -254,7 +255,6 @@ cd c:\Users\danis\Desktop\LastMileLab2
 py -3.12 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install --upgrade pip
 .\.venv\Scripts\python.exe -m pip install -r backend\requirements.txt -r backend\requirements-dev.txt -r frontend\requirements.txt
-copy .env.example .env
 ```
 
 Terminal 1 — API:
@@ -285,7 +285,7 @@ Vienna optimiser kilometres are intentionally **not** frozen. LEARNING_6 optimum
 
 ## API
 
-Interactive docs when the API is running: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs). After public deploy, use the HTTPS `/docs` URL from the live-demo table.
+Interactive docs when the API is running locally: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs). Compose keeps FastAPI internal. The free demo uses a public Render service; see [`docs/deployment.md`](docs/deployment.md).
 
 | Method | Path | Role |
 |---|---|---|
@@ -310,7 +310,7 @@ Streamlit is a client of this API. It does not re-solve the CVRP.
 - Sequential NN on LEARNING_6 is incomplete; 27.000 km is partial and 34.000 km is a named packing, not that baseline.
 - No time windows, split deliveries, dropped customers, or heterogeneous fleet.
 - No public authentication; fixtures must stay synthetic.
-- Streamlit Community Cloud cannot host this product.
+- The free demo stores planning runs on ephemeral Render disk; presets remain, stored custom runs may disappear after a backend restart.
 
 Full write-up and versioned extensions: [`docs/limitations.md`](docs/limitations.md).
 
@@ -329,4 +329,4 @@ Do not add these until the CVRP MVP is publicly demonstrable.
 
 [MIT](LICENSE). Copyright (c) 2026 SyedDanishAli.
 
-Source: [github.com/syeddanishali17/LastMileLab2](https://github.com/syeddanishali17/LastMileLab2). After the VM is live, paste the HTTPS Streamlit URL and the HTTPS `/docs` URL into the live-demo table at the top of this README.
+Source: [github.com/syeddanishali17/LastMileLab2](https://github.com/syeddanishali17/LastMileLab2). After the host is live, paste the HTTPS Streamlit URL into the live-demo table at the top of this README.

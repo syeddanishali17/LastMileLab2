@@ -16,9 +16,10 @@ from api_client import (
 )
 from components import (
     call_api,
+    comparison_ready,
+    fetch_preset_scenario,
     page_header,
     planning_offline_notice,
-    planning_service_up,
     render_footer,
     search_pulse,
 )
@@ -366,19 +367,14 @@ def preset_radio() -> str:
 
 def load_preset(selected: str) -> tuple[dict | None, bool]:
     set_scenario(selected)
-    if not planning_service_up():
-        st.session_state["_planning_offline"] = True
-        return None, False
-    payload = call_api(get_scenario, selected, notify=False)
-    ready = payload is not None and payload["precheck"]["status"] == "passed"
-    return payload, ready
+    payload = fetch_preset_scenario(selected)
+    return payload, comparison_ready(payload)
 
 
 page_header(t("ux.scenarios.title"), t("ux.scenarios.subtitle"))
 st.markdown('<div class="lm-scenarios-flag"></div>', unsafe_allow_html=True)
 if "_custom_open" not in st.session_state:
     st.session_state["_custom_open"] = st.session_state.scenario_id.startswith("GEN_")
-st.session_state["_planning_offline"] = False
 
 custom_open = bool(st.session_state["_custom_open"])
 if custom_open:
@@ -409,11 +405,12 @@ with inputs:
             if st.button(t("ux.custom.configure"), type="secondary"):
                 st.session_state["_custom_open"] = True
                 st.rerun()
-        payload, ready = load_preset(selected)
 
 with preview_panel:
     with st.container(key="scenario-preview"):
         _heading(t("ux.preview"))
+        if not custom_open:
+            payload, ready = load_preset(selected)
         if st.session_state.get("_planning_offline"):
             planning_offline_notice()
         if payload is not None:

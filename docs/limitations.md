@@ -11,8 +11,8 @@
 - **Displayed loads are reconstructed.** The inspector shows cumulative tote counts from stop sequences. It does not display MTZ potentials `w_ik`, and OR-Tools did not solve the documented three-index MILP.
 - **LEARNING_6 baseline is incomplete.** Sequential nearest neighbour leaves C4 unserved. Do not treat 27.000 km or 34.000 km as that baseline's complete objective.
 - **No public auth.** The demo is unauthenticated. Do not put real customer data in the fixtures.
-- **Hosting.** Streamlit Community Cloud cannot run the FastAPI sidecar. The live demo must be a host that runs both processes (Compose on a VM, or both processes on one machine).
-- **Persistence.** DuckDB stores run history on the server volume. Clearing the volume forgets runs. Generated scenarios are not a substitute for the fixed fixtures.
+- **Hosting.** The free demo runs Streamlit Community Cloud against a separate FastAPI service (Render). Streamlit cannot run the solver itself. Optional Docker Compose keeps both processes on one host with a persistent volume; see [`deployment.md`](deployment.md).
+- **Persistence.** On Compose, DuckDB run history lives on a named volume and is lost if that volume is cleared. On Render Free, local DuckDB is ephemeral: presets re-seed after restart, while generated scenarios and stored runs may disappear. Generated scenarios are not a substitute for the fixed fixtures.
 
 ## Explicit MVP non-goals
 

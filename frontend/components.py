@@ -9,7 +9,7 @@ from typing import Any
 
 import streamlit as st
 
-from api_client import ApiError
+from api_client import ApiError, is_missing_run
 from display import (
     VEHICLE_COLOURS,
     display_node,
@@ -19,7 +19,7 @@ from display import (
     vehicle_colour,
 )
 from i18n import current_language, t
-from state import ensure_session
+from state import clear_planner_runs, ensure_session
 
 THEME_CSS = """
 <style>
@@ -1873,14 +1873,12 @@ def render_language_bar() -> None:
 
 
 def _render_service_status() -> None:
-    import httpx
-
-    from api_client import backend_url
-
-    try:
-        response = httpx.get(f"{backend_url()}/health", timeout=0.6)
-        label = t("api.status.on") if response.is_success else t("api.status.off")
-    except Exception:
+    phase = planning_availability()
+    if phase == "up":
+        label = t("api.status.on")
+    elif phase == "starting":
+        label = t("api.status.starting")
+    else:
         label = t("api.status.off")
     st.markdown(f'<div class="lm-api-status">{escape(label)}</div>', unsafe_allow_html=True)
 
@@ -2330,6 +2328,18 @@ def empty_state(title: str, body: str) -> None:
     st.page_link("pages/1_Dispatch_Setup.py", label=t("empty.open"))
 
 
+def expired_result_state() -> None:
+    st.markdown(
+        (
+            f'<div class="lm-empty"><strong>{escape(t("ux.plan.expired.title"))}</strong><br/>'
+            f"{escape(t('ux.plan.expired.body'))}</div>"
+        ),
+        unsafe_allow_html=True,
+    )
+    if st.button(t("ux.plan.expired.action"), type="primary", key="expired-run-again"):
+        st.switch_page("pages/1_Dispatch_Setup.py")
+
+
 def render_check_table(checks: list[dict[str, Any]]) -> None:
     rows = []
     for check in checks:
@@ -2372,10 +2382,15 @@ def render_footer() -> None:
     )
 
 
-PLANNING_START_CMD = (
-    r".\.venv\Scripts\python.exe -m uvicorn app.main:app "
-    "--app-dir backend --host 127.0.0.1 --port 8000"
-)
+HEALTH_PROBE_TIMEOUT_SECONDS = 0.6
+
+
+def classify_planning_availability(*, health_ok: bool, offline_confirmed: bool) -> str:
+    if health_ok:
+        return "up"
+    if offline_confirmed:
+        return "down"
+    return "starting"
 
 
 def planning_service_up() -> bool:
@@ -2384,10 +2399,65 @@ def planning_service_up() -> bool:
     from api_client import backend_url
 
     try:
-        response = httpx.get(f"{backend_url()}/health", timeout=0.6)
+        response = httpx.get(
+            f"{backend_url()}/health",
+            timeout=HEALTH_PROBE_TIMEOUT_SECONDS,
+        )
         return response.is_success
     except Exception:
         return False
+
+
+def planning_availability() -> str:
+    phase = classify_planning_availability(
+        health_ok=planning_service_up(),
+        offline_confirmed=bool(st.session_state.get("_planning_offline")),
+    )
+    if phase == "up":
+        st.session_state["_planning_offline"] = False
+    return phase
+
+
+def comparison_ready(payload: dict[str, Any] | None) -> bool:
+    return isinstance(payload, dict) and payload.get("precheck", {}).get("status") == "passed"
+
+
+def _starting_notice_html() -> str:
+    return (
+        f'<div class="lm-offline"><p class="lm-offline-title">'
+        f'{escape(t("ux.api.starting.title"))}</p>'
+        f'<p class="lm-offline-body">{escape(t("ux.api.starting.body"))}</p></div>'
+    )
+
+
+def fetch_preset_scenario(scenario_id: str) -> dict[str, Any] | None:
+    from api_client import get_scenario
+
+    phase = planning_availability()
+    if phase == "down":
+        return None
+
+    def load() -> dict[str, Any] | None:
+        try:
+            payload = get_scenario(scenario_id)
+        except ApiError as exc:
+            if exc.kind in {"connection", "timeout"}:
+                st.session_state["_planning_offline"] = True
+                return None
+            st.error(t("ux.error"))
+            return None
+        st.session_state["_planning_offline"] = False
+        return payload
+
+    if phase != "starting":
+        return load()
+
+    notice = st.empty()
+    notice.markdown(_starting_notice_html(), unsafe_allow_html=True)
+    with st.spinner(t("ux.api.starting")):
+        payload = load()
+    notice.empty()
+    return payload
 
 
 def planning_offline_notice() -> None:
@@ -2399,27 +2469,151 @@ def planning_offline_notice() -> None:
         ),
         unsafe_allow_html=True,
     )
-    with st.expander(t("ux.api.command"), expanded=False):
-        st.code(PLANNING_START_CMD, language="powershell")
+
+
+class StoredResult:
+    def __init__(self, status: str, payload: dict[str, Any] | None = None) -> None:
+        self.status = status
+        self.payload = payload
+
+
+def _notify_stored_lookup_failure(exc: ApiError) -> None:
+    if exc.kind == "connection":
+        st.error(t("ux.api.offline.title"))
+        return
+    if exc.kind == "timeout":
+        st.warning(str(exc))
+        return
+    if exc.kind == "server":
+        st.error(t("api.server"))
+        caption = str(exc)
+        if "404" not in caption:
+            st.caption(caption)
+        return
+    if exc.kind == "not_found" or "404" in str(exc):
+        st.error(t("ux.error"))
+        return
+    st.error(str(exc))
+
+
+def _stored_lookup_failure(exc: ApiError, *, notify: bool = True) -> StoredResult:
+    if is_missing_run(exc):
+        clear_planner_runs()
+        return StoredResult("expired")
+    if exc.kind == "connection":
+        st.session_state["_planning_offline"] = True
+        if notify:
+            _notify_stored_lookup_failure(exc)
+        return StoredResult("unavailable")
+    if exc.kind == "timeout":
+        if notify:
+            _notify_stored_lookup_failure(exc)
+        return StoredResult("unavailable")
+    if notify:
+        _notify_stored_lookup_failure(exc)
+    return StoredResult("error")
+
+
+def confirm_stored_runs(*run_ids: str, notify: bool = True) -> StoredResult:
+    from api_client import get_run
+
+    try:
+        for run_id in run_ids:
+            get_run(run_id)
+    except ApiError as exc:
+        return _stored_lookup_failure(exc, notify=notify)
+    return StoredResult("ok")
+
+
+def fetch_comparison_bundle(
+    *,
+    scenario_id: str,
+    baseline_run_id: str,
+    optimised_run_id: str,
+    notify: bool = True,
+) -> StoredResult:
+    from api_client import get_checks, get_routes, get_run, get_scenario
+
+    try:
+        bundle: dict[str, Any] = {"scenario": get_scenario(scenario_id)}
+        for kind, run_id in (("baseline", baseline_run_id), ("optimised", optimised_run_id)):
+            bundle[kind] = {
+                "run": get_run(run_id),
+                "routes": get_routes(run_id),
+                "checks": get_checks(run_id),
+            }
+    except ApiError as exc:
+        return _stored_lookup_failure(exc, notify=notify)
+    return StoredResult("ok", bundle)
+
+
+def fetch_verification_view(
+    run_id: str,
+    scenario_id: str,
+    *,
+    notify: bool = True,
+) -> StoredResult:
+    from api_client import get_checks, get_routes, get_run, get_scenario
+
+    try:
+        payload = {
+            "run": get_run(run_id),
+            "routes": get_routes(run_id),
+            "checks": get_checks(run_id),
+            "scenario": get_scenario(scenario_id),
+        }
+    except ApiError as exc:
+        return _stored_lookup_failure(exc, notify=notify)
+    return StoredResult("ok", payload)
+
+
+def resolve_plan_bundle(
+    baseline: dict[str, Any],
+    optimised: dict[str, Any],
+    scenario_id: str,
+) -> StoredResult:
+    cached = st.session_state.get("_plan_bundle")
+    cache_ok = (
+        isinstance(cached, dict)
+        and cached.get("baseline", {}).get("run", {}).get("run_id") == baseline.get("run_id")
+        and cached.get("optimised", {}).get("run", {}).get("run_id") == optimised.get("run_id")
+    )
+    if cache_ok:
+        check = confirm_stored_runs(baseline["run_id"], optimised["run_id"], notify=False)
+        if check.status == "expired":
+            return check
+        return StoredResult("ok", cached)
+    loaded = fetch_comparison_bundle(
+        scenario_id=scenario_id,
+        baseline_run_id=baseline["run_id"],
+        optimised_run_id=optimised["run_id"],
+    )
+    if loaded.status == "ok":
+        st.session_state["_plan_bundle"] = loaded.payload
+        st.session_state.plan_view = "comparison"
+    return loaded
 
 
 def call_api(func: Callable[..., Any], *args: Any, notify: bool = True, **kwargs: Any) -> Any:
     try:
         return func(*args, **kwargs)
     except ApiError as exc:
+        if is_missing_run(exc):
+            return None
         if exc.kind == "connection":
             st.session_state["_planning_offline"] = True
             if notify:
-                st.error(str(exc))
-                st.caption("In PowerShell: " + PLANNING_START_CMD)
+                st.error(t("ux.api.offline.title"))
         elif exc.kind == "timeout":
             st.warning(str(exc))
         elif exc.kind == "not_found":
-            st.error(str(exc))
-            st.caption(t("api.reconnect"))
+            if notify:
+                st.error(t("ux.error"))
         elif exc.kind == "server":
             st.error(t("api.server"))
-            st.caption(str(exc))
+            caption = str(exc)
+            if "404" not in caption:
+                st.caption(caption)
         else:
             st.error(str(exc))
         return None

@@ -19,11 +19,7 @@ Activation is optional if you call the venv interpreter directly:
 
 If PowerShell blocks the script, keep using `.\.venv\Scripts\python.exe` instead of activating.
 
-Copy environment defaults. There are no secrets.
-
-```powershell
-copy .env.example .env
-```
+Do not copy `.env.example` for this two-process workflow. That file is the Compose template (`BACKEND_URL=http://backend:8000`). Here, leave `BACKEND_URL` unset so Streamlit uses `http://127.0.0.1:8000`, and leave `DUCKDB_PATH` unset so DuckDB uses `data/runs/lastmile.duckdb`. There are no secrets.
 
 ## Tests
 
@@ -54,10 +50,10 @@ Open:
 - Health: http://127.0.0.1:8000/health
 - OpenAPI: http://127.0.0.1:8000/docs
 
+These local API URLs apply to this two-process setup only. Docker Compose does not publish FastAPI; see [`deployment.md`](deployment.md).
+
 In the UI, follow **Overview → Scenarios → Vienna Standard 24 → Run comparison**. The default five-second search opens **Plan** automatically with both route maps and visible JSON/CSV ZIP exports. The Overview proof card is the published snapshot; the Plan page shows the current API run.
 
 For a custom delivery wave, choose **Custom scenario**, edit tote demand, then **Generate scenario**. Generation is disabled if an order exceeds a van's capacity or total demand exceeds fleet capacity. A passed input check is not a guarantee that unsplit orders can be packed. Generated locations use the existing Vienna zones. **Methodology** and **Model validation** are optional sidebar links.
 
-Do not host the UI on Streamlit Community Cloud. That host cannot run the FastAPI sidecar.
-
-Compose deployment is documented in [`deployment.md`](deployment.md).
+Free Streamlit Community Cloud + Render deployment, and optional Compose, are documented in [`deployment.md`](deployment.md).

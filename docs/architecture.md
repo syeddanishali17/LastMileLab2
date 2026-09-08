@@ -100,7 +100,7 @@ Ordinary portfolio output is the best feasible plan found within that search lim
 
 ## Data and fixtures
 
-Fixed CSV scenarios live under `data/fixtures/`. Generated scenarios exist only in the repository for the process lifetime (or until DuckDB is cleared). Distances are integer metres. Displayed kilometres use three decimal places. There are no Mapbox tokens or other secrets.
+Fixed CSV scenarios live under `data/fixtures/`. Generated scenarios and runs are stored in DuckDB. Compose keeps that file on a named volume; Render Free disk is ephemeral. Distances are integer metres. Displayed kilometres use three decimal places. There are no Mapbox tokens or other secrets.
 
 ## Runtime topology
 
@@ -111,11 +111,20 @@ Local PowerShell (two processes on one machine):
 127.0.0.1:8501   Streamlit  (BACKEND_URL=http://localhost:8000)
 ```
 
-Docker Compose:
+Docker Compose (optional local / self-hosted):
 
 ```text
+browser        -->  published Streamlit (host FRONTEND_PORT, default 8501)
 frontend:8501  -->  backend:8000  on the Compose network
-browser        -->  localhost:8501 and localhost:8000
+backend        -->  DuckDB at /app/data/runs/lastmile.duckdb (volume duckdb_data)
 ```
 
-CORS allows the Streamlit origin. The frontend container still calls `http://backend:8000`. Deployment notes are in [`deployment.md`](deployment.md).
+Free recruiter demo (no Compose):
+
+```text
+browser  -->  Streamlit Community Cloud
+Streamlit (httpx)  -->  Render FastAPI (HTTPS, $PORT)
+backend  -->  ephemeral DuckDB on the instance disk
+```
+
+Streamlit calls the API server-side, so CORS is unused for the UI. Deployment notes are in [`deployment.md`](deployment.md).

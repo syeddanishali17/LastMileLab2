@@ -5,7 +5,10 @@ from unittest.mock import MagicMock
 
 import pytest
 
+import api_client
 import components
+import state
+from api_client import ApiError, is_missing_run
 from display import (
     VEHICLE_COLOURS,
     format_sequence,
@@ -14,6 +17,16 @@ from display import (
     scenario_label,
 )
 from maps import PLOTLY_MAP_CONFIG, _map_camera
+from state import PLANNER_RUN_KEYS, clear_planner_runs
+
+
+def test_connection_errors_do_not_instruct_localhost_api() -> None:
+    ui_source = Path("frontend/components.py").read_text(encoding="utf-8")
+    client_source = Path("frontend/api_client.py").read_text(encoding="utf-8")
+    assert "PLANNING_START_CMD" not in ui_source
+    assert "127.0.0.1" not in ui_source
+    assert "Start Uvicorn" not in client_source
+    assert "port 8000 first" not in client_source
 
 
 def test_route_palette_and_camera_are_comparable():
@@ -470,3 +483,525 @@ def test_methodology_animation_shows_assignment_and_sequencing():
     assert "Assignment and sequencing under capacity" in markup
     assert "Spreadsheet formulation" in markup
     assert "lm-cons-grid .lm-card:nth-child(n+4)" in components.THEME_CSS
+
+
+def _vienna_payload(*, status: str = "passed") -> dict:
+    return {
+        "scenario": {"scenario_id": "VIENNA_STANDARD_24", "customer_count": 24},
+        "precheck": {"status": status},
+        "customers": [],
+    }
+
+
+def _install_ui(monkeypatch, *, offline: bool | None = False) -> MagicMock:
+    ui = MagicMock()
+    ui.session_state = {} if offline is None else {"_planning_offline": offline}
+    monkeypatch.setattr(components, "st", ui)
+    return ui
+
+
+def test_health_probe_uses_short_timeout_and_succeeds(monkeypatch) -> None:
+    seen: dict[str, float] = {}
+
+    class Response:
+        is_success = True
+
+    def fake_get(url, timeout):
+        seen["url"] = url
+        seen["timeout"] = timeout
+        return Response()
+
+    monkeypatch.setattr("httpx.get", fake_get)
+    assert components.HEALTH_PROBE_TIMEOUT_SECONDS == 0.6
+    assert components.planning_service_up() is True
+    assert seen["timeout"] == 0.6
+    assert seen["url"].endswith("/health")
+
+
+def test_quick_health_success_keeps_vienna_run_ready(monkeypatch) -> None:
+    ui = _install_ui(monkeypatch)
+    payload = _vienna_payload()
+    get_scenario = MagicMock(return_value=payload)
+    monkeypatch.setattr(components, "planning_service_up", lambda: True)
+    monkeypatch.setattr(api_client, "get_scenario", get_scenario)
+
+    loaded = components.fetch_preset_scenario("VIENNA_STANDARD_24")
+    assert loaded is payload
+    assert components.comparison_ready(loaded)
+    get_scenario.assert_called_once_with("VIENNA_STANDARD_24")
+    ui.spinner.assert_not_called()
+    ui.empty.assert_not_called()
+    assert ui.session_state.get("_planning_offline") is False
+
+
+def test_failed_health_recovers_when_scenario_request_succeeds(monkeypatch) -> None:
+    ui = _install_ui(monkeypatch, offline=False)
+    payload = _vienna_payload()
+    get_scenario = MagicMock(return_value=payload)
+    monkeypatch.setattr(components, "planning_service_up", lambda: False)
+    monkeypatch.setattr(api_client, "get_scenario", get_scenario)
+
+    loaded = components.fetch_preset_scenario("VIENNA_STANDARD_24")
+    assert loaded is payload
+    assert components.comparison_ready(loaded)
+    get_scenario.assert_called_once_with("VIENNA_STANDARD_24")
+    ui.spinner.assert_called_once()
+    assert "Planning service is starting" in ui.spinner.call_args.args[0]
+    assert ui.session_state.get("_planning_offline") is False
+    assert "Render" not in components._starting_notice_html()
+    assert "cold start" not in components._starting_notice_html().lower()
+
+
+def test_failed_health_and_failed_request_are_unavailable(monkeypatch) -> None:
+    ui = _install_ui(monkeypatch, offline=False)
+    get_scenario = MagicMock(
+        side_effect=ApiError("Planning service unavailable.", kind="timeout")
+    )
+    monkeypatch.setattr(components, "planning_service_up", lambda: False)
+    monkeypatch.setattr(api_client, "get_scenario", get_scenario)
+
+    loaded = components.fetch_preset_scenario("VIENNA_STANDARD_24")
+    assert loaded is None
+    assert not components.comparison_ready(loaded)
+    assert ui.session_state["_planning_offline"] is True
+    get_scenario.assert_called_once_with("VIENNA_STANDARD_24")
+    ui.warning.assert_not_called()
+    ui.exception.assert_not_called()
+
+    loaded_again = components.fetch_preset_scenario("VIENNA_STANDARD_24")
+    assert loaded_again is None
+    get_scenario.assert_called_once()
+
+
+def test_run_comparison_stays_blocked_for_failed_precheck(monkeypatch) -> None:
+    _install_ui(monkeypatch)
+    payload = _vienna_payload(status="infeasible")
+    monkeypatch.setattr(components, "planning_service_up", lambda: True)
+    monkeypatch.setattr(api_client, "get_scenario", MagicMock(return_value=payload))
+    loaded = components.fetch_preset_scenario("VIENNA_STANDARD_24")
+    assert loaded is payload
+    assert not components.comparison_ready(loaded)
+    source = Path("frontend/pages/1_Dispatch_Setup.py").read_text(encoding="utf-8")
+    assert "disabled=not ready" in source
+    assert "if not planning_service_up()" not in source
+    client = Path("frontend/api_client.py").read_text(encoding="utf-8")
+    assert "timeout: float = 90.0" in client
+
+
+def test_sidebar_treats_missed_health_as_starting_until_confirmed_down(monkeypatch) -> None:
+    ui = _install_ui(monkeypatch, offline=None)
+    monkeypatch.setattr(components, "planning_service_up", lambda: False)
+    monkeypatch.setattr(
+        components,
+        "t",
+        lambda key: {
+            "api.status.on": "Planning service available",
+            "api.status.off": "Planning service unavailable",
+            "api.status.starting": "Planning service is starting",
+        }[key],
+    )
+    components._render_service_status()
+    markup = ui.markdown.call_args.args[0]
+    assert "Planning service is starting" in markup
+    assert "Planning service unavailable" not in markup
+
+    ui.session_state["_planning_offline"] = True
+    components._render_service_status()
+    markup = ui.markdown.call_args.args[0]
+    assert "Planning service unavailable" in markup
+
+
+def test_classify_planning_availability_phases() -> None:
+    assert components.classify_planning_availability(health_ok=True, offline_confirmed=True) == "up"
+    assert (
+        components.classify_planning_availability(health_ok=False, offline_confirmed=False)
+        == "starting"
+    )
+    assert (
+        components.classify_planning_availability(health_ok=False, offline_confirmed=True)
+        == "down"
+    )
+
+
+class _Session(dict):
+    def __getattr__(self, name: str):
+        try:
+            return self[name]
+        except KeyError as exc:
+            raise AttributeError(name) from exc
+
+    def __setattr__(self, name: str, value: object) -> None:
+        self[name] = value
+
+
+def _missing_run(run_id: str = "gone") -> ApiError:
+    return ApiError(
+        f"UNKNOWN_RUN: Run '{run_id}' was not found.",
+        status_code=404,
+        kind="not_found",
+        code="UNKNOWN_RUN",
+    )
+
+
+def _planner_ui(monkeypatch, **initial) -> tuple[MagicMock, _Session]:
+    session = _Session(initial)
+    ui = MagicMock()
+    ui.session_state = session
+    ui.button.return_value = False
+    monkeypatch.setattr(components, "st", ui)
+    monkeypatch.setattr(state, "st", ui)
+    return ui, session
+
+
+def _install_run_api(monkeypatch, *, get_run, get_routes=None, get_checks=None, get_scenario=None):
+    monkeypatch.setattr(api_client, "get_run", get_run)
+    monkeypatch.setattr(
+        api_client,
+        "get_routes",
+        get_routes or (lambda run_id: {"run_id": run_id, "stops": [], "vehicle_kpis": []}),
+    )
+    monkeypatch.setattr(
+        api_client,
+        "get_checks",
+        get_checks or (lambda run_id: {"run_id": run_id, "checks": []}),
+    )
+    monkeypatch.setattr(
+        api_client,
+        "get_scenario",
+        get_scenario or (lambda scenario_id: {"scenario_id": scenario_id}),
+    )
+
+
+def _populated_run_session(**extra):
+    values = {
+        "scenario_id": "VIENNA_STANDARD_24",
+        "ui_language": "de",
+        "solver_time_limit_seconds": 10,
+        "baseline_run_id": "run-b",
+        "optimised_run_id": "run-o",
+        "_baseline_summary": {"run_id": "run-b", "scenario_id": "VIENNA_STANDARD_24"},
+        "_optimised_summary": {"run_id": "run-o", "scenario_id": "VIENNA_STANDARD_24"},
+        "_export_payloads": {("run-b", "json"): b"{}"},
+        "_custom_config": {"n": 24},
+        "_planning_offline": False,
+        "plan_view": "baseline",
+    }
+    values.update(extra)
+    return values
+
+
+def _run_payload(run_id: str, *, status: str = "feasible") -> dict:
+    return {
+        "run_id": run_id,
+        "run_type": "baseline" if run_id.endswith("b") else "optimised",
+        "scenario_id": "VIENNA_STANDARD_24",
+        "status": status,
+        "unserved_customer_ids": [],
+        "comparison_eligible": status == "feasible",
+    }
+
+
+def test_is_missing_run_distinguishes_genuine_run_404() -> None:
+    assert is_missing_run(_missing_run("run-b"))
+    assert not is_missing_run(
+        ApiError(
+            "UNKNOWN_SCENARIO: Scenario 'x' was not found.",
+            status_code=404,
+            kind="not_found",
+            code="UNKNOWN_SCENARIO",
+        )
+    )
+    assert not is_missing_run(ApiError("Planning service unavailable.", kind="connection"))
+    assert not is_missing_run(ApiError("HTTP 404: Not Found", status_code=404, kind="not_found"))
+    assert not is_missing_run(ApiError("invalid input", status_code=400, kind="invalid"))
+
+
+def test_clear_planner_runs_drops_only_comparison_keys(monkeypatch) -> None:
+    _planner_ui(monkeypatch, **_populated_run_session(_plan_bundle={"keep": False}))
+    clear_planner_runs()
+    session = state.st.session_state
+    assert PLANNER_RUN_KEYS == (
+        "_plan_bundle",
+        "baseline_run_id",
+        "optimised_run_id",
+        "_baseline_summary",
+        "_optimised_summary",
+        "_export_payloads",
+    )
+    assert "_plan_bundle" not in session
+    assert "_export_payloads" not in session
+    assert session.baseline_run_id is None
+    assert session.optimised_run_id is None
+    assert session["_baseline_summary"] is None
+    assert session["_optimised_summary"] is None
+    assert session.plan_view == "comparison"
+    assert session["scenario_id"] == "VIENNA_STANDARD_24"
+    assert session["ui_language"] == "de"
+    assert session["solver_time_limit_seconds"] == 10
+    assert session["_custom_config"] == {"n": 24}
+    assert session["_planning_offline"] is False
+
+
+def test_valid_stored_runs_still_resolve(monkeypatch) -> None:
+    _planner_ui(monkeypatch, **_populated_run_session())
+    _install_run_api(
+        monkeypatch,
+        get_run=lambda run_id: _run_payload(run_id),
+    )
+    result = components.resolve_plan_bundle(
+        {"run_id": "run-b"},
+        {"run_id": "run-o"},
+        "VIENNA_STANDARD_24",
+    )
+    assert result.status == "ok"
+    assert result.payload["baseline"]["run"]["run_id"] == "run-b"
+    assert result.payload["optimised"]["run"]["run_id"] == "run-o"
+    session = state.st.session_state
+    assert session["baseline_run_id"] == "run-b"
+    assert session["optimised_run_id"] == "run-o"
+    assert session["ui_language"] == "de"
+    assert session["_plan_bundle"] is result.payload
+
+
+def test_valid_cached_runs_still_render_without_refetching_routes(monkeypatch) -> None:
+    cached = {
+        "scenario": {"scenario_id": "VIENNA_STANDARD_24"},
+        "baseline": {"run": _run_payload("run-b")},
+        "optimised": {"run": _run_payload("run-o")},
+    }
+    _planner_ui(monkeypatch, **_populated_run_session(_plan_bundle=cached))
+    seen: list[str] = []
+
+    def get_run(run_id: str) -> dict:
+        seen.append(run_id)
+        return _run_payload(run_id)
+
+    routes = MagicMock()
+    _install_run_api(monkeypatch, get_run=get_run, get_routes=routes)
+    result = components.resolve_plan_bundle(
+        {"run_id": "run-b"},
+        {"run_id": "run-o"},
+        "VIENNA_STANDARD_24",
+    )
+    assert result.status == "ok"
+    assert result.payload is cached
+    assert seen == ["run-b", "run-o"]
+    routes.assert_not_called()
+
+
+def test_missing_baseline_run_is_expired_not_partial(monkeypatch) -> None:
+    ui, session = _planner_ui(monkeypatch, **_populated_run_session(_plan_bundle={"stale": True}))
+
+    def get_run(run_id: str) -> dict:
+        if run_id == "run-b":
+            raise _missing_run(run_id)
+        return _run_payload(run_id)
+
+    _install_run_api(monkeypatch, get_run=get_run)
+    result = components.resolve_plan_bundle(
+        {"run_id": "run-b"},
+        {"run_id": "run-o"},
+        "VIENNA_STANDARD_24",
+    )
+    assert result.status == "expired"
+    assert result.payload is None
+    assert session.get("_plan_bundle") is None
+    assert session.baseline_run_id is None
+    assert session.optimised_run_id is None
+    assert session["ui_language"] == "de"
+    assert session["scenario_id"] == "VIENNA_STANDARD_24"
+    ui.error.assert_not_called()
+    ui.exception.assert_not_called()
+    ui.warning.assert_not_called()
+
+
+def test_cached_bundle_expires_when_a_stored_run_is_gone(monkeypatch) -> None:
+    cached = {
+        "scenario": {"scenario_id": "VIENNA_STANDARD_24"},
+        "baseline": {"run": _run_payload("run-b")},
+        "optimised": {"run": _run_payload("run-o")},
+    }
+    ui, session = _planner_ui(monkeypatch, **_populated_run_session(_plan_bundle=cached))
+    _install_run_api(monkeypatch, get_run=MagicMock(side_effect=_missing_run("run-b")))
+    result = components.resolve_plan_bundle(
+        {"run_id": "run-b"},
+        {"run_id": "run-o"},
+        "VIENNA_STANDARD_24",
+    )
+    assert result.status == "expired"
+    assert result.payload is None
+    assert session.get("_plan_bundle") is None
+    assert session.baseline_run_id is None
+    assert session.optimised_run_id is None
+    ui.error.assert_not_called()
+    ui.exception.assert_not_called()
+
+
+def test_missing_optimised_run_is_expired_not_partial(monkeypatch) -> None:
+    ui, session = _planner_ui(monkeypatch, **_populated_run_session())
+
+    def get_run(run_id: str) -> dict:
+        if run_id == "run-o":
+            raise _missing_run(run_id)
+        return _run_payload(run_id)
+
+    _install_run_api(monkeypatch, get_run=get_run)
+    result = components.resolve_plan_bundle(
+        {"run_id": "run-b"},
+        {"run_id": "run-o"},
+        "VIENNA_STANDARD_24",
+    )
+    assert result.status == "expired"
+    assert session.baseline_run_id is None
+    assert session.optimised_run_id is None
+    assert session.get("_plan_bundle") is None
+    ui.error.assert_not_called()
+    markup_calls = [str(call.args) for call in ui.markdown.call_args_list]
+    assert not any("404" in item for item in markup_calls)
+
+
+def test_missing_verification_run_is_expired(monkeypatch) -> None:
+    ui, session = _planner_ui(monkeypatch, **_populated_run_session())
+    _install_run_api(
+        monkeypatch,
+        get_run=MagicMock(side_effect=_missing_run("run-o")),
+    )
+    result = components.fetch_verification_view("run-o", "VIENNA_STANDARD_24")
+    assert result.status == "expired"
+    assert result.payload is None
+    assert session.baseline_run_id is None
+    assert session.optimised_run_id is None
+    assert session["ui_language"] == "de"
+    ui.error.assert_not_called()
+    ui.exception.assert_not_called()
+
+
+def test_backend_unavailable_is_not_expired_run(monkeypatch) -> None:
+    ui, session = _planner_ui(monkeypatch, **_populated_run_session())
+    _install_run_api(
+        monkeypatch,
+        get_run=MagicMock(side_effect=ApiError("Planning service unavailable.", kind="connection")),
+    )
+    result = components.resolve_plan_bundle(
+        {"run_id": "run-b"},
+        {"run_id": "run-o"},
+        "VIENNA_STANDARD_24",
+    )
+    assert result.status == "unavailable"
+    assert session["baseline_run_id"] == "run-b"
+    assert session["optimised_run_id"] == "run-o"
+    assert session["_baseline_summary"]["run_id"] == "run-b"
+    ui.error.assert_called_once()
+    assert ui.error.call_args.args[0] == "Planning service unavailable"
+    assert "404" not in str(ui.error.call_args)
+    assert "Route result expired" not in str(ui.error.call_args)
+    ui.exception.assert_not_called()
+
+    verification = components.fetch_verification_view("run-o", "VIENNA_STANDARD_24")
+    assert verification.status == "unavailable"
+    assert session["optimised_run_id"] == "run-o"
+
+
+def test_cached_comparison_is_kept_when_backend_is_unavailable(monkeypatch) -> None:
+    cached = {
+        "scenario": {"scenario_id": "VIENNA_STANDARD_24"},
+        "baseline": {"run": _run_payload("run-b")},
+        "optimised": {"run": _run_payload("run-o")},
+    }
+    ui, session = _planner_ui(monkeypatch, **_populated_run_session(_plan_bundle=cached))
+    _install_run_api(
+        monkeypatch,
+        get_run=MagicMock(side_effect=ApiError("Planning service unavailable.", kind="connection")),
+    )
+    result = components.resolve_plan_bundle(
+        {"run_id": "run-b"},
+        {"run_id": "run-o"},
+        "VIENNA_STANDARD_24",
+    )
+    assert result.status == "ok"
+    assert result.payload is cached
+    assert session["baseline_run_id"] == "run-b"
+    assert session["optimised_run_id"] == "run-o"
+    ui.error.assert_not_called()
+    ui.exception.assert_not_called()
+
+
+def test_infeasible_and_no_solution_payloads_are_not_expired(monkeypatch) -> None:
+    _planner_ui(monkeypatch, **_populated_run_session())
+
+    def get_run(run_id: str) -> dict:
+        status = "infeasible" if run_id == "run-b" else "no_solution_found"
+        return _run_payload(run_id, status=status)
+
+    _install_run_api(monkeypatch, get_run=get_run)
+    result = components.resolve_plan_bundle(
+        {"run_id": "run-b"},
+        {"run_id": "run-o"},
+        "VIENNA_STANDARD_24",
+    )
+    assert result.status == "ok"
+    assert result.payload["baseline"]["run"]["status"] == "infeasible"
+    assert result.payload["optimised"]["run"]["status"] == "no_solution_found"
+    assert state.st.session_state["baseline_run_id"] == "run-b"
+
+
+def test_expired_result_state_copy_and_action(monkeypatch) -> None:
+    ui, _ = _planner_ui(monkeypatch)
+    components.expired_result_state()
+    markup = ui.markdown.call_args.args[0]
+    assert "Route result expired" in markup
+    assert "This saved route result is no longer available." in markup
+    assert "Run the scenario again to generate a new comparison." in markup
+    assert "404" not in markup
+    assert "infeasible" not in markup.lower()
+    assert "no_solution_found" not in markup
+    assert "Planning service unavailable" not in markup
+    ui.button.assert_called_once()
+    assert ui.button.call_args.args[0] == "Run scenario again"
+    assert ui.button.call_args.kwargs["type"] == "primary"
+    ui.switch_page.assert_not_called()
+
+    ui.button.return_value = True
+    components.expired_result_state()
+    ui.switch_page.assert_called_with("pages/1_Dispatch_Setup.py")
+
+
+def test_call_api_does_not_surface_raw_run_404(monkeypatch) -> None:
+    ui, _ = _planner_ui(monkeypatch)
+
+    def boom() -> None:
+        raise _missing_run("run-b")
+
+    assert components.call_api(boom) is None
+    ui.error.assert_not_called()
+    ui.exception.assert_not_called()
+    ui.caption.assert_not_called()
+
+    def missing_scenario() -> None:
+        raise ApiError(
+            "UNKNOWN_SCENARIO: Scenario 'x' was not found.",
+            status_code=404,
+            kind="not_found",
+            code="UNKNOWN_SCENARIO",
+        )
+
+    components.call_api(missing_scenario)
+    assert "404" not in str(ui.error.call_args)
+    assert "was not found" not in str(ui.error.call_args)
+
+
+def test_plan_and_inspect_recover_expired_runs_without_autorun() -> None:
+    plan = Path("frontend/pages/3_Baseline_vs_Optimised.py").read_text(encoding="utf-8")
+    inspect = Path("frontend/pages/4_Model_Inspector.py").read_text(encoding="utf-8")
+    assert "resolve_plan_bundle" in plan
+    assert "expired_result_state" in plan
+    assert "run_baseline" not in plan
+    assert "run_optimise" not in plan
+    assert "call_api" not in plan
+    assert "fetch_verification_view" in inspect
+    assert "expired_result_state" in inspect
+    assert "run_baseline" not in inspect
+    assert "run_optimise" not in inspect
+    assert "status_badge" not in Path("frontend/components.py").read_text(encoding="utf-8").split(
+        "def expired_result_state"
+    )[1].split("def render_check_table")[0]

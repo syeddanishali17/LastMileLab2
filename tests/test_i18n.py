@@ -200,6 +200,66 @@ def test_user_facing_copy_avoids_em_dashes() -> None:
         assert all("—" not in value for value in language.values())
 
 
+def test_recruiter_copy_does_not_point_at_localhost_api() -> None:
+    banned = ("localhost", "127.0.0.1", "port 8000", "Port 8000", ":8000", ":8501")
+    for table in STRINGS.values():
+        for value in table.values():
+            assert all(token not in value for token in banned)
+
+
+def test_planning_service_starting_copy_is_recruiter_facing() -> None:
+    en = STRINGS["en"]
+    de = STRINGS["de"]
+    assert en["ux.api.starting"] == (
+        "Planning service is starting. This can take a little longer after a period of inactivity."
+    )
+    assert de["ux.api.starting"] == (
+        "Planungsdienst wird gestartet. Nach längerer Inaktivität kann dies etwas länger dauern."
+    )
+    assert en["ux.api.starting.title"] == "Planning service is starting"
+    assert de["ux.api.starting.title"] == "Planungsdienst wird gestartet"
+    assert en["api.status.starting"] == "Planning service is starting"
+    assert de["api.status.starting"] == "Planungsdienst wird gestartet"
+    assert en["ux.api.offline.title"] == "Planning service unavailable"
+    hosting = (
+        "Render",
+        "cold start",
+        "cold-start",
+        "free tier",
+        "Free tier",
+        "Community Cloud",
+        "onrender",
+        "streamlit.app",
+    )
+    for table in STRINGS.values():
+        for value in table.values():
+            assert all(token not in value for token in hosting)
+
+
+def test_expired_run_copy_is_recruiter_facing() -> None:
+    en = STRINGS["en"]
+    de = STRINGS["de"]
+    assert en["ux.plan.expired.title"] == "Route result expired"
+    assert en["ux.plan.expired.body"] == (
+        "This saved route result is no longer available. "
+        "Run the scenario again to generate a new comparison."
+    )
+    assert en["ux.plan.expired.action"] == "Run scenario again"
+    assert de["ux.plan.expired.title"] == "Tourenergebnis abgelaufen"
+    assert de["ux.plan.expired.body"] == (
+        "Dieses gespeicherte Tourenergebnis ist nicht mehr verfügbar. "
+        "Führen Sie das Szenario erneut aus, um einen neuen Vergleich zu erzeugen."
+    )
+    assert de["ux.plan.expired.action"] == "Szenario erneut ausführen"
+    banned = ("404", "Render", "free tier", "Free tier", "localhost", "127.0.0.1")
+    for key in ("ux.plan.expired.title", "ux.plan.expired.body", "ux.plan.expired.action"):
+        for table in STRINGS.values():
+            assert all(token not in table[key] for token in banned)
+    assert en["ux.plan.expired.title"] != en["ux.api.offline.title"]
+    assert en["ux.plan.expired.title"] != en["ux.plan.no_solution"]
+    assert en["status.infeasible.label"] != en["ux.plan.expired.title"]
+
+
 def test_german_number_formatting(monkeypatch) -> None:
     monkeypatch.setattr(i18n, "current_language", lambda: "de")
     assert format_km(30101) == "30,101 km"

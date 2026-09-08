@@ -115,11 +115,11 @@ STRINGS: dict[str, dict[str, str]] = {
             "shorter feasible routes."
         ),
         "home.api": "Optimisation service",
-        "home.api.help": "If the service is offline, start the FastAPI process on port 8000.",
+        "home.api.help": "If this status is offline, the planning service is unavailable.",
         "home.api.on": "Online",
         "home.api.off": "Offline",
         "home.url": "Service endpoint",
-        "home.url.help": "Where this screen sends requests. Local default is http://127.0.0.1:8000.",
+        "home.url.help": "Where this screen sends planning requests.",
         "home.scenario": "Active scenario",
         "home.scenario.help": (
             "Selecting another scenario clears the current baseline and optimised solutions."
@@ -132,7 +132,7 @@ STRINGS: dict[str, dict[str, str]] = {
         "home.about": "About this case study",
         "home.about.body": (
             "The Streamlit interface displays results only. Route construction and KPIs are "
-            "computed by a local FastAPI optimisation service on port 8000. Distances are estimated "
+            "computed by the FastAPI planning service. Distances are estimated "
             "(map formula plus a detour factor, or a published table) and are not live GPS traces. "
             "The recommended Vienna scenario has 24 customers, 108 totes, and four vehicles of 30 totes. "
             "The illustrative example uses six customers and the internal identifier LEARNING_6."
@@ -140,8 +140,7 @@ STRINGS: dict[str, dict[str, str]] = {
         "home.tech.endpoint": "Service endpoint",
         "home.tech.scenario": "Internal scenario identifier",
         "home.offline": (
-            "This interface cannot reach the optimisation service. Start it on port 8000, then reload. "
-            "Streamlit Community Cloud cannot host the accompanying optimisation service."
+            "Planning service unavailable. Reload this page once the service is restored."
         ),
         "home.what": "Decision context",
         "home.what.cap": "A static morning delivery scenario without live traffic updates.",
@@ -197,7 +196,7 @@ STRINGS: dict[str, dict[str, str]] = {
             "- Delivery time windows or split orders\n"
             "- A claim that the Vienna OR-Tools result is globally optimal\n"
             "- Distances computed in this browser. Distance and utilisation are returned by "
-            "the FastAPI optimisation service running on port 8000"
+            "the FastAPI planning service"
         ),
         "dispatch.kicker": "Workflow 1 of 5 | Scenario configuration",
         "dispatch.title": "Configure and Solve a Delivery Scenario",
@@ -914,11 +913,11 @@ STRINGS: dict[str, dict[str, str]] = {
             "zeitlich begrenzten OR-Tools-Suche nach kürzeren zulässigen Touren."
         ),
         "home.api": "Optimierungsdienst",
-        "home.api.help": "Steht hier „offline“, starten Sie zuerst den Optimierungsdienst auf Port 8000.",
+        "home.api.help": "Steht hier „offline“, ist der Planungsdienst nicht verfügbar.",
         "home.api.on": "Online",
         "home.api.off": "Offline",
         "home.url": "Dienst-Endpunkt",
-        "home.url.help": "Wohin diese Oberfläche Anfragen sendet. Lokal: http://127.0.0.1:8000.",
+        "home.url.help": "Wohin diese Oberfläche Planungsanfragen sendet.",
         "home.scenario": "Aktives Szenario",
         "home.scenario.help": "Ein Wechsel unter Touren planen verwirft alte einfache und optimierte Pläne.",
         "home.model": "Problemklasse",
@@ -930,7 +929,7 @@ STRINGS: dict[str, dict[str, str]] = {
         "home.about": "Über diese Fallstudie",
         "home.about.body": (
             "Die Streamlit-Oberfläche zeigt nur Ergebnisse. Tourenkonstruktion und Kennzahlen "
-            "berechnet ein lokaler FastAPI-Optimierungsdienst auf Port 8000. Distanzen sind Schätzungen "
+            "berechnet der FastAPI-Planungsdienst. Distanzen sind Schätzungen "
             "(Kartenformel plus Umwegfaktor oder eine veröffentlichte Tabelle), keine Live-GPS-Spuren. "
             "Das empfohlene Wien-Szenario umfasst 24 Kunden, 108 Totes und vier Fahrzeuge mit je 30 Totes. "
             "Das Fallbeispiel hat sechs Kunden und die interne Kennung LEARNING_6."
@@ -938,8 +937,7 @@ STRINGS: dict[str, dict[str, str]] = {
         "home.tech.endpoint": "Dienst-Endpunkt",
         "home.tech.scenario": "Interne Szenariokennung",
         "home.offline": (
-            "Die Oberfläche erreicht den Optimierungsdienst nicht. Starten Sie ihn auf Port 8000 und laden Sie neu. "
-            "Streamlit Community Cloud kann den zugehörigen Planungsdienst nicht ausführen."
+            "Planungsdienst nicht verfügbar. Laden Sie die Seite neu, sobald der Dienst wieder erreichbar ist."
         ),
         "home.what": "Entscheidungskontext",
         "home.what.cap": "Ein statisches morgendliches Lieferszenario ohne Live-Verkehrsdaten.",
@@ -993,7 +991,7 @@ STRINGS: dict[str, dict[str, str]] = {
             "- Zeitfenster oder geteilte Aufträge\n"
             "- Die Behauptung, das Wien-Ergebnis von OR-Tools sei global optimal\n"
             "- Im Browser berechnete Distanzen. Distanz und Auslastung liefert der "
-            "FastAPI-Optimierungsdienst auf Port 8000"
+            "FastAPI-Planungsdienst"
         ),
         "dispatch.kicker": "Arbeitsablauf 1 von 5 | Szenariokonfiguration",
         "dispatch.title": "Lieferszenario konfigurieren und lösen",
