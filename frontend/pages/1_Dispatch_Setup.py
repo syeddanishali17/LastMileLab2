@@ -324,32 +324,54 @@ def custom_builder() -> tuple[dict | None, bool]:
         "geographic_zone_weights": {"Z1": 0.25, "Z2": 0.25, "Z3": 0.25, "Z4": 0.25},
         "customer_demands": demands,
     }
-    generate, reset = st.columns([0.62, 0.38], gap="medium")
-    generated = None
-    with generate:
-        if st.button(t("ux.generate"), disabled=not preview["can_generate"], type="primary"):
-            generated = call_api(generate_scenario, request, notify=False)
-    with reset:
-        st.button(t("ux.custom.reset"), type="secondary", on_click=reset_custom_defaults)
-    if generated is not None:
-        set_scenario(generated["scenario_id"])
-        st.session_state["_generated_request"] = request
-        st.session_state["_generated_payload"] = call_api(
-            get_scenario, generated["scenario_id"], notify=False
+    with st.container(key="scenario-generate"):
+        render_search_limit()
+        generate, reset = st.columns([0.62, 0.38], gap="medium")
+        generated = None
+        with generate:
+            if st.button(t("ux.generate"), disabled=not preview["can_generate"], type="primary"):
+                generated = call_api(generate_scenario, request, notify=False)
+        with reset:
+            st.button(t("ux.custom.reset"), type="secondary", on_click=reset_custom_defaults)
+        if generated is not None:
+            set_scenario(generated["scenario_id"])
+            st.session_state["_generated_request"] = request
+            st.session_state["_generated_payload"] = call_api(
+                get_scenario, generated["scenario_id"], notify=False
+            )
+        ready = (
+            preview["can_generate"]
+            and request == st.session_state.get("_generated_request")
+            and st.session_state.get("_generated_payload") is not None
         )
-    ready = (
-        preview["can_generate"]
-        and request == st.session_state.get("_generated_request")
-        and st.session_state.get("_generated_payload") is not None
+        payload = None
+        if ready:
+            payload = st.session_state["_generated_payload"]
+            set_scenario(payload["scenario"]["scenario_id"])
+            _banner("ready", t("ux.custom.ready"))
+        elif st.session_state.get("_generated_request") is not None:
+            _banner("stale", t("ux.custom.stale"), t("ux.custom.changed"))
+        return payload, ready
+
+
+def render_search_limit() -> int:
+    seconds = st.radio(
+        t("ux.seconds"),
+        [1, 5, 10],
+        horizontal=True,
+        index=[1, 5, 10].index(st.session_state.solver_time_limit_seconds),
+        key="_search_seconds",
+        format_func=lambda value: t("ux.seconds.opt", n=value),
+        help=t("ux.seconds.help"),
     )
-    payload = None
-    if ready:
-        payload = st.session_state["_generated_payload"]
-        set_scenario(payload["scenario"]["scenario_id"])
-        _banner("ready", t("ux.custom.ready"))
-    elif st.session_state.get("_generated_request") is not None:
-        _banner("stale", t("ux.custom.stale"), t("ux.custom.changed"))
-    return payload, ready
+    st.session_state.solver_time_limit_seconds = seconds
+    return seconds
+
+
+def run_comparison_button(ready: bool) -> None:
+    if st.button(t("ux.run"), type="primary", disabled=not ready):
+        if compare(st.session_state.scenario_id, st.session_state.solver_time_limit_seconds):
+            st.switch_page("pages/3_Baseline_vs_Optimised.py")
 
 
 def preset_radio() -> str:
@@ -446,21 +468,15 @@ with preview_panel:
             )
 
 with st.container(key="scenario-action"):
-    search, action = st.columns([0.62, 0.38], gap="medium")
-    with search:
-        seconds = st.radio(
-            t("ux.seconds"),
-            [1, 5, 10],
-            horizontal=True,
-            index=[1, 5, 10].index(st.session_state.solver_time_limit_seconds),
-            key="_search_seconds",
-            format_func=lambda value: t("ux.seconds.opt", n=value),
-            help=t("ux.seconds.help"),
-        )
-        st.session_state.solver_time_limit_seconds = seconds
-    with action:
-        if st.button(t("ux.run"), type="primary", disabled=not ready):
-            if compare(st.session_state.scenario_id, st.session_state.solver_time_limit_seconds):
-                st.switch_page("pages/3_Baseline_vs_Optimised.py")
+    if custom_open:
+        action, _ = st.columns([0.38, 0.62], gap="medium")
+        with action:
+            run_comparison_button(ready)
+    else:
+        search, action = st.columns([0.62, 0.38], gap="medium")
+        with search:
+            render_search_limit()
+        with action:
+            run_comparison_button(ready)
 
 render_footer()

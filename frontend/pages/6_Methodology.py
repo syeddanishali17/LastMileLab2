@@ -104,5 +104,7 @@ st.caption(t("ux.method.scope.note"))
 
 section(t("ux.plan.audit"))
 st.write(t("ux.method.audit"))
-st.page_link("pages/4_Model_Inspector.py", label=t("nav.inspect"))
+with st.container(key="method-inspect"):
+    if st.button(t("ux.method.inspect"), type="secondary"):
+        st.switch_page("pages/4_Model_Inspector.py")
 render_footer()

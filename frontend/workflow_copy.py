@@ -3,6 +3,7 @@
 # Keeping each pair together makes reviews of new product copy straightforward.
 COPY = {
     "ux.motion.pause": ("Pause animations", "Animationen pausieren"),
+    "ux.motion.replay": ("Replay comparison", "Vergleich erneut abspielen"),
     "ux.export.prepare": ("Prepare JSON and CSV", "JSON und CSV vorbereiten"),
     "ux.preview.empty": (
         "Select a preset and generate the scenario to preview customer locations and fleet capacity.",
@@ -18,10 +19,10 @@ COPY = {
         "Zahlen zeigen die Kundenstopp-Reihenfolge. Depotstart und -rückkehr sind nicht nummeriert.",
     ),
     "ux.over.diagram": (
-        "Illustrative CVRP structure: multiple vehicle routes leave one depot, each "
-        "customer is served exactly once, and every used vehicle returns to the depot.",
-        "Illustrative CVRP-Struktur: mehrere Fahrzeugtouren verlassen ein Depot, jeder "
-        "Kunde wird genau einmal bedient, und jedes genutzte Fahrzeug kehrt zum Depot zurück.",
+        "Illustrative routing structure, not road navigation. The reference distances "
+        "are from the Vienna Standard scenario, not from this schematic.",
+        "Illustrative Tourenstruktur, keine Straßennavigation. Die Referenzdistanzen "
+        "stammen vom Szenario Wien Standard, nicht von dieser Skizze.",
     ),
     "check.audit.DEMAND_SATISFACTION": (
         "Every customer served exactly once",
@@ -44,7 +45,7 @@ COPY = {
     "nav.dispatch": ("Scenarios", "Szenarien"),
     "nav.compare": ("Plan", "Plan"),
     "nav.method": ("Methodology", "Methodik"),
-    "nav.inspect": ("Model validation", "Modellprüfung"),
+    "nav.inspect": ("Solution verification", "Lösungsprüfung"),
     "nav.workflow": ("WORKFLOW", "ABLAUF"),
     "nav.secondary": ("MODEL & METHODS", "MODELL UND METHODEN"),
     "nav.language": ("LANGUAGE", "SPRACHE"),
@@ -64,11 +65,13 @@ COPY = {
     ),
     "ux.over.intro": (
         "LastMile Lab models a static, single-depot Capacitated Vehicle Routing Problem "
-        "(CVRP) for last-mile delivery. It determines how customer demand is assigned across "
-        "vehicles and the sequence in which each route serves its customers.",
+        "(CVRP) for last-mile delivery. It assigns customer demand to capacity-constrained "
+        "vehicles, determines each route's visit sequence, and minimizes estimated fleet "
+        "distance.",
         "LastMile Lab modelliert ein statisches Capacitated Vehicle Routing Problem (CVRP) "
-        "mit einem Depot für die Last-Mile-Zustellung. Es bestimmt, wie der Kundenbedarf auf "
-        "Fahrzeuge verteilt wird und in welcher Reihenfolge jede Tour ihre Kunden bedient.",
+        "mit einem Depot für die Last-Mile-Zustellung. Es weist den Kundenbedarf "
+        "kapazitätsbeschränkten Fahrzeugen zu, bestimmt die Besuchsreihenfolge jeder Tour "
+        "und minimiert die geschätzte Flottendistanz.",
     ),
     "ux.over.feas.hero": (
         "The objective is to minimize total estimated fleet distance while serving every "
@@ -89,22 +92,32 @@ COPY = {
         "ABOUT THIS PROJECT",
         "ÜBER DIESES PROJEKT",
     ),
-    "ux.over.about.body": (
-        "LastMile Lab is an independent portfolio project designed and developed by "
-        "Syed Danish Ali. It applies capacitated vehicle routing concepts to a synthetic "
-        "last-mile delivery case and brings together optimization, API-based planning, "
-        "solution verification, and a bilingual interactive interface.",
-        "LastMile Lab ist ein unabhängiges Portfolio-Projekt, entworfen und entwickelt "
-        "von Syed Danish Ali. Es wendet Konzepte des Capacitated Vehicle Routing auf einen "
-        "synthetischen Last-Mile-Zustellfall an und verbindet Optimierung, API-basierte "
-        "Planung, Lösungsverifikation und eine zweisprachige interaktive Oberfläche.",
+    "ux.over.about.title": (
+        "Built to make routing decisions inspectable",
+        "Entwickelt, um Tourenentscheidungen prüfbar zu machen",
     ),
-    "ux.over.vrp.title": ("Routing objective", "Tourenziel"),
+    "ux.over.about.body1": (
+        "LastMile Lab is an independent portfolio project by Syed Danish Ali that applies "
+        "capacitated vehicle routing to a synthetic last-mile delivery case.",
+        "LastMile Lab ist ein unabhängiges Portfolio-Projekt von Syed Danish Ali, das "
+        "Capacitated Vehicle Routing auf einen synthetischen Last-Mile-Zustellfall anwendet.",
+    ),
+    "ux.over.about.body2": (
+        "It brings together scenario design, route optimization, API-based planning, "
+        "solution verification, and a bilingual interactive interface in one inspectable "
+        "workflow.",
+        "Es verbindet Szenariodesign, Tourenoptimierung, API-basierte Planung, "
+        "Lösungsprüfung und eine zweisprachige interaktive Oberfläche in einem prüfbaren "
+        "Ablauf.",
+    ),
+    "ux.over.about.stack": (
+        "CVRP · Python · FastAPI · Streamlit",
+        "CVRP · Python · FastAPI · Streamlit",
+    ),
+    "ux.over.vrp.title": ("Minimize fleet travel", "Fahrdistanz minimieren"),
     "ux.over.vrp": (
-        "Minimize the total estimated distance travelled across all active vehicle routes "
-        "while serving every customer.",
-        "Die geschätzte Gesamtdistanz über alle aktiven Fahrzeugtouren minimieren und dabei "
-        "jeden Kunden bedienen.",
+        "Minimize the total estimated distance travelled across all active vehicle routes.",
+        "Die geschätzte Gesamtdistanz über alle aktiven Fahrzeugtouren minimieren.",
     ),
     "ux.over.vrp.tip": (
         "The objective is to reduce combined fleet travel while satisfying the model's routing "
@@ -112,7 +125,7 @@ COPY = {
         "Das Ziel ist, die kombinierte Flottenfahrt zu reduzieren und dabei die Touren- und "
         "Kapazitätsanforderungen des Modells zu erfüllen.",
     ),
-    "ux.over.cvrp.title": ("Capacity constraints", "Kapazitätsbedingungen"),
+    "ux.over.cvrp.title": ("Respect vehicle capacity", "Fahrzeugkapazität einhalten"),
     "ux.over.cvrp": (
         "Each customer has an unsplit tote demand, and the total demand assigned to a vehicle "
         "cannot exceed its available capacity.",
@@ -125,7 +138,7 @@ COPY = {
         "Jeder Kundenauftrag bleibt auf einem Fahrzeug, und der kombinierte Tote-Bedarf dieser "
         "Tour muss innerhalb der Fahrzeugkapazität bleiben.",
     ),
-    "ux.over.feas.title": ("Feasibility requirements", "Zulässigkeitsanforderungen"),
+    "ux.over.feas.title": ("Serve every customer", "Jeden Kunden bedienen"),
     "ux.over.feas": (
         "Every customer must be served exactly once, and every active vehicle route starts and "
         "returns to the depot.",
@@ -150,8 +163,63 @@ COPY = {
         "optimierten Plan zu bewerten.",
     ),
     "ux.over.proof.kicker": (
-        "Vienna Standard 24 · Route comparison",
-        "Wien Standard 24 · Tourenvergleich",
+        "REFERENCE SCENARIO",
+        "REFERENZSZENARIO",
+    ),
+    "ux.over.proof.scenario": (
+        "Vienna Standard",
+        "Wien Standard",
+    ),
+    "ux.over.proof.line": (
+        "122.394 km → 97.193 km · 20.6% shorter · 24/24 customers served",
+        "122,394 km → 97,193 km · 20,6 % kürzer · 24/24 Kunden bedient",
+    ),
+    "ux.over.stage.kicker": (
+        "ROUTE COMPARISON",
+        "TOURENVERGLEICH",
+    ),
+    "ux.over.stage.title": (
+        "Baseline versus optimized",
+        "Baseline und optimierte Lösung",
+    ),
+    "ux.over.stage.lead": (
+        "Compare the nearest-neighbour baseline with the optimized route plan for the "
+        "same scenario.",
+        "Nächster-Nachbar-Baseline und optimierten Tourenplan für dasselbe Szenario vergleichen.",
+    ),
+    "ux.over.stage.view": (
+        "Illustrative route view",
+        "Illustrative Touransicht",
+    ),
+    "ux.over.anim.label.baseline": ("BASELINE", "BASELINE"),
+    "ux.over.anim.label.optimized": ("OPTIMIZED", "OPTIMIERT"),
+    "ux.over.anim.note.baseline": (
+        "Deterministic starting plan for comparison.",
+        "Deterministischer Startplan zum Vergleich.",
+    ),
+    "ux.over.anim.note.optimized": (
+        "Capacity-feasible plan with reduced fleet distance.",
+        "Kapazitätszulässiger Plan mit reduzierter Flottendistanz.",
+    ),
+    "ux.over.model.kicker": (
+        "MODEL LOGIC",
+        "MODELLLOGIK",
+    ),
+    "ux.over.vrp.label": (
+        "OBJECTIVE",
+        "ZIEL",
+    ),
+    "ux.over.cvrp.label": (
+        "CAPACITY CONSTRAINT",
+        "KAPAZITÄTSBESCHRÄNKUNG",
+    ),
+    "ux.over.feas.label": (
+        "FEASIBILITY",
+        "ZULÄSSIGKEIT",
+    ),
+    "ux.over.compare.label": (
+        "COMPARISON",
+        "VERGLEICH",
     ),
     "ux.over.proof.tech": (
         "This comparison shows a feasible optimized plan for Vienna Standard 24; global "
@@ -339,12 +407,12 @@ COPY = {
     "ux.api.command": ("Show startup command", "Startbefehl anzeigen"),
     "ux.stage.load": ("Loading scenario", "Szenario wird geladen"),
     "ux.stage.baseline": (
-        "Building nearest-neighbour baseline",
-        "Nächster-Nachbar-Baseline wird erstellt",
+        "Building baseline route plan",
+        "Baseline-Tourenplan wird erstellt",
     ),
     "ux.stage.optimise": (
-        "Searching for optimized solution with OR-Tools",
-        "Suche nach optimierter Lösung mit OR-Tools",
+        "Searching for an improved route plan",
+        "Suche nach einem verbesserten Tourenplan",
     ),
     "ux.stage.optimise.detail": (
         "Up to {n} seconds",
@@ -401,13 +469,13 @@ COPY = {
         "Eine deterministische Nächster-Nachbar-Methode als Referenz, um die Verbesserung "
         "durch die Optimierung zu messen.",
     ),
+    "ux.plan.result.cue": ("Result", "Ergebnis"),
+    "ux.plan.ineligible.cue": ("Incomplete comparison", "Unvollständiger Vergleich"),
     "ux.plan.result": (
-        "The optimized route plan reduces total fleet distance travelled from {baseline_km} "
-        "to {optimized_km}, a {reduction} reduction. Both plans serve all {customer_count} "
-        "customers while respecting vehicle-capacity limits.",
-        "Der optimierte Tourenplan senkt die zurückgelegte Gesamtdistanz der Flotte von "
-        "{baseline_km} auf {optimized_km}, eine Reduktion um {reduction}. Beide Pläne "
-        "bedienen alle {customer_count} Kunden und halten die Fahrzeugkapazitätsgrenzen ein.",
+        "Optimized routing reduced estimated fleet distance by {reduction} while serving all "
+        "{customer_count} customers.",
+        "Die optimierte Tourenplanung senkte die geschätzte Flottendistanz um {reduction} "
+        "und bediente alle {customer_count} Kunden.",
     ),
     "ux.plan.kpi.baseline": ("Baseline distance travelled", "Zurückgelegte Baseline-Distanz"),
     "ux.plan.kpi.optimised": ("Optimized distance travelled", "Zurückgelegte optimierte Distanz"),
@@ -420,8 +488,8 @@ COPY = {
         "und keine Live-Navigation dar.",
     ),
     "ux.plan.map.numbers": (
-        "Numbers indicate the order of customer stops. Depot departure and return are not numbered.",
-        "Zahlen zeigen die Reihenfolge der Kundenstopps. Depotstart und -rückkehr sind nicht nummeriert.",
+        "Stop numbers show the order in which customers are visited.",
+        "Stoppnummern zeigen die Reihenfolge, in der Kunden angefahren werden.",
     ),
     "ux.plan.map.depot": (
         "Depot: The common start and return point for all vehicle routes.",
@@ -531,8 +599,10 @@ COPY = {
         "Beide Tourenpläne bestehen die zentralen Prüfungen zu Kundenbedienung, Kapazität, "
         "Distanz und Tourkontinuität.",
     ),
+    "ux.plan.check.passed": ("Passed", "Bestanden"),
+    "ux.plan.check.failed": ("Failed", "Nicht bestanden"),
     "ux.plan.validation.check": ("Validation check", "Validierungsprüfung"),
-    "ux.plan.validation.open": ("View model validation", "Modellprüfung anzeigen"),
+    "ux.plan.validation.open": ("View solution verification", "Lösungsprüfung anzeigen"),
     "ux.plan.review": ("Technical review", "Technische Prüfung"),
     "ux.plan.review.body": (
         "Explore how the route plans were validated or review the model formulation, "
@@ -540,10 +610,10 @@ COPY = {
         "Prüfen, wie die Tourenpläne validiert wurden, oder Formulierung, Annahmen und "
         "Lösungsansatz des Modells nachlesen.",
     ),
-    "ux.plan.audit": ("Model checks", "Modellprüfungen"),
+    "ux.plan.audit": ("Model checks", "Lösungsprüfungen"),
     "ux.plan.audit.failed": (
-        "Some checks did not pass. Review model validation before using this plan.",
-        "Einige Prüfungen sind fehlgeschlagen. Prüfen Sie die Modellvalidierung vor der "
+        "Some checks did not pass. Review solution verification before using this plan.",
+        "Einige Prüfungen sind fehlgeschlagen. Prüfen Sie die Lösungsprüfung vor der "
         "Verwendung dieses Plans.",
     ),
     "ux.plan.method.open": ("Open methodology", "Methodik öffnen"),
@@ -735,11 +805,11 @@ COPY = {
     "ux.method.impl": (
         "The documented mathematical formulation describes the CVRP structure with three-index "
         "route variables. The production application solves the routing problem through Google "
-        "OR-Tools RoutingModel. Model validation reconstructs assignment and route views from "
+        "OR-Tools RoutingModel. Solution verification reconstructs assignment and route views from "
         "the returned stop sequences; it does not read hidden solver decision variables.",
         "Die dokumentierte mathematische Formulierung beschreibt die CVRP-Struktur mit "
         "Drei-Index-Tourvariablen. Die produktive Anwendung löst das Tourenproblem mit dem "
-        "Google-OR-Tools-RoutingModel. Die Modellprüfung rekonstruiert Zuordnungs- und "
+        "Google-OR-Tools-RoutingModel. Die Lösungsprüfung rekonstruiert Zuordnungs- und "
         "Touransichten aus den zurückgegebenen Stoppfolgen; sie liest keine verborgenen "
         "Solver-Entscheidungsvariablen.",
     ),
@@ -757,12 +827,16 @@ COPY = {
         "und keine CO₂-Optimierung.",
     ),
     "ux.method.audit": (
-        "The validation view independently checks customer coverage, vehicle capacity, depot "
+        "Solution verification independently checks customer coverage, vehicle capacity, depot "
         "connectivity, route-distance reconciliation and solution invariants using the route "
         "sequences returned by the planning service.",
-        "Die Prüfansicht kontrolliert unabhängig Kundenabdeckung, Fahrzeugkapazität, "
+        "Die Lösungsprüfung kontrolliert unabhängig Kundenabdeckung, Fahrzeugkapazität, "
         "Depotanbindung, Distanzabgleich und Lösungsinvarianten anhand der vom Planungsdienst "
         "zurückgegebenen Tourfolgen.",
+    ),
+    "ux.method.inspect": (
+        "Open solution verification",
+        "Lösungsprüfung öffnen",
     ),
     "ux.method.scope.note": (
         "This application is a static CVRP. It does not implement warehouse putaway or "
@@ -791,6 +865,143 @@ COPY = {
         "Wählen Sie ein Szenario und starten Sie zuerst den Vergleich.",
     ),
     "inspect.empty.title": ("No route comparison yet", "Noch kein Tourenvergleich"),
+    "inspect.subtitle": (
+        "Verify the returned route plan against customer-service, vehicle-capacity, "
+        "route-connectivity and distance-consistency requirements.",
+        "Den zurückgegebenen Tourenplan gegen die Anforderungen an Kundenbedienung, "
+        "Fahrzeugkapazität, Touranbindung und Distanzkonsistenz prüfen.",
+    ),
+    "inspect.pick": ("Which route plan?", "Welcher Tourenplan?"),
+    "inspect.pick.help": (
+        "Checks and evidence are rebuilt from the returned stop list of the selected plan.",
+        "Prüfungen und Nachweise werden aus der zurückgegebenen Stopliste des gewählten Plans aufgebaut.",
+    ),
+    "inspect.verdict.pass": ("All solution checks passed", "Alle Lösungsprüfungen bestanden"),
+    "inspect.verdict.fail": (
+        "One or more solution checks failed",
+        "Eine oder mehrere Lösungsprüfungen sind fehlgeschlagen",
+    ),
+    "inspect.verdict.count": (
+        "{passed} of {total} solution checks passed",
+        "{passed} von {total} Lösungsprüfungen bestanden",
+    ),
+    "inspect.checks": ("Checks performed", "Durchgeführte Prüfungen"),
+    "inspect.col.result": ("Result", "Ergebnis"),
+    "inspect.col.explain": ("Explanation", "Erläuterung"),
+    "inspect.check.coverage": ("Customer coverage", "Kundenabdeckung"),
+    "inspect.check.capacity": ("Vehicle capacity", "Fahrzeugkapazität"),
+    "inspect.check.depot": ("Depot / route connectivity", "Depot-/Touranbindung"),
+    "inspect.check.distance": ("Distance reconciliation", "Distanzabgleich"),
+    "inspect.check.invariants": ("Solution invariants", "Lösungsinvarianten"),
+    "inspect.check.coverage.ok": (
+        "Every customer was served exactly once.",
+        "Jeder Kunde wurde genau einmal bedient.",
+    ),
+    "inspect.check.coverage.fail": (
+        "One or more customers were not served exactly once.",
+        "Ein oder mehrere Kunden wurden nicht genau einmal bedient.",
+    ),
+    "inspect.check.capacity.ok": (
+        "No vehicle exceeded tote capacity.",
+        "Kein Fahrzeug hat die Tote-Kapazität überschritten.",
+    ),
+    "inspect.check.capacity.fail": (
+        "At least one vehicle exceeds tote capacity.",
+        "Mindestens ein Fahrzeug überschreitet die Tote-Kapazität.",
+    ),
+    "inspect.check.depot.ok": (
+        "Every reconstructed route starts and ends at the depot.",
+        "Jede rekonstruierte Tour beginnt und endet am Depot.",
+    ),
+    "inspect.check.depot.fail": (
+        "A route is not depot-connected.",
+        "Eine Tour ist nicht depotverbunden.",
+    ),
+    "inspect.check.distance.ok": (
+        "Route distances reconcile with the distance matrix.",
+        "Die Tourdistanzen stimmen mit der Distanzmatrix überein.",
+    ),
+    "inspect.check.distance.fail": (
+        "A route distance does not match the sum of matrix route legs.",
+        "Eine Tourdistanz entspricht nicht der Summe der Matrix-Tourabschnitte.",
+    ),
+    "inspect.check.invariants.ok": (
+        "Returned-solution consistency checks passed.",
+        "Konsistenzprüfungen der zurückgegebenen Lösung bestanden.",
+    ),
+    "inspect.meta": ("Run and solver", "Lauf und Solver"),
+    "inspect.meta.scenario": ("Scenario", "Szenario"),
+    "inspect.meta.method": ("Method", "Verfahren"),
+    "inspect.meta.run_id": ("Run ID", "Lauf-ID"),
+    "inspect.meta.termination": ("Solver termination", "Solver-Ende"),
+    "inspect.meta.limit": ("Requested search limit", "Angefordertes Suchlimit"),
+    "inspect.meta.runtime": ("Actual runtime", "Tatsächliche Laufzeit"),
+    "inspect.meta.seconds": ("{n} s", "{n} s"),
+    "inspect.term.success": ("Success", "Erfolgreich"),
+    "inspect.term.timeout": ("Time limit reached", "Zeitlimit erreicht"),
+    "inspect.term.no_first_solution": ("No first solution", "Keine Erstlösung"),
+    "inspect.term.search_exhausted": ("Search exhausted", "Suche ausgeschöpft"),
+    "inspect.term.error": ("Error", "Fehler"),
+    "inspect.scope": (
+        "Verification confirms internal consistency with the application checks; "
+        "it does not prove global optimality.",
+        "Die Prüfung bestätigt die interne Konsistenz anhand der Anwendungsprüfungen; "
+        "sie beweist keine globale Optimalität.",
+    ),
+    "inspect.view.assignments": (
+        "View customer assignments",
+        "Kundenzuordnungen anzeigen",
+    ),
+    "inspect.view.legs": ("View route legs", "Tourabschnitte anzeigen"),
+    "inspect.view.loads": ("View cumulative loads", "Kumulierte Lasten anzeigen"),
+    "inspect.view.distance": (
+        "View distance reconciliation",
+        "Distanzabgleich anzeigen",
+    ),
+    "inspect.view.matrix": ("View distance matrix", "Distanzmatrix anzeigen"),
+    "inspect.demand.cap": (
+        "One row per customer. A complete plan visits each customer once.",
+        "Eine Zeile je Kunde. Ein vollständiger Plan besucht jeden Kunden einmal.",
+    ),
+    "inspect.loads.cap": (
+        "Cumulative demand served after each stop. This is not the remaining onboard load.",
+        "Kumuliert bedienter Bedarf nach jedem Stopp. Dies ist nicht die verbleibende Fahrzeuglast.",
+    ),
+    "inspect.arcs.cap": (
+        "Outgoing counts how many selected route legs leave a stop. Incoming counts how many arrive.",
+        "Ausgang zählt, wie viele gewählte Tourabschnitte einen Stopp verlassen. Eingang zählt Ankünfte.",
+    ),
+    "inspect.matrix.van": ("Route-leg table for {id}", "Tourabschnitte für {id}"),
+    "inspect.matrix.all": ("Full route-leg tables", "Vollständige Tourabschnittstabellen"),
+    "inspect.dist.cap": (
+        "Stored as metres, shown as kilometres to three decimals.",
+        "Intern Meter, angezeigt als Kilometer mit drei Nachkommastellen.",
+    ),
+    "inspect.dist.full": ("Full distance matrix", "Vollständige Distanzmatrix"),
+    "inspect.col.customer": ("Customer", "Kunde"),
+    "inspect.col.required": ("Required (totes)", "Bedarf (Totes)"),
+    "inspect.col.delivered": ("Demand served (totes)", "Bedienter Bedarf (Totes)"),
+    "inspect.col.vehicle": ("Vehicle", "Fahrzeug"),
+    "inspect.col.visits": ("Visits", "Besuche"),
+    "inspect.col.check": ("Check", "Prüfung"),
+    "inspect.col.from": ("From", "Von"),
+    "inspect.col.to": ("To", "Nach"),
+    "inspect.col.selected": ("Selected route leg", "Gewählter Tourabschnitt"),
+    "inspect.col.leg": ("Route-leg distance", "Teilstrecke"),
+    "inspect.col.outgoing": ("Outgoing route legs", "Ausgehende Tourabschnitte"),
+    "inspect.col.incoming": ("Incoming route legs", "Eingehende Tourabschnitte"),
+    "inspect.cum.sequence": ("Sequence", "Reihenfolge"),
+    "inspect.cum.node": ("Location", "Ort"),
+    "inspect.cum.demand": ("Stop demand (totes)", "Stoppbedarf (Totes)"),
+    "inspect.cum.served": ("Cumulative demand served (totes)", "Kumuliert bedienter Bedarf (Totes)"),
+    "inspect.depot": (
+        "Stored depot id `{id}` is shown as {label}.",
+        "Gespeicherte Depot-ID `{id}` wird als {label} angezeigt.",
+    ),
+    "inspect.obj": (
+        "Solution distance returned by the planning service: {km}",
+        "Vom Planungsdienst zurückgegebene Lösungsdistanz: {km}",
+    ),
     "routes.opt": ("Optimized solution", "Optimierte Lösung"),
     "dispatch.or": ("Optimized solution (OR-Tools)", "Optimierte Lösung (OR-Tools)"),
     "compare.or": ("Optimized solution (OR-Tools)", "Optimierte Lösung (OR-Tools)"),

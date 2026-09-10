@@ -1,4 +1,4 @@
-"""Plotly OpenStreetMap figures. Lines are schematic, not road geometry."""
+"""Plotly geographic figures on CARTO Positron. Lines are schematic, not road geometry."""
 
 from __future__ import annotations
 
@@ -26,8 +26,24 @@ DIAGRAM_CAPTION = (
 )
 
 _VIENNA_COS_LAT = math.cos(math.radians(48.2))
-DEPOT_FILL = "#173B57"
+# Plotly's named "carto-positron" still points at CartoDB Fastly rasters that CARTO
+# now watermarks without an API key. The public Positron GL style is the token-free
+# equivalent and keeps Scattermapbox + center/zoom camera behaviour.
+BASE_MAP_STYLE = "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
+CUSTOMER_FILL = "#64748B"
+DEPOT_FILL = "#102F46"
 DEPOT_RING = "#FFFFFF"
+ROUTE_HALO = "#FFFFFF"
+ROUTE_LINE_WIDTH = 3.0
+ROUTE_HALO_WIDTH = 4.4
+ROUTE_LINE_OPACITY = 0.92
+CUSTOMER_MARKER_SIZE = 10
+CUSTOMER_HALO_SIZE = 13
+STOP_MARKER_SIZE = 14
+STOP_HALO_SIZE = 17
+DEPOT_CORE_SIZE = 12
+DEPOT_RING_SIZE = 17
+UNSERVED_FILL = "#B42318"
 
 
 def _finite_coords(
@@ -54,7 +70,7 @@ def _fan_offset_index(index: int, used_count: int) -> tuple[float, float]:
 
 
 def _map_camera(lats: list[float], lons: list[float]) -> dict[str, Any]:
-    """Center + zoom. Do not use mapbox.bounds: it blanks OSM tiles in Streamlit."""
+    """Center + zoom. Do not use mapbox.bounds: it can blank raster tiles in Streamlit."""
     south, north = min(lats), max(lats)
     west, east = min(lons), max(lons)
     lat_span = max(north - south, 0.02)
@@ -65,9 +81,45 @@ def _map_camera(lats: list[float], lons: list[float]) -> dict[str, Any]:
         math.log2(360 * 340 * _VIENNA_COS_LAT / (512 * lat_span)),
     )
     return {
-        "style": "open-street-map",
+        "style": BASE_MAP_STYLE,
         "center": {"lat": (south + north) / 2, "lon": (west + east) / 2},
         "zoom": zoom,
+    }
+
+
+def _scenario_revision(scenario: dict[str, Any], fallback: str) -> str:
+    nested = scenario.get("scenario")
+    if isinstance(nested, dict) and nested.get("scenario_id"):
+        return str(nested["scenario_id"])
+    if scenario.get("scenario_id"):
+        return str(scenario["scenario_id"])
+    depot = scenario.get("depot")
+    if isinstance(depot, dict) and depot.get("scenario_id"):
+        return str(depot["scenario_id"])
+    return fallback
+
+
+def _geo_layout(
+    lats: list[float],
+    lons: list[float],
+    *,
+    height: int,
+    uirevision: str,
+) -> dict[str, Any]:
+    return {
+        "mapbox": _map_camera(lats, lons),
+        "margin": {"l": 0, "r": 0, "t": 4, "b": 0},
+        "height": height,
+        "showlegend": False,
+        "hovermode": "closest",
+        "uirevision": uirevision,
+        "paper_bgcolor": "rgba(0,0,0,0)",
+        "template": "none",
+        "hoverlabel": {
+            "bgcolor": "#FFFFFF",
+            "bordercolor": "#CCD9DF",
+            "font": {"size": 13, "color": "#172B3A"},
+        },
     }
 
 
@@ -77,35 +129,90 @@ def _legend_layout() -> dict[str, Any]:
         "y": 1.01,
         "x": 0,
         "yanchor": "bottom",
-        "bgcolor": "rgba(244,247,250,0.96)",
-        "bordercolor": "#D7E0E8",
+        "bgcolor": "rgba(234,241,243,0.96)",
+        "bordercolor": "#CCD9DF",
         "borderwidth": 0,
         "font": {"size": 12, "color": "#172B3A"},
     }
 
 
-def _add_depot_marker(fig: go.Figure, latitude: float, longitude: float) -> None:
-    """OSM Scattermapbox only reliably draws circles. Keep the depot dark, not white."""
+def _scattermap(**kwargs: Any) -> go.Scattermapbox:
+    kwargs.setdefault("showlegend", False)
+    return go.Scattermapbox(**kwargs)
+
+
+def _add_circle_halo(
+    fig: go.Figure,
+    lats: list[float],
+    lons: list[float],
+    *,
+    size: float,
+) -> None:
     fig.add_trace(
-        go.Scattermapbox(
+        _scattermap(
+            lat=lats,
+            lon=lons,
+            mode="markers",
+            marker={"size": size, "color": DEPOT_RING, "opacity": 1, "allowoverlap": True},
+            hoverinfo="skip",
+            name="halo",
+        )
+    )
+
+
+def _customer_hover_template() -> str:
+    return (
+        f"<b>{t('ux.customer')} %{{customdata[0]}}</b><br>"
+        f"{t('ux.map.demand')}: %{{customdata[1]}} totes"
+        "<extra></extra>"
+    )
+
+
+def _stop_hover_text(
+    customer_id: str,
+    stop_number: int,
+    demand_totes: int,
+    vehicle_id: str,
+) -> str:
+    return (
+        f"{t('ux.customer')} {customer_id}<br>"
+        f"{t('ux.stop')} {stop_number}<br>"
+        f"{t('ux.map.demand')}: {demand_totes} totes<br>"
+        f"{t('ux.van')}: {vehicle_id}"
+    )
+
+
+def _add_depot_marker(fig: go.Figure, latitude: float, longitude: float) -> None:
+    """Scattermapbox only reliably draws circles. Keep the depot navy and compact."""
+    fig.add_trace(
+        _scattermap(
             lat=[latitude],
             lon=[longitude],
             mode="markers",
-            marker={"size": 22, "color": DEPOT_RING, "opacity": 1},
+            marker={
+                "size": DEPOT_RING_SIZE,
+                "color": DEPOT_RING,
+                "opacity": 1,
+                "allowoverlap": True,
+            },
             hoverinfo="skip",
-            showlegend=False,
             name="Depot ring",
         )
     )
     fig.add_trace(
-        go.Scattermapbox(
+        _scattermap(
             lat=[latitude],
             lon=[longitude],
             mode="markers+text",
-            marker={"size": 14, "color": DEPOT_FILL, "opacity": 1},
+            marker={
+                "size": DEPOT_CORE_SIZE,
+                "color": DEPOT_FILL,
+                "opacity": 1,
+                "allowoverlap": True,
+            },
             text=["Depot"],
             textposition="top right",
-            textfont={"size": 13, "color": DEPOT_FILL, "family": "Arial Black"},
+            textfont={"size": 12, "color": DEPOT_FILL, "family": "Arial"},
             name="Depot",
             hovertemplate="<b>Depot</b><extra></extra>",
         )
@@ -126,38 +233,36 @@ def customer_map(scenario: dict[str, Any]) -> go.Figure:
     if not lats:
         lats, lons = [48.17], [16.44]
     fig = go.Figure()
-    fig.add_trace(
-        go.Scattermapbox(
-            lat=[customer["latitude"] for customer in customers],
-            lon=[customer["longitude"] for customer in customers],
-            mode="markers",
-            marker={
-                "size": 11,
-                "color": "#64748B",
-                "opacity": 1,
-            },
-            customdata=[
-                [customer["customer_id"], customer["demand_totes"], customer.get("zone_id") or ""]
-                for customer in customers
-            ],
-            hovertemplate=(
-                "<b>%{customdata[0]}</b><br>" + t("ux.map.demand") + ": %{customdata[1]} totes"
-                "<br>Zone: %{customdata[2]}<extra></extra>"
-            ),
-            name=t("ux.map.customers"),
+    if customers:
+        customer_lats = [customer["latitude"] for customer in customers]
+        customer_lons = [customer["longitude"] for customer in customers]
+        _add_circle_halo(fig, customer_lats, customer_lons, size=CUSTOMER_HALO_SIZE)
+        fig.add_trace(
+            _scattermap(
+                lat=customer_lats,
+                lon=customer_lons,
+                mode="markers",
+                marker={
+                    "size": CUSTOMER_MARKER_SIZE,
+                    "color": CUSTOMER_FILL,
+                    "opacity": 1,
+                    "allowoverlap": True,
+                },
+                customdata=[
+                    [customer["customer_id"], customer["demand_totes"]]
+                    for customer in customers
+                ],
+                hovertemplate=_customer_hover_template(),
+                name=t("ux.map.customers"),
+            )
         )
-    )
     _add_depot_marker(fig, depot["latitude"], depot["longitude"])
-    fig.update_layout(
-        mapbox=_map_camera(lats, lons),
-        margin={"l": 0, "r": 0, "t": 4, "b": 0},
+    fig.update_layout(**_geo_layout(
+        lats,
+        lons,
         height=400,
-        showlegend=False,
-        hovermode="closest",
-        uirevision=str(scenario.get("scenario_id") or "customers"),
-        paper_bgcolor="rgba(0,0,0,0)",
-        template="none",
-    )
+        uirevision=_scenario_revision(scenario, "customers"),
+    ))
     return fig
 
 
@@ -190,55 +295,9 @@ def route_map(
         lats, lons = [48.17], [16.44]
     fig = go.Figure()
 
-    served = [
-        row
-        for row in customers.values()
-        if row["customer_id"] not in unserved
-        and row.get("latitude") is not None
-        and row.get("longitude") is not None
-    ]
-    leftover = [
-        row
-        for row in customers.values()
-        if row["customer_id"] in unserved
-        and row.get("latitude") is not None
-        and row.get("longitude") is not None
-    ]
-    if served:
-        fig.add_trace(
-            go.Scattermapbox(
-                lat=[row["latitude"] for row in served],
-                lon=[row["longitude"] for row in served],
-                mode="markers",
-                marker={
-                    "size": 8,
-                    "color": "#64748B",
-                    "opacity": 1,
-                },
-                customdata=[[row["customer_id"], row["demand_totes"]] for row in served],
-                hovertemplate="<b>%{customdata[0]}</b><br>%{customdata[1]} totes<extra></extra>",
-                name=t("ux.map.customers"),
-            )
-        )
-    if leftover:
-        fig.add_trace(
-            go.Scattermapbox(
-                lat=[row["latitude"] for row in leftover],
-                lon=[row["longitude"] for row in leftover],
-                mode="markers+text",
-                marker={"size": 14, "color": "#B42318"},
-                text=[row["customer_id"] for row in leftover],
-                textposition="top right",
-                customdata=[[row["customer_id"], row["demand_totes"]] for row in leftover],
-                hovertemplate=(
-                    "<b>%{customdata[0]} "
-                    + t("ux.map.unserved")
-                    + "</b><br>%{customdata[1]} totes<extra></extra>"
-                ),
-                name=t("ux.map.unserved"),
-            )
-        )
-
+    numbered: set[str] = set()
+    polylines: list[tuple[str, str, list[float], list[float]]] = []
+    stop_sets: list[tuple[str, list[float], list[float], list[str], list[str]]] = []
     for vehicle in used:
         sequence: list[str] = vehicle.get("sequence") or []
         points = [
@@ -250,37 +309,10 @@ def route_map(
         ]
         if len(points) < 2:
             continue
-        dlat, dlon = 0.0, 0.0
-        route_lats = [lat + dlat for lat, _lon in points]
-        route_lons = [lon + dlon for _lat, lon in points]
+        route_lats = [lat for lat, _lon in points]
+        route_lons = [lon for _lat, lon in points]
         colour = vehicle_colour(vehicle["vehicle_id"])
-        hover = [
-            f"{vehicle['vehicle_id']}: {display_node(origin)} → {display_node(dest)}"
-            for origin, dest in zip(sequence, sequence[1:], strict=False)
-        ]
-        hover.append(hover[-1] if hover else vehicle["vehicle_id"])
-        fig.add_trace(
-            go.Scattermapbox(
-                lat=route_lats,
-                lon=route_lons,
-                mode="lines",
-                line={"width": 3.2, "color": "rgba(255, 255, 255, 0.75)"},
-                hoverinfo="skip",
-                showlegend=False,
-            )
-        )
-        fig.add_trace(
-            go.Scattermapbox(
-                lat=route_lats,
-                lon=route_lons,
-                mode="lines",
-                line={"width": 2.8, "color": colour},
-                name=vehicle["vehicle_id"],
-                hovertext=hover,
-                hoverinfo="text",
-                opacity=0.95,
-            )
-        )
+        polylines.append((vehicle["vehicle_id"], colour, route_lats, route_lons))
         stop_lats = []
         stop_lons = []
         stop_text = []
@@ -290,42 +322,139 @@ def route_map(
             if node_id not in customers:
                 continue
             customer_order += 1
+            numbered.add(node_id)
             lat, lon = coords[node_id]
             stop_lats.append(lat)
             stop_lons.append(lon)
             stop_text.append(str(customer_order))
             stop_hover.append(
-                f"{vehicle['vehicle_id']} {t('ux.map.stop')} {customer_order}: {node_id} "
-                f"({customers[node_id]['demand_totes']} totes)"
-            )
-        if stop_lats:
-            fig.add_trace(
-                go.Scattermapbox(
-                    lat=stop_lats,
-                    lon=stop_lons,
-                    mode="markers+text",
-                    marker={"size": 13, "color": colour},
-                    text=stop_text,
-                    textfont={"size": 11, "color": "white"},
-                    textposition="middle center",
-                    hovertext=stop_hover,
-                    hoverinfo="text",
-                    showlegend=False,
-                    name=f"{vehicle['vehicle_id']} {t('ux.stops')}",
+                _stop_hover_text(
+                    node_id,
+                    customer_order,
+                    customers[node_id]["demand_totes"],
+                    vehicle["vehicle_id"],
                 )
             )
+        if stop_lats:
+            stop_sets.append((colour, stop_lats, stop_lons, stop_text, stop_hover))
+
+    leftover = [
+        row
+        for row in customers.values()
+        if row["customer_id"] in unserved
+        and row.get("latitude") is not None
+        and row.get("longitude") is not None
+    ]
+    unassigned = [
+        row
+        for row in customers.values()
+        if row["customer_id"] not in numbered
+        and row["customer_id"] not in unserved
+        and row.get("latitude") is not None
+        and row.get("longitude") is not None
+    ]
+
+    if unassigned:
+        unassigned_lats = [row["latitude"] for row in unassigned]
+        unassigned_lons = [row["longitude"] for row in unassigned]
+        _add_circle_halo(fig, unassigned_lats, unassigned_lons, size=CUSTOMER_HALO_SIZE)
+        fig.add_trace(
+            _scattermap(
+                lat=unassigned_lats,
+                lon=unassigned_lons,
+                mode="markers",
+                marker={
+                    "size": CUSTOMER_MARKER_SIZE,
+                    "color": CUSTOMER_FILL,
+                    "opacity": 1,
+                    "allowoverlap": True,
+                },
+                customdata=[[row["customer_id"], row["demand_totes"]] for row in unassigned],
+                hovertemplate=_customer_hover_template(),
+                name=t("ux.map.customers"),
+            )
+        )
+    if leftover:
+        leftover_lats = [row["latitude"] for row in leftover]
+        leftover_lons = [row["longitude"] for row in leftover]
+        _add_circle_halo(fig, leftover_lats, leftover_lons, size=CUSTOMER_HALO_SIZE + 2)
+        fig.add_trace(
+            _scattermap(
+                lat=leftover_lats,
+                lon=leftover_lons,
+                mode="markers+text",
+                marker={
+                    "size": CUSTOMER_MARKER_SIZE + 3,
+                    "color": UNSERVED_FILL,
+                    "opacity": 1,
+                    "allowoverlap": True,
+                },
+                text=[row["customer_id"] for row in leftover],
+                textposition="top right",
+                customdata=[[row["customer_id"], row["demand_totes"]] for row in leftover],
+                hovertemplate=(
+                    f"<b>{t('ux.customer')} %{{customdata[0]}}</b><br>"
+                    + t("ux.map.unserved")
+                    + f"<br>{t('ux.map.demand')}: %{{customdata[1]}} totes<extra></extra>"
+                ),
+                name=t("ux.map.unserved"),
+            )
+        )
+
+    for _vehicle_id, _colour, route_lats, route_lons in polylines:
+        fig.add_trace(
+            _scattermap(
+                lat=route_lats,
+                lon=route_lons,
+                mode="lines",
+                line={"width": ROUTE_HALO_WIDTH, "color": ROUTE_HALO},
+                hoverinfo="skip",
+                opacity=0.9,
+                name="route-halo",
+            )
+        )
+    for vehicle_id, colour, route_lats, route_lons in polylines:
+        fig.add_trace(
+            _scattermap(
+                lat=route_lats,
+                lon=route_lons,
+                mode="lines",
+                line={"width": ROUTE_LINE_WIDTH, "color": colour},
+                name=vehicle_id,
+                hoverinfo="skip",
+                opacity=ROUTE_LINE_OPACITY,
+            )
+        )
+    for colour, stop_lats, stop_lons, _stop_text, _stop_hover in stop_sets:
+        _add_circle_halo(fig, stop_lats, stop_lons, size=STOP_HALO_SIZE)
+    for colour, stop_lats, stop_lons, stop_text, stop_hover in stop_sets:
+        fig.add_trace(
+            _scattermap(
+                lat=stop_lats,
+                lon=stop_lons,
+                mode="markers+text",
+                marker={
+                    "size": STOP_MARKER_SIZE,
+                    "color": colour,
+                    "opacity": 1,
+                    "allowoverlap": True,
+                },
+                text=stop_text,
+                textfont={"size": 10, "color": "#FFFFFF", "family": "Arial"},
+                textposition="middle center",
+                hovertext=stop_hover,
+                hoverinfo="text",
+                name=f"{colour} {t('ux.stops')}",
+            )
+        )
 
     _add_depot_marker(fig, depot["latitude"], depot["longitude"])
-    fig.update_layout(
-        mapbox=_map_camera(lats, lons),
-        margin={"l": 0, "r": 0, "t": 4, "b": 0},
+    fig.update_layout(**_geo_layout(
+        lats,
+        lons,
         height=430,
-        showlegend=False,
-        hovermode="closest",
-        uirevision=str(scenario.get("scenario_id") or "route-map"),
-        paper_bgcolor="rgba(0,0,0,0)",
-        template="none",
-    )
+        uirevision=_scenario_revision(scenario, "route-map"),
+    ))
     return fig
 
 
@@ -424,7 +553,7 @@ def learning_schematic(
             x=[LEARNING_DIAGRAM_POSITIONS[node_id][0] for node_id in customer_ids],
             y=[LEARNING_DIAGRAM_POSITIONS[node_id][1] for node_id in customer_ids],
             mode="markers+text",
-            marker={"size": 16, "color": "#1f4e79"},
+            marker={"size": 16, "color": CUSTOMER_FILL},
             text=[display_node(node_id) for node_id in customer_ids],
             textposition="top center",
             name="Customers",
@@ -452,8 +581,8 @@ def learning_schematic(
         height=460,
         margin={"l": 20, "r": 20, "t": 16, "b": 80},
         legend=_legend_layout(),
-        plot_bgcolor="#F4F7FA",
-        paper_bgcolor="#F4F7FA",
+        plot_bgcolor="#EAF1F3",
+        paper_bgcolor="#EAF1F3",
         template="none",
         uirevision="learning-schematic",
     )
@@ -461,8 +590,14 @@ def learning_schematic(
 
 
 PLOTLY_MAP_CONFIG = {"scrollZoom": False, "displaylogo": False}
+PLOTLY_PLAN_MAP_CONFIG = {**PLOTLY_MAP_CONFIG, "displayModeBar": False}
 PLOTLY_CHART_KWARGS = {
     "use_container_width": True,
     "config": PLOTLY_MAP_CONFIG,
+    "theme": None,
+}
+PLOTLY_PLAN_CHART_KWARGS = {
+    "use_container_width": True,
+    "config": PLOTLY_PLAN_MAP_CONFIG,
     "theme": None,
 }

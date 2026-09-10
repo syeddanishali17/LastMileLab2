@@ -19,6 +19,11 @@ SESSION_DEFAULTS = {
     "_optimised_summary": None,
 }
 
+# Durable copy of the language choice. Streamlit can remount the sidebar radio
+# with its default value after st.switch_page(); this key is not widget-owned.
+LANGUAGE_PERSIST_KEY = "ui_language_persist"
+VALID_LANGUAGES = ("en", "de")
+
 # Comparison/run keys dropped or reset by clear_planner_runs(). Language, scenario_id,
 # solver limit, custom-scenario config, and _planning_offline are left unchanged.
 PLANNER_RUN_KEYS = (
@@ -31,10 +36,26 @@ PLANNER_RUN_KEYS = (
 )
 
 
+def restore_language() -> None:
+    persist = st.session_state.get(LANGUAGE_PERSIST_KEY)
+    current = st.session_state.get("ui_language")
+    if persist in VALID_LANGUAGES:
+        st.session_state.ui_language = persist
+    elif current in VALID_LANGUAGES:
+        st.session_state[LANGUAGE_PERSIST_KEY] = current
+
+
+def persist_language() -> None:
+    lang = st.session_state.get("ui_language")
+    if lang in VALID_LANGUAGES:
+        st.session_state[LANGUAGE_PERSIST_KEY] = lang
+
+
 def ensure_session() -> None:
     for key, value in SESSION_DEFAULTS.items():
         if key not in st.session_state:
             st.session_state[key] = value
+    restore_language()
     drop_stale_runs()
 
 

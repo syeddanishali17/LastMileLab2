@@ -31,25 +31,49 @@ def test_overview_english_copy_is_locked() -> None:
         "Optimize fleet routing to minimize travel distance under capacity constraints"
     )
     assert en["ux.over.compare.title"] == "Solution comparison"
-    assert en["ux.over.vrp.title"] == "Routing objective"
-    assert en["ux.over.cvrp.title"] == "Capacity constraints"
-    assert en["ux.over.feas.title"] == "Feasibility requirements"
+    assert en["ux.over.compare.label"] == "COMPARISON"
+    assert STRINGS["de"]["ux.over.compare.label"] == "VERGLEICH"
+    assert en["ux.over.vrp.title"] == "Minimize fleet travel"
+    assert en["ux.over.cvrp.title"] == "Respect vehicle capacity"
+    assert en["ux.over.feas.title"] == "Serve every customer"
+    assert STRINGS["de"]["ux.over.vrp.title"] == "Fahrdistanz minimieren"
+    assert STRINGS["de"]["ux.over.cvrp.title"] == "Fahrzeugkapazität einhalten"
+    assert STRINGS["de"]["ux.over.feas.title"] == "Jeden Kunden bedienen"
+    assert en["ux.over.vrp"] == (
+        "Minimize the total estimated distance travelled across all active vehicle routes."
+    )
+    assert STRINGS["de"]["ux.over.vrp"] == (
+        "Die geschätzte Gesamtdistanz über alle aktiven Fahrzeugtouren minimieren."
+    )
     assert "01  " not in en["ux.over.vrp.title"]
     assert "ux.over.author" not in en
     assert en["ux.over.about.kicker"] == "ABOUT THIS PROJECT"
-    assert en["ux.over.about.body"] == (
-        "LastMile Lab is an independent portfolio project designed and developed by "
-        "Syed Danish Ali. It applies capacitated vehicle routing concepts to a synthetic "
-        "last-mile delivery case and brings together optimization, API-based planning, "
-        "solution verification, and a bilingual interactive interface."
+    assert en["ux.over.about.title"] == "Built to make routing decisions inspectable"
+    assert en["ux.over.about.body1"] == (
+        "LastMile Lab is an independent portfolio project by Syed Danish Ali that applies "
+        "capacitated vehicle routing to a synthetic last-mile delivery case."
     )
+    assert en["ux.over.about.body2"] == (
+        "It brings together scenario design, route optimization, API-based planning, "
+        "solution verification, and a bilingual interactive interface in one inspectable "
+        "workflow."
+    )
+    assert en["ux.over.about.stack"] == "CVRP · Python · FastAPI · Streamlit"
     assert STRINGS["de"]["ux.over.about.kicker"] == "ÜBER DIESES PROJEKT"
-    assert STRINGS["de"]["ux.over.about.body"] == (
-        "LastMile Lab ist ein unabhängiges Portfolio-Projekt, entworfen und entwickelt "
-        "von Syed Danish Ali. Es wendet Konzepte des Capacitated Vehicle Routing auf einen "
-        "synthetischen Last-Mile-Zustellfall an und verbindet Optimierung, API-basierte "
-        "Planung, Lösungsverifikation und eine zweisprachige interaktive Oberfläche."
+    assert STRINGS["de"]["ux.over.about.title"] == (
+        "Entwickelt, um Tourenentscheidungen prüfbar zu machen"
     )
+    assert STRINGS["de"]["ux.over.about.body1"] == (
+        "LastMile Lab ist ein unabhängiges Portfolio-Projekt von Syed Danish Ali, das "
+        "Capacitated Vehicle Routing auf einen synthetischen Last-Mile-Zustellfall anwendet."
+    )
+    assert STRINGS["de"]["ux.over.about.body2"] == (
+        "Es verbindet Szenariodesign, Tourenoptimierung, API-basierte Planung, "
+        "Lösungsprüfung und eine zweisprachige interaktive Oberfläche in einem prüfbaren "
+        "Ablauf."
+    )
+    assert STRINGS["de"]["ux.over.about.stack"] == "CVRP · Python · FastAPI · Streamlit"
+    assert "ux.over.about.body" not in en
     assert en["footer"] == "© 2026 Syed Danish Ali · LastMile Lab"
     assert STRINGS["de"]["footer"] == "© 2026 Syed Danish Ali · LastMile Lab"
     assert "ux.over.proof" not in en
@@ -58,9 +82,41 @@ def test_overview_english_copy_is_locked() -> None:
     assert "ux.over.future" not in en
     assert "ux.over.carbon" not in en
     assert "ux.over.anim.what" not in en
-    assert en["ux.over.proof.kicker"] == "Vienna Standard 24 · Route comparison"
+    assert en["ux.over.proof.kicker"] == "REFERENCE SCENARIO"
+    assert STRINGS["de"]["ux.over.proof.kicker"] == "REFERENZSZENARIO"
+    assert en["ux.over.proof.scenario"] == "Vienna Standard"
+    assert STRINGS["de"]["ux.over.proof.scenario"] == "Wien Standard"
+    assert en["ux.over.proof.line"] == (
+        "122.394 km → 97.193 km · 20.6% shorter · 24/24 customers served"
+    )
+    assert STRINGS["de"]["ux.over.proof.line"] == (
+        "122,394 km → 97,193 km · 20,6 % kürzer · 24/24 Kunden bedient"
+    )
+    assert en["ux.over.stage.kicker"] == "ROUTE COMPARISON"
+    assert STRINGS["de"]["ux.over.stage.kicker"] == "TOURENVERGLEICH"
+    assert en["ux.over.stage.title"] == "Baseline versus optimized"
+    assert STRINGS["de"]["ux.over.stage.title"] == "Baseline und optimierte Lösung"
+    assert en["ux.over.model.kicker"] == "MODEL LOGIC"
+    assert en["ux.over.vrp.label"] == "OBJECTIVE"
+    assert en["ux.over.cvrp.label"] == "CAPACITY CONSTRAINT"
+    assert STRINGS["de"]["ux.over.model.kicker"] == "MODELLLOGIK"
+    assert STRINGS["de"]["ux.over.vrp.label"] == "ZIEL"
+    assert STRINGS["de"]["ux.over.cvrp.label"] == "KAPAZITÄTSBESCHRÄNKUNG"
+    assert STRINGS["de"]["ux.over.feas.label"] == "ZULÄSSIGKEIT"
+    assert en["ux.over.stage.lead"] == (
+        "Compare the nearest-neighbour baseline with the optimized route plan for the "
+        "same scenario."
+    )
+    assert STRINGS["de"]["ux.over.stage.lead"] == (
+        "Nächster-Nachbar-Baseline und optimierten Tourenplan für dasselbe Szenario vergleichen."
+    )
+    assert "One comparison frame keeps both planning states visible" not in en["ux.over.stage.lead"]
+    assert "ViennaCart" not in en["ux.over.about.body1"]
+    assert "ViennaCart" not in en["ux.over.about.body2"]
     assert "Published result" not in en["ux.over.proof.kicker"]
     assert "OR-Tools" not in en["ux.over.proof.kicker"]
+    assert "OR-Tools" not in en["ux.over.intro"]
+    assert "OR-Tools" not in en["ux.over.proof.line"]
     assert "ux.over.context" not in en
     overview_copy = " ".join(value for key, value in en.items() if key.startswith("ux.over."))
     assert "Published reference" not in overview_copy
@@ -76,8 +132,34 @@ def test_overview_english_copy_is_locked() -> None:
     assert en["ux.kpi.baseline"] == "Baseline distance"
     assert en["ux.kpi.optimised"] == "Optimized distance"
     assert en["ux.kpi.saving"] == "Distance reduction"
+    assert en["ux.over.cvrp"] == (
+        "Each customer has an unsplit tote demand, and the total demand assigned to a vehicle "
+        "cannot exceed its available capacity."
+    )
+    assert en["ux.over.feas"] == (
+        "Every customer must be served exactly once, and every active vehicle route starts and "
+        "returns to the depot."
+    )
+    assert "OR-Tools" not in en["ux.over.vrp"]
+    assert "OR-Tools" not in en["ux.over.cvrp"]
+    assert "OR-Tools" not in en["ux.over.feas"]
     assert "unsplit tote demand" in en["ux.over.cvrp"]
     assert en["ux.over.intro"].startswith("LastMile Lab models a static, single-depot")
+    assert "assigns customer demand to capacity-constrained vehicles" in en["ux.over.intro"]
+    assert "minimizes estimated fleet distance" in en["ux.over.intro"]
+    assert STRINGS["de"]["ux.over.intro"].startswith(
+        "LastMile Lab modelliert ein statisches Capacitated Vehicle Routing Problem"
+    )
+    assert (
+        "The reference distances are from the Vienna Standard scenario, not from this schematic."
+        in en["ux.over.diagram"]
+    )
+    assert (
+        "Die Referenzdistanzen stammen vom Szenario Wien Standard, nicht von dieser Skizze."
+        in STRINGS["de"]["ux.over.diagram"]
+    )
+    assert "Vienna Standard 24" not in en["ux.over.diagram"]
+    assert "Wien Standard 24" not in STRINGS["de"]["ux.over.diagram"]
     assert en["ux.over.vrp.tip"].startswith("The objective is to reduce combined fleet travel")
     assert en["ux.over.compare.tip"].startswith("The baseline provides a transparent reference")
     assert en["ux.over.proof.tech"] == (
@@ -88,7 +170,10 @@ def test_overview_english_copy_is_locked() -> None:
         "Dieser Vergleich zeigt einen zulässigen optimierten Plan für Wien Standard 24; "
         "globale Optimalität wird nicht behauptet."
     )
-    assert en["ux.over.anim.total"] == "Total distance"
+    assert en["ux.motion.pause"] == "Pause animations"
+    assert en["ux.motion.replay"] == "Replay comparison"
+    assert STRINGS["de"]["ux.motion.pause"] == "Animationen pausieren"
+    assert STRINGS["de"]["ux.motion.replay"] == "Vergleich erneut abspielen"
     assert "ux.over.diagram.note" not in en
     assert en["ux.source"] == "Scenario Selection"
     assert en["ux.scenarios.title"] == "Scenarios"
@@ -133,15 +218,34 @@ def test_plan_copy_is_recruiter_facing() -> None:
     )
     assert en["ux.plan.why.body"].startswith("The baseline provides a consistent reference")
     assert en["ux.plan.result"] == (
-        "The optimized route plan reduces total fleet distance travelled from {baseline_km} "
-        "to {optimized_km}, a {reduction} reduction. Both plans serve all {customer_count} "
-        "customers while respecting vehicle-capacity limits."
+        "Optimized routing reduced estimated fleet distance by {reduction} while serving all "
+        "{customer_count} customers."
     )
-    assert "{baseline_km}" in en["ux.plan.result"]
+    assert de["ux.plan.result"] == (
+        "Die optimierte Tourenplanung senkte die geschätzte Flottendistanz um {reduction} "
+        "und bediente alle {customer_count} Kunden."
+    )
+    assert en["ux.plan.result.cue"] == "Result"
+    assert de["ux.plan.result.cue"] == "Ergebnis"
+    assert en["ux.plan.ineligible.cue"] == "Incomplete comparison"
+    assert de["ux.plan.ineligible.cue"] == "Unvollständiger Vergleich"
+    assert "{reduction}" in en["ux.plan.result"]
     assert "{customer_count}" in en["ux.plan.result"]
+    assert "{baseline_km}" not in en["ux.plan.result"]
+    assert "{optimized_km}" not in en["ux.plan.result"]
     assert "122.394" not in en["ux.plan.result"]
     assert "97.193" not in en["ux.plan.result"]
     assert "20.6" not in en["ux.plan.result"]
+    assert en["ux.plan.map.numbers"] == (
+        "Stop numbers show the order in which customers are visited."
+    )
+    assert de["ux.plan.map.numbers"] == (
+        "Stoppnummern zeigen die Reihenfolge, in der Kunden angefahren werden."
+    )
+    assert en["ux.plan.check.passed"] == "Passed"
+    assert en["ux.plan.check.failed"] == "Failed"
+    assert de["ux.plan.check.passed"] == "Bestanden"
+    assert de["ux.plan.check.failed"] == "Nicht bestanden"
     assert en["ux.plan.ineligible"].startswith("A complete route comparison is not available")
     assert "baseline route plan is incomplete" not in en["ux.plan.ineligible"]
     assert "Both plans serve all" not in en["ux.plan.ineligible"]
@@ -280,3 +384,79 @@ def test_check_three_message_is_plain() -> None:
     assert "4" in text
     assert "informational" not in text
     assert t("check.msg.minvans", n=4) == text
+
+
+def test_solution_verification_copy_is_precise() -> None:
+    en = STRINGS["en"]
+    de = STRINGS["de"]
+    assert en["nav.inspect"] == "Solution verification"
+    assert de["nav.inspect"] == "Lösungsprüfung"
+    assert en["inspect.subtitle"] == (
+        "Verify the returned route plan against customer-service, vehicle-capacity, "
+        "route-connectivity and distance-consistency requirements."
+    )
+    assert de["inspect.subtitle"] == (
+        "Den zurückgegebenen Tourenplan gegen die Anforderungen an Kundenbedienung, "
+        "Fahrzeugkapazität, Touranbindung und Distanzkonsistenz prüfen."
+    )
+    assert en["inspect.verdict.pass"] == "All solution checks passed"
+    assert de["inspect.verdict.pass"] == "Alle Lösungsprüfungen bestanden"
+    assert en["inspect.verdict.fail"] == "One or more solution checks failed"
+    assert de["inspect.verdict.fail"] == (
+        "Eine oder mehrere Lösungsprüfungen sind fehlgeschlagen"
+    )
+    assert "{passed}" in en["inspect.verdict.count"]
+    assert "{total}" in en["inspect.verdict.count"]
+    assert "5" not in en["inspect.verdict.pass"]
+    assert "five" not in en["inspect.verdict.pass"].lower()
+    assert en["inspect.check.coverage"] == "Customer coverage"
+    assert en["inspect.check.capacity"] == "Vehicle capacity"
+    assert en["inspect.check.depot"] == "Depot / route connectivity"
+    assert en["inspect.check.distance"] == "Distance reconciliation"
+    assert en["inspect.check.invariants"] == "Solution invariants"
+    assert de["inspect.check.coverage"] == "Kundenabdeckung"
+    assert de["inspect.check.capacity"] == "Fahrzeugkapazität"
+    assert de["inspect.check.depot"] == "Depot-/Touranbindung"
+    assert de["inspect.check.distance"] == "Distanzabgleich"
+    assert de["inspect.check.invariants"] == "Lösungsinvarianten"
+    assert en["inspect.col.delivered"] == "Demand served (totes)"
+    assert de["inspect.col.delivered"] == "Bedienter Bedarf (Totes)"
+    assert en["inspect.col.selected"] == "Selected route leg"
+    assert de["inspect.col.selected"] == "Gewählter Tourabschnitt"
+    assert en["inspect.view.assignments"] == "View customer assignments"
+    assert en["inspect.view.legs"] == "View route legs"
+    assert en["inspect.view.loads"] == "View cumulative loads"
+    assert en["inspect.view.distance"] == "View distance reconciliation"
+    assert en["inspect.view.matrix"] == "View distance matrix"
+    assert de["inspect.view.legs"] == "Tourabschnitte anzeigen"
+    assert en["inspect.scope"] == (
+        "Verification confirms internal consistency with the application checks; "
+        "it does not prove global optimality."
+    )
+    assert de["inspect.scope"] == (
+        "Die Prüfung bestätigt die interne Konsistenz anhand der Anwendungsprüfungen; "
+        "sie beweist keine globale Optimalität."
+    )
+    inspect_copy = " ".join(
+        value for key, value in en.items() if key.startswith("inspect.") or key == "nav.inspect"
+    )
+    inspect_copy_de = " ".join(
+        value for key, value in de.items() if key.startswith("inspect.") or key == "nav.inspect"
+    )
+    lowered = inspect_copy.lower()
+    assert "independent model validation" not in lowered
+    assert "proven optimal" not in lowered
+    assert "validated real-world" not in lowered
+    assert "selected drive" not in lowered
+    assert "Gewählte Fahrt" not in inspect_copy_de
+    assert en["inspect.col.delivered"] != "Delivered"
+    assert de["inspect.col.delivered"] != "Geliefert"
+    assert en["ux.plan.validation"] == "Validation summary"
+    assert en["ux.plan.validation.open"] == "View solution verification"
+    assert de["ux.plan.validation.open"] == "Lösungsprüfung anzeigen"
+    assert en["ux.method.inspect"] == "Open solution verification"
+    assert de["ux.method.inspect"] == "Lösungsprüfung öffnen"
+    assert "model validation" not in " ".join(en.values()).lower()
+    assert "Modellprüfung" not in " ".join(de.values())
+    assert "Modellvalidierung" not in " ".join(de.values())
+    assert en["nav.secondary"] == "MODEL & METHODS"

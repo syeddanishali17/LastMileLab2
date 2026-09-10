@@ -22,7 +22,7 @@ STRINGS: dict[str, dict[str, str]] = {
         "nav.dispatch": "Scenario Setup",
         "nav.routes": "Route Plan",
         "nav.compare": "Solution Comparison",
-        "nav.inspect": "Model Validation",
+        "nav.inspect": "Solution verification",
         "nav.learn": "Illustrative Example",
         "nav.session": "Current session",
         "nav.technical": "Technical details",
@@ -383,11 +383,11 @@ STRINGS: dict[str, dict[str, str]] = {
             "A distance improvement is shown only when both plans serve every customer. "
             "A partial greedy plan is never given a made-up complete distance."
         ),
-        "inspect.kicker": "Workflow 4 of 5 | Model validation",
-        "inspect.title": "Validate Route Reconstruction and Constraints",
+        "inspect.kicker": "MODEL & METHODS | Solution verification",
+        "inspect.title": "Solution verification",
         "inspect.subtitle": (
-            "Reconstruct assignments, selected arcs, and cumulative loads from the returned "
-            "stop sequences, then reconcile them with the documented model constraints."
+            "Verify the returned route plan against customer-service, vehicle-capacity, "
+            "route-connectivity and distance-consistency requirements."
         ),
         "inspect.empty.title": "Nothing to check yet",
         "inspect.empty.body": "Run a plan on Plan deliveries first.",
@@ -419,7 +419,7 @@ STRINGS: dict[str, dict[str, str]] = {
         ),
         "learn.load": "Set this scenario as active",
         "learn.load.help": (
-            "Applies the six-customer scenario to Route Plan, Solution Comparison, and Model Validation."
+            "Applies the six-customer scenario to Route Plan, Solution Comparison, and Solution verification."
         ),
         "learn.loaded": "The other pages now use the six-customer illustrative example.",
         "export.title": "Download this plan",
@@ -587,7 +587,7 @@ STRINGS: dict[str, dict[str, str]] = {
             "Tables are rebuilt from the stop list. You are not looking at hidden optimiser internals."
         ),
         "inspect.how": (
-            "A customer on a vehicle is an assignment. Consecutive stops become a selected drive. "
+            "A customer on a vehicle is an assignment. Consecutive stops become a selected route leg. "
             "A vehicle is used if it serves at least one customer. The cumulative value records "
             "demand served, not remaining onboard load."
         ),
@@ -599,7 +599,7 @@ STRINGS: dict[str, dict[str, str]] = {
         "inspect.solver.runtime": "Search runtime: {n} s",
         "inspect.demand": "Did every customer get their boxes?",
         "inspect.demand.cap": "One row per customer. A complete plan visits each customer once.",
-        "inspect.constraints": "Independent checks on the rebuilt routes",
+        "inspect.constraints": "Checks on the rebuilt routes",
         "inspect.constraints.cap": "These checks look at the returned tours, not at hidden solver memory.",
         "inspect.loads": "Cumulative demand served by stop",
         "inspect.loads.cap": (
@@ -609,30 +609,30 @@ STRINGS: dict[str, dict[str, str]] = {
         "inspect.cum.node": "Node",
         "inspect.cum.demand": "Stop demand (totes)",
         "inspect.cum.served": "Cumulative demand served (totes)",
-        "inspect.arcs": "Selected drives between stops",
+        "inspect.arcs": "Selected route legs between stops",
         "inspect.arcs.cap": (
-            "Outgoing counts how many selected drives leave a stop. Incoming counts how many arrive."
+            "Outgoing counts how many selected route legs leave a stop. Incoming counts how many arrive."
         ),
-        "inspect.arcs.list": "Selected drives",
-        "inspect.matrix.van": "Drive table for {id}",
-        "inspect.matrix.all": "Full drive tables",
+        "inspect.arcs.list": "Selected route legs",
+        "inspect.matrix.van": "Route-leg table for {id}",
+        "inspect.matrix.all": "Full route-leg tables",
         "inspect.dist": "Distance table",
         "inspect.dist.cap": "Stored as metres, shown as kilometres to three decimals.",
         "inspect.dist.full": "Full distance table",
-        "inspect.dist.compact": "Distances of selected drives",
+        "inspect.dist.compact": "Distances of selected route legs",
         "inspect.depot": "Stored depot id `{id}` is shown as {label}.",
         "inspect.obj": "Solution distance returned by the optimisation service: {km}",
         "inspect.next": "Open the 6-customer example",
         "inspect.col.customer": "Customer",
         "inspect.col.required": "Required (totes)",
-        "inspect.col.delivered": "Delivered",
+        "inspect.col.delivered": "Demand served (totes)",
         "inspect.col.vehicle": "Vehicle",
         "inspect.col.visits": "Visits",
         "inspect.col.check": "Check",
         "inspect.col.from": "From",
         "inspect.col.to": "To",
-        "inspect.col.selected": "Selected drive",
-        "inspect.col.leg": "Leg distance",
+        "inspect.col.selected": "Selected route leg",
+        "inspect.col.leg": "Route-leg distance",
         "learn.inputs": "Example Inputs",
         "learn.inputs.cap": "Six unsplit orders must be assigned to two vehicles with equal capacity.",
         "learn.input.demand": "Total demand",
@@ -820,7 +820,7 @@ STRINGS: dict[str, dict[str, str]] = {
         "nav.dispatch": "Szenario einrichten",
         "nav.routes": "Tourenplan",
         "nav.compare": "Lösungsvergleich",
-        "nav.inspect": "Modellvalidierung",
+        "nav.inspect": "Lösungsprüfung",
         "nav.learn": "Fallbeispiel",
         "nav.session": "Aktuelle Sitzung",
         "nav.technical": "Technische Details",
@@ -1171,11 +1171,11 @@ STRINGS: dict[str, dict[str, str]] = {
             "Eine Distanzverbesserung erscheint nur, wenn beide Pläne alle Kunden bedienen. "
             "Ein unvollständiger gieriger Plan bekommt keine erfundene Gesamtdistanz."
         ),
-        "inspect.kicker": "Arbeitsablauf 4 von 5 | Modellvalidierung",
-        "inspect.title": "Tourrekonstruktion und Nebenbedingungen validieren",
+        "inspect.kicker": "MODELL UND METHODEN | Lösungsprüfung",
+        "inspect.title": "Lösungsprüfung",
         "inspect.subtitle": (
-            "Rekonstruieren Sie Zuordnungen, gewählte Kanten und kumulierte Lasten aus den "
-            "Stoppreihenfolgen und gleichen Sie diese mit den dokumentierten Nebenbedingungen ab."
+            "Den zurückgegebenen Tourenplan gegen die Anforderungen an Kundenbedienung, "
+            "Fahrzeugkapazität, Touranbindung und Distanzkonsistenz prüfen."
         ),
         "inspect.empty.title": "Noch nichts zu prüfen",
         "inspect.empty.body": "Zuerst unter Touren planen einen Plan rechnen.",
@@ -1208,7 +1208,7 @@ STRINGS: dict[str, dict[str, str]] = {
         ),
         "learn.load": "Dieses Szenario als aktiv setzen",
         "learn.load.help": (
-            "Übernimmt das Sechs-Kunden-Szenario in Tourenplan, Lösungsvergleich und Modellvalidierung."
+            "Übernimmt das Sechs-Kunden-Szenario in Tourenplan, Lösungsvergleich und Lösungsprüfung."
         ),
         "learn.loaded": "Die anderen Seiten nutzen jetzt das Sechs-Kunden-Fallbeispiel.",
         "export.title": "Diesen Plan herunterladen",
@@ -1381,7 +1381,7 @@ STRINGS: dict[str, dict[str, str]] = {
         ),
         "inspect.how": (
             "Ein Kunde auf einem Fahrzeug ist eine Zuordnung. Aufeinanderfolgende Stopps werden "
-            "zu einer gewählten Fahrt. Ein Fahrzeug ist genutzt, wenn es mindestens einen Kunden "
+            "zu einem gewählten Tourabschnitt. Ein Fahrzeug ist genutzt, wenn es mindestens einen Kunden "
             "bedient. Der kumulierte Wert erfasst bedienten Bedarf, nicht verbleibende Fahrzeuglast."
         ),
         "inspect.solver": "Wie der Optimierer suchen sollte",
@@ -1394,7 +1394,7 @@ STRINGS: dict[str, dict[str, str]] = {
         "inspect.solver.runtime": "Laufzeit der Suche: {n} s",
         "inspect.demand": "Hat jeder Kunde seine Boxen erhalten?",
         "inspect.demand.cap": "Eine Zeile je Kunde. Ein vollständiger Plan besucht jeden Kunden einmal.",
-        "inspect.constraints": "Unabhängige Prüfungen der rekonstruierten Touren",
+        "inspect.constraints": "Prüfungen der rekonstruierten Touren",
         "inspect.constraints.cap": "Diese Prüfungen sehen die zurückgegebenen Touren, nicht verborgenen Solver-Speicher.",
         "inspect.loads": "Kumuliert bedienter Bedarf je Stopp",
         "inspect.loads.cap": (
@@ -1404,30 +1404,30 @@ STRINGS: dict[str, dict[str, str]] = {
         "inspect.cum.node": "Knoten",
         "inspect.cum.demand": "Stoppbedarf (Totes)",
         "inspect.cum.served": "Kumuliert bedienter Bedarf (Totes)",
-        "inspect.arcs": "Gewählte Fahrten zwischen Stopps",
+        "inspect.arcs": "Gewählte Tourabschnitte zwischen Stopps",
         "inspect.arcs.cap": (
-            "Ausgang zählt, wie viele gewählte Fahrten einen Stopp verlassen. Eingang zählt Ankünfte."
+            "Ausgang zählt, wie viele gewählte Tourabschnitte einen Stopp verlassen. Eingang zählt Ankünfte."
         ),
-        "inspect.arcs.list": "Gewählte Fahrten",
-        "inspect.matrix.van": "Fahrtabelle für {id}",
-        "inspect.matrix.all": "Vollständige Fahrtabellen",
+        "inspect.arcs.list": "Gewählte Tourabschnitte",
+        "inspect.matrix.van": "Tourabschnitte für {id}",
+        "inspect.matrix.all": "Vollständige Tourabschnittstabellen",
         "inspect.dist": "Distanztafel",
         "inspect.dist.cap": "Intern Meter, angezeigt als Kilometer mit drei Nachkommastellen.",
         "inspect.dist.full": "Vollständige Distanztafel",
-        "inspect.dist.compact": "Distanzen der gewählten Fahrten",
+        "inspect.dist.compact": "Distanzen der gewählten Tourabschnitte",
         "inspect.depot": "Gespeicherte Depot-id `{id}` wird als {label} angezeigt.",
         "inspect.obj": "Vom Planungsdienst zurückgegebene Lösungsdistanz: {km}",
         "inspect.next": "6-Kunden-Beispiel öffnen",
         "inspect.col.customer": "Kunde",
         "inspect.col.required": "Bedarf (Totes)",
-        "inspect.col.delivered": "Geliefert",
+        "inspect.col.delivered": "Bedienter Bedarf (Totes)",
         "inspect.col.vehicle": "Fahrzeug",
         "inspect.col.visits": "Besuche",
         "inspect.col.check": "Prüfung",
         "inspect.col.from": "Von",
         "inspect.col.to": "Nach",
-        "inspect.col.selected": "Gewählte Fahrt",
-        "inspect.col.leg": "Schenkeldistanz",
+        "inspect.col.selected": "Gewählter Tourabschnitt",
+        "inspect.col.leg": "Teilstrecke",
         "learn.inputs": "Eingabedaten des Beispiels",
         "learn.inputs.cap": (
             "Sechs ungeteilte Aufträge müssen zwei Fahrzeugen mit gleicher Kapazität zugeordnet werden."

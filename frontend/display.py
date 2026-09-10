@@ -6,12 +6,12 @@ from typing import Any
 
 VEHICLE_COLOURS = [
     "#2563EB",
-    "#EA580C",
-    "#7C3AED",
+    "#D8893B",
+    "#6775C9",
     "#C026D3",
     "#0891B2",
     "#CA8A04",
-    "#0F766E",
+    "#0B7A75",
     "#B42318",
     "#4F46E5",
     "#64748B",
@@ -260,8 +260,6 @@ def plan_comparison_summary(
     return (
         t(
             "ux.plan.result",
-            baseline_km=format_km(baseline.get("objective_distance_metres")),
-            optimized_km=format_km(optimised.get("objective_distance_metres")),
             reduction=format_improvement(optimised.get("distance_improvement_percentage")),
             customer_count=optimised.get("customers_total"),
         ),

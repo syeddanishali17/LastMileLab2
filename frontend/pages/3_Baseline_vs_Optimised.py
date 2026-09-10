@@ -16,9 +16,9 @@ from components import (
     section,
     static_table,
     status_badge,
-    with_terms,
 )
 from display import (
+    VEHICLE_COLOURS,
     display_node,
     format_improvement,
     format_km,
@@ -28,10 +28,11 @@ from display import (
     scenario_label,
 )
 from i18n import t
-from maps import PLOTLY_CHART_KWARGS, route_map
+from maps import PLOTLY_PLAN_CHART_KWARGS, route_map
 from state import summary_for_current
 
 PLAN_VIEWS = ("comparison", "baseline", "optimised")
+ROUTE_LEGEND_VEHICLES = ("V01", "V02", "V03", "V04")
 
 
 def _tab_label(code: str) -> str:
@@ -56,6 +57,18 @@ def km_or_na(run: dict) -> str:
     return t("common.na")
 
 
+def panel_distance(run: dict) -> str:
+    if run["comparison_eligible"]:
+        return format_km(run["objective_distance_metres"])
+    if run.get("partial_distance_metres") is not None:
+        return t("ux.plan.partial", km=format_km(run["partial_distance_metres"]))
+    return t("common.na")
+
+
+def check_outcome_label(passed: bool) -> str:
+    return t("ux.plan.check.passed") if passed else t("ux.plan.check.failed")
+
+
 def render_feasible_status(run: dict) -> None:
     if run.get("status") == "feasible":
         st.markdown(
@@ -65,6 +78,42 @@ def render_feasible_status(run: dict) -> None:
         )
         return
     status_badge(run.get("status"), run_type=run.get("run_type"))
+
+
+def render_plan_verdict(lead: str, detail: str | None, comparable: bool) -> None:
+    cue = t("ux.plan.result.cue") if comparable else t("ux.plan.ineligible.cue")
+    st.markdown(
+        f'<p class="lm-plan-verdict-cue">{escape(cue)}</p>',
+        unsafe_allow_html=True,
+    )
+    if comparable:
+        st.markdown(
+            f'<p class="lm-plan-verdict">{escape(lead)}</p>',
+            unsafe_allow_html=True,
+        )
+        return
+    st.info(lead)
+    if detail:
+        for line in detail.splitlines():
+            st.write(line)
+
+
+def render_route_legend() -> None:
+    items = []
+    for index, label in enumerate(ROUTE_LEGEND_VEHICLES):
+        colour = VEHICLE_COLOURS[index]
+        items.append(
+            f'<span class="lm-plan-legend-item" role="listitem">'
+            f'<span class="lm-plan-legend-swatch" style="background:{colour}" '
+            f'aria-hidden="true"></span>{escape(label)}</span>'
+        )
+    st.markdown(
+        '<div class="lm-plan-legend">'
+        f'<div class="lm-plan-legend-swatches" role="list">{"".join(items)}</div>'
+        f'<p class="lm-plan-legend-note">{escape(t("ux.plan.map.numbers"))}</p>'
+        "</div>",
+        unsafe_allow_html=True,
+    )
 
 
 def vehicle_summary(routes: dict) -> None:
@@ -143,6 +192,11 @@ def all_checks_passed(checks: list[dict]) -> bool:
     return bool(checks) and all(check.get("passed") for check in checks)
 
 
+def check_result_cell(passed: bool) -> str:
+    kind = "is-pass" if passed else "is-fail"
+    return f'<td class="lm-plan-check {kind}">{escape(check_outcome_label(passed))}</td>'
+
+
 def validation_matrix(bundle: dict) -> None:
     baseline_checks = bundle["baseline"]["checks"]["checks"]
     optimised_checks = checks_by_code(bundle["optimised"]["checks"]["checks"])
@@ -153,8 +207,8 @@ def validation_matrix(bundle: dict) -> None:
         rows.append(
             "<tr>"
             f"<th scope='row'>{escape(t(f'check.audit.{code}'))}</th>"
-            f"<td>{'✓' if check.get('passed') else '✗'}</td>"
-            f"<td>{'✓' if other.get('passed') else '✗'}</td>"
+            f"{check_result_cell(bool(check.get('passed')))}"
+            f"{check_result_cell(bool(other.get('passed')))}"
             "</tr>"
         )
     st.markdown(
@@ -178,7 +232,10 @@ def validation_matrix(bundle: dict) -> None:
 def validation_list(checks: list[dict]) -> None:
     items = "".join(
         "<li>"
-        + escape(("✓ " if check.get("passed") else "✗ ") + t(f"check.audit.{check.get('code')}"))
+        + escape(
+            f"{check_outcome_label(bool(check.get('passed')))} · "
+            f"{t('check.audit.' + str(check.get('code')))}"
+        )
         + "</li>"
         for check in checks
     )
@@ -211,31 +268,24 @@ def render_technical_review() -> None:
                 st.switch_page("pages/6_Methodology.py")
 
 
-def render_plan_side(
-    *,
-    kind: str,
-    run: dict,
-    figure,
-    comparable: bool,
-    reduction: str,
-    map_key: str,
-) -> None:
+def render_plan_side(*, kind: str, run: dict, figure, map_key: str) -> None:
     if kind == "baseline":
         heading_with_tip(
-            t("ux.plan.baseline.heading"),
+            t("ux.baseline"),
             t("ux.plan.baseline.method.tip"),
             level="h3",
         )
-        st.caption(t("ux.plan.baseline.method"))
     else:
-        heading_with_tip(t("ux.plan.opt.heading"), t("ux.plan.opt.tip"), level="h3")
-    render_feasible_status(run)
+        heading_with_tip(t("ux.optimised.short"), t("ux.plan.opt.tip"), level="h3")
+    if run.get("status") != "feasible":
+        status_badge(run.get("status"), run_type=run.get("run_type"))
     if run.get("unserved_customer_ids"):
         st.warning(t("ux.plan.unserved", ids=", ".join(run["unserved_customer_ids"])))
-    st.markdown(f"**{total_distance_label(run)}**")
-    if kind == "optimised" and comparable:
-        st.caption(t("ux.plan.reduction", reduction=reduction))
-    st.plotly_chart(figure, key=map_key, **PLOTLY_CHART_KWARGS)
+    st.markdown(
+        f'<p class="lm-plan-distance">{escape(panel_distance(run))}</p>',
+        unsafe_allow_html=True,
+    )
+    st.plotly_chart(figure, key=map_key, **PLOTLY_PLAN_CHART_KWARGS)
 
 
 def render_comparison(bundle: dict, figures: dict, comparable: bool) -> None:
@@ -248,15 +298,8 @@ def render_comparison(bundle: dict, figures: dict, comparable: bool) -> None:
     )
     heading_with_tip(t("ux.plan.why.title"), t("ux.plan.why.tip"))
     st.write(t("ux.plan.why.body"))
-    section(t("ux.plan.summary"))
     lead, detail = plan_comparison_summary(baseline, optimised)
-    if comparable:
-        st.write(lead)
-    else:
-        st.info(lead)
-        if detail:
-            for line in detail.splitlines():
-                st.write(line)
+    render_plan_verdict(lead, detail, comparable)
     kpi_cards(
         [
             (t("ux.plan.kpi.baseline"), km_or_na(baseline)),
@@ -269,19 +312,14 @@ def render_comparison(bundle: dict, figures: dict, comparable: bool) -> None:
         ]
     )
     st.caption(t("ux.plan.map.guide"))
-    st.markdown(
-        with_terms(t("ux.plan.map.numbers"), [("Depot", "ux.plan.map.depot")]),
-        unsafe_allow_html=True,
-    )
     with st.container(key="plan-pair"):
+        render_route_legend()
         left, right = st.columns(2, gap="large")
         with left:
             render_plan_side(
                 kind="baseline",
                 run=baseline,
                 figure=figures["baseline"],
-                comparable=comparable,
-                reduction=reduction,
                 map_key="map-baseline",
             )
         with right:
@@ -289,8 +327,6 @@ def render_comparison(bundle: dict, figures: dict, comparable: bool) -> None:
                 kind="optimised",
                 run=optimised,
                 figure=figures["optimised"],
-                comparable=comparable,
-                reduction=reduction,
                 map_key="map-optimised",
             )
     with st.container(key="plan-route-details"):
@@ -330,11 +366,8 @@ def render_detail(bundle: dict, figures: dict, kind: str, comparable: bool) -> N
     if kind == "optimised" and comparable:
         st.caption(t("ux.plan.reduction", reduction=reduction))
     st.caption(t("ux.plan.map.guide"))
-    st.markdown(
-        with_terms(t("ux.plan.map.numbers"), [("Depot", "ux.plan.map.depot")]),
-        unsafe_allow_html=True,
-    )
-    st.plotly_chart(figures[kind], key=f"map-{kind}-detail", **PLOTLY_CHART_KWARGS)
+    render_route_legend()
+    st.plotly_chart(figures[kind], key=f"map-{kind}-detail", **PLOTLY_PLAN_CHART_KWARGS)
     vehicle_summary(routes)
     route_sequences(routes)
     detailed_route_data(routes)
