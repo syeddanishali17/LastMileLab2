@@ -29,7 +29,7 @@ DuckDBRepository  (data/runs/lastmile.duckdb)
 ```mermaid
 flowchart TD
   user[Recruiter or planner]
-  ui[Streamlit pages<br/>Overview, Scenarios, Plan,<br/>Methodology, Model validation]
+  ui[Streamlit pages<br/>Overview, Scenarios, Plan,<br/>Methodology, Solution verification]
   api[FastAPI<br/>GET /health<br/>/api/v1/scenarios<br/>/api/v1/plans<br/>/api/v1/runs]
   core[Core planning package]
   val[Validation and pre-checks]
@@ -73,11 +73,11 @@ Phase 6 used an in-memory repository. Phase 8 swapped in DuckDB behind the same 
 | Scenarios | Three curated presets or guided custom demand; one run-comparison action |
 | Plan | Baseline and OR-Tools KPIs, both schematic maps, van tables, JSON/CSV export |
 | Methodology | Short assumptions and solver notes (secondary) |
-| Model validation | Reconstruct `x_ijk`, `y_ik`, and `u_k` from returned stops (secondary) |
+| Solution verification | Reconstruct `x_ijk`, `y_ik`, and `u_k` from returned stops (secondary) |
 
 `Home.py` registers those pages with `st.navigation`. LEARNING_6 remains a fixture and test suite; it is not in the primary UI. Session state keeps `scenario_id`, `baseline_run_id`, `optimised_run_id`, and `_plan_bundle`. Changing scenario drops stale run IDs so plans from different datasets cannot be compared.
 
-OpenStreetMap tiles are schematic. Route lines are synthetic connections, not road geometry.
+CARTO Positron tiles are a geographic backdrop. Route lines are synthetic connections, not road geometry.
 
 ## Documented MILP versus OR-Tools
 

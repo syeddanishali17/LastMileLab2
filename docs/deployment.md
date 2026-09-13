@@ -68,13 +68,14 @@ This path keeps FastAPI internal and retains run history on volume `duckdb_data`
 
 ### Local Compose
 
-From the project root, with Docker Engine 24+ and Compose V2:
+From the cloned repository root, with Docker Engine 24+ and Compose V2:
 
-```powershell
-cd c:\Users\danis\Desktop\LastMileLab2
-copy .env.example .env
+```bash
+cp .env.example .env
 docker compose up --build
 ```
+
+On Windows PowerShell, `copy .env.example .env` is the equivalent of `cp`.
 
 Open the UI at `http://localhost:8501` (or `http://localhost:$FRONTEND_PORT`). Follow **Overview → Scenarios → Vienna Standard → Run comparison → Plan**.
 
