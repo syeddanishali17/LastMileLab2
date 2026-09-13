@@ -2,7 +2,7 @@
 
 ## Current limitations
 
-- **Synthetic geography.** Distances are Haversine metres with a detour factor, rounded to integer metres. OpenStreetMap polylines are schematic connections, not driving directions or live traffic.
+- **Synthetic geography.** Distances are Haversine metres with a detour factor, rounded to integer metres. CARTO Positron polylines are schematic connections, not driving directions or live traffic.
 - **One frozen morning wave.** The planner does not re-optimise during the day, accept late orders, or model service times.
 - **Homogeneous fleet.** Every van has the same tote capacity. There is no dispatch fixed cost, workload-balance objective, or vehicle-specific constraint.
 - **Unsplit mandatory service.** Customers cannot be split, dropped, or made optional. Time windows are out of scope.

@@ -1,11 +1,12 @@
 # Local setup (Windows PowerShell)
 
-Use Python 3.12 and the project virtual environment at `.venv`. Do not install packages globally.
+Use Python 3.12 and the project virtual environment at `.venv`. Do not install packages globally. macOS/Linux and Docker Compose commands are in the [README](../README.md) and [`deployment.md`](deployment.md).
 
 ## Create the virtual environment
 
+From the cloned repository root:
+
 ```powershell
-cd c:\Users\danis\Desktop\LastMileLab2
 py -3.12 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install --upgrade pip
 .\.venv\Scripts\python.exe -m pip install -r backend\requirements.txt -r backend\requirements-dev.txt -r frontend\requirements.txt
@@ -33,14 +34,12 @@ Do not copy `.env.example` for this two-process workflow. That file is the Compo
 Terminal 1 — API at `http://127.0.0.1:8000`:
 
 ```powershell
-cd c:\Users\danis\Desktop\LastMileLab2
 .\.venv\Scripts\python.exe -m uvicorn app.main:app --app-dir backend --reload --host 127.0.0.1 --port 8000
 ```
 
 Terminal 2 — UI at `http://localhost:8501`:
 
 ```powershell
-cd c:\Users\danis\Desktop\LastMileLab2
 .\.venv\Scripts\python.exe -m streamlit run frontend\Home.py
 ```
 
@@ -54,6 +53,6 @@ These local API URLs apply to this two-process setup only. Docker Compose does n
 
 In the UI, follow **Overview → Scenarios → Vienna Standard 24 → Run comparison**. The default five-second search opens **Plan** automatically with both route maps and visible JSON/CSV ZIP exports. The Overview proof card is the published snapshot; the Plan page shows the current API run.
 
-For a custom delivery wave, choose **Custom scenario**, edit tote demand, then **Generate scenario**. Generation is disabled if an order exceeds a van's capacity or total demand exceeds fleet capacity. A passed input check is not a guarantee that unsplit orders can be packed. Generated locations use the existing Vienna zones. **Methodology** and **Model validation** are optional sidebar links.
+For a custom delivery wave, choose **Custom scenario**, edit tote demand, then **Generate scenario**. Generation is disabled if an order exceeds a van's capacity or total demand exceeds fleet capacity. A passed input check is not a guarantee that unsplit orders can be packed. Generated locations use the existing Vienna zones. **Methodology** and **Solution verification** are optional sidebar links.
 
 Free Streamlit Community Cloud + Render deployment, and optional Compose, are documented in [`deployment.md`](deployment.md).

@@ -84,7 +84,7 @@ design decisions were checked against the running application.
 Desktop uses side-by-side baseline and OR-Tools maps with the same initial camera.
 Below the 760 px CSS breakpoint a native plan selector and one visible map replace
 the pair. The compact external legend avoids a tall Plotly legend strip.
-Existing OpenStreetMap tiles remain; no new mapping service or token was added.
+Geographic maps use token-free CARTO Positron tiles; no Mapbox token was added.
 Connections are schematic, estimated-distance planning, not roads or navigation.
 
 ## Verification record

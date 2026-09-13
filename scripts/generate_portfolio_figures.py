@@ -2,7 +2,7 @@
 
 Run from the project root:
 
-    .\\.venv\\Scripts\\python.exe scripts\\generate_portfolio_figures.py
+    python scripts/generate_portfolio_figures.py
 
 Figures are synthetic schematic connections, not road geometry.
 """

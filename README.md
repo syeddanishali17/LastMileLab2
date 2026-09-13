@@ -10,16 +10,14 @@ Inspectable static morning dispatch: assign every unsplit tote order to one homo
 
 ## Live demo
 
-Public deployment is in preparation. The final live URL will be added after successful deployment.
-
-The intended free demo is Streamlit Community Cloud for the UI and a Render FastAPI service for planning. Setup is in [`docs/deployment.md`](docs/deployment.md).
+The planner is live at **[https://lastmilelab.streamlit.app/](https://lastmilelab.streamlit.app/)**. Streamlit Community Cloud serves the UI; a Render FastAPI service runs planning. Hosting notes: [`docs/deployment.md`](docs/deployment.md).
 
 | Surface | URL |
 |---|---|
-| Streamlit planner | `_paste HTTPS UI URL after deploy_` |
+| Streamlit planner | https://lastmilelab.streamlit.app/ |
 | GitHub (source) | https://github.com/syeddanishali17/LastMileLab2 |
 
-While developing with two local processes on this machine:
+Local two-process development:
 
 | Surface | Local URL |
 |---|---|
@@ -27,13 +25,19 @@ While developing with two local processes on this machine:
 | API health | http://127.0.0.1:8000/health |
 | OpenAPI `/docs` | http://127.0.0.1:8000/docs |
 
-Docker Compose publishes only Streamlit (`http://localhost:8501` by default). API health from Compose: `docker compose exec backend` as in [`docs/deployment.md`](docs/deployment.md).
+Docker Compose publishes only Streamlit (`http://localhost:8501` by default). Check API health from the backend container:
+
+```bash
+docker compose exec backend python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8000/health').read().decode())"
+```
+
+Expected body includes `"status":"ok"`. See [`docs/deployment.md`](docs/deployment.md).
 
 ### Application journey
 
-**Overview → Scenarios → Plan.** Overview explains the delivery problem and distinguishes its published Vienna example from a live run. Scenarios offers exactly three presets: Standard 24, Tight Capacity 24 and Wide Geography 24, plus a custom tote-demand editor with live capacity checks. **Run comparison** executes the nearest-neighbour baseline and OR-Tools search, then opens Plan with both maps, API result metrics, route tables and JSON/CSV ZIP downloads.
+**Overview → Scenarios → Plan.** Overview explains the delivery problem and distinguishes the published Vienna example from a live run. Scenarios offers three presets — Standard 24, Tight Capacity 24, and Wide Geography 24 — plus a custom tote-demand editor with live capacity checks. **Run comparison** executes the nearest-neighbour baseline and OR-Tools search, then opens **Plan** (heading: **Route comparison**) with both maps, API result metrics, route tables, and JSON/CSV ZIP downloads.
 
-Methodology and Model validation are secondary pages. The six-customer teaching example remains in the documentation and regression tests, outside the normal application journey. The sidebar starts collapsed and contains the single navigation and English/Deutsch control. The current page is also named above its heading. The UI still starts with `streamlit run frontend/Home.py`. [UX research and file map](docs/ux_rewrite.md).
+**Methodology** and **Solution verification** are secondary pages. The six-customer teaching example stays in the documentation and regression tests, outside the normal application journey. The sidebar uses Streamlit's default auto state and holds navigation plus the English/Deutsch control. Start the UI with `streamlit run frontend/Home.py`. [UX research and file map](docs/ux_rewrite.md).
 
 ## Contents
 
@@ -47,7 +51,7 @@ Methodology and Model validation are secondary pages. The six-customer teaching 
 8. [Mathematical formulation](#mathematical-formulation)
 9. [Methodology and synthetic data](#methodology-and-synthetic-data)
 10. [Technology stack](#technology-stack)
-11. [Local setup (Windows PowerShell)](#local-setup-windows-powershell)
+11. [Local setup](#local-setup)
 12. [Tests](#tests)
 13. [API](#api)
 14. [Limitations](#limitations)
@@ -175,7 +179,7 @@ Walkthrough: [`docs/learning_6_sequential_nn.md`](docs/learning_6_sequential_nn.
 
 ![Nearest-neighbour baseline schematic for Vienna Standard 24.](docs/screenshots/vienna_baseline_schematic.png)
 
-*Dispatch-style schematic of the complete baseline. Same numbers as the demo table. Not OSM tiles; the live UI draws these connections on OpenStreetMap and captions them as synthetic.*
+*Dispatch-style schematic of the complete baseline. Same numbers as the demo table. Not map tiles; the live UI draws these connections on CARTO Positron and captions them as synthetic.*
 
 ![OR-Tools 5-second feasible plan schematic for Vienna Standard 24.](docs/screenshots/vienna_optimised_schematic.png)
 
@@ -185,13 +189,13 @@ Walkthrough: [`docs/learning_6_sequential_nn.md`](docs/learning_6_sequential_nn.
 
 *Streamlit never solves. FastAPI never owns KPI formulae. Pytest calls `backend/app/core` directly.*
 
-The live Streamlit pages (Overview, Scenarios, Plan, plus optional Methodology and Model validation) are the interactive screenshots. Capture those from the running UI after deploy if a recruiter walkthrough needs browser chrome.
+The live Streamlit pages (Overview, Scenarios, Plan, plus optional Methodology and Solution verification) are the interactive screenshots. Capture those from [the running demo](https://lastmilelab.streamlit.app/) if a walkthrough needs browser chrome.
 
-Regenerate schematic figures:
+Regenerate schematic figures from the cloned repository root (`pillow` is in `backend/requirements-dev.txt`):
 
-```powershell
-cd c:\Users\danis\Desktop\LastMileLab2
-.\.venv\Scripts\python.exe scripts\generate_portfolio_figures.py
+```bash
+python -m pip install -r backend/requirements.txt -r backend/requirements-dev.txt
+python scripts/generate_portfolio_figures.py
 ```
 
 ## Architecture
@@ -205,7 +209,7 @@ Browser → Streamlit (published :8501) → FastAPI /api/v1 (internal :8000)
                               └─ DuckDB run history + JSON/CSV export
 ```
 
-OR-Tools does **not** solve the documented three-index MILP. The Model Inspector reconstructs `x_ijk`, `y_ik`, and `u_k` from returned stop sequences. Displayed load is the cumulative tote sum, not MTZ `w_ik`.
+OR-Tools does **not** solve the documented three-index MILP. Solution verification reconstructs `x_ijk`, `y_ik`, and `u_k` from returned stop sequences. Displayed load is the cumulative tote sum, not MTZ `w_ik`.
 
 Detail: [`docs/architecture.md`](docs/architecture.md).
 
@@ -240,52 +244,109 @@ Field catalogue: [`docs/data_dictionary.md`](docs/data_dictionary.md).
 | Language | Python 3.12 |
 | API | FastAPI 0.115.8, Uvicorn 0.34.0, Pydantic 2.10.6 |
 | Solver | `ortools==9.11.4210` |
-| UI | Streamlit 1.44.1, Plotly 5.24.1, OpenStreetMap tiles |
+| UI | Streamlit 1.44.1, Plotly 5.24.1, CARTO Positron GL (token-free) |
 | Storage | DuckDB 1.2.2 |
 | Tests / lint | pytest 8.3.5, ruff 0.11.2 |
-| CI | GitHub Actions, Python 3.12 |
-| Runtime | Docker Compose (API + UI together) |
+| CI | GitHub Actions on `ubuntu-latest`: pytest, ruff, and `compose-config` |
+| Runtime | Docker Compose (API + UI together), or two local processes |
 
-No Mapbox token. No secrets in `.env.example`.
+No Mapbox token. [`.env.example`](.env.example) has no secrets; it is the Compose template.
 
-## Local setup (Windows PowerShell)
+## Local setup
+
+Python 3.12. Clone the repository, then work from that directory. Do not install packages globally.
+
+```bash
+git clone https://github.com/syeddanishali17/LastMileLab2.git
+cd LastMileLab2
+```
+
+### Docker Compose
+
+The straightforward path if Docker Engine 24+ and Compose V2 are available:
+
+```bash
+cp .env.example .env
+docker compose up --build
+```
+
+Open http://localhost:8501. FastAPI stays on the Compose network; it is not published on `localhost:8000`. Health check:
+
+```bash
+docker compose exec backend python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8000/health').read().decode())"
+```
+
+Compose environment and persistence: [`docs/deployment.md`](docs/deployment.md).
+
+### Two-process (macOS / Linux)
+
+```bash
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r backend/requirements.txt -r backend/requirements-dev.txt -r frontend/requirements.txt
+```
+
+Terminal 1 — API:
+
+```bash
+python -m uvicorn app.main:app --app-dir backend --reload --host 127.0.0.1 --port 8000
+```
+
+Terminal 2 — UI:
+
+```bash
+python -m streamlit run frontend/Home.py
+```
+
+Leave `BACKEND_URL` unset so Streamlit uses `http://127.0.0.1:8000`. Do not copy `.env.example` for this workflow; that file is the Compose template (`BACKEND_URL=http://backend:8000`).
+
+### Windows PowerShell
 
 ```powershell
-cd c:\Users\danis\Desktop\LastMileLab2
 py -3.12 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install --upgrade pip
 .\.venv\Scripts\python.exe -m pip install -r backend\requirements.txt -r backend\requirements-dev.txt -r frontend\requirements.txt
 ```
 
-Terminal 1 — API:
-
 ```powershell
 .\.venv\Scripts\python.exe -m uvicorn app.main:app --app-dir backend --reload --host 127.0.0.1 --port 8000
 ```
-
-Terminal 2 — UI:
 
 ```powershell
 .\.venv\Scripts\python.exe -m streamlit run frontend\Home.py
 ```
 
-More detail: [`docs/local_setup.md`](docs/local_setup.md). Compose: [`docs/deployment.md`](docs/deployment.md).
+More Windows detail: [`docs/local_setup.md`](docs/local_setup.md).
+
+### Environment variables
+
+There are no secrets. See [`.env.example`](.env.example) and [`docs/deployment.md`](docs/deployment.md).
+
+| Variable | Role |
+|---|---|
+| `BACKEND_URL` | Streamlit → FastAPI origin. Unset locally (UI defaults to `http://127.0.0.1:8000`). Compose: `http://backend:8000`. Community Cloud: set in App Secrets to the Render HTTPS origin. |
+| `DUCKDB_PATH` | DuckDB file. Unset locally (`data/runs/lastmile.duckdb`). Compose: `/app/data/runs/lastmile.duckdb`. |
+| `LOG_LEVEL` | Backend log level (`INFO` default). |
+| `FRONTEND_PORT` | Compose host port mapped to Streamlit (`8501` default). |
+| `CORS_ORIGINS` | FastAPI CORS allow-list (`http://localhost:8501` default). Do not set `*`. Unused for Compose (server-side httpx). |
 
 ## Tests
 
-```powershell
-cd c:\Users\danis\Desktop\LastMileLab2
-.\.venv\Scripts\python.exe -m pytest -q
-.\.venv\Scripts\python.exe -m ruff check backend tests frontend
+```bash
+python -m pytest -q
+python -m ruff check backend tests frontend
 ```
 
-CI runs the same commands on Python 3.12 (`.github/workflows/ci.yml`). Tests call core planning directly; they do not require a running Uvicorn process.
+Windows: `.\.venv\Scripts\python.exe -m pytest -q` and the same interpreter for ruff.
+
+CI (`.github/workflows/ci.yml`) runs ruff and pytest on Python 3.12, plus a `compose-config` job that validates `docker compose config`. Tests call core planning directly; they do not require a running Uvicorn process.
 
 Vienna optimiser kilometres are intentionally **not** frozen. LEARNING_6 optimum **is** frozen at 31000 m.
 
 ## API
 
-Interactive docs when the API is running locally: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs). Compose keeps FastAPI internal. The free demo uses a public Render service; see [`docs/deployment.md`](docs/deployment.md).
+Interactive docs when the API is running locally: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs). Compose keeps FastAPI internal. The live demo uses a public Render service; see [`docs/deployment.md`](docs/deployment.md).
 
 | Method | Path | Role |
 |---|---|---|
@@ -295,11 +356,13 @@ Interactive docs when the API is running locally: [http://127.0.0.1:8000/docs](h
 | `POST` | `/api/v1/scenarios/generate` | Synthetic geographic scenario |
 | `POST` | `/api/v1/scenarios/validate` | Pre-checks only |
 | `POST` | `/api/v1/plans/baseline` | Sequential nearest neighbour |
-| `POST` | `/api/v1/plans/optimise` | OR-Tools (`time_limit_seconds` 1, 5, or 10) |
+| `POST` | `/api/v1/plans/optimise` | OR-Tools (`solver_time_limit_seconds` 1, 5, or 10) |
 | `GET` | `/api/v1/runs/{run_id}` | Stored plan and KPIs |
 | `GET` | `/api/v1/runs/{run_id}/routes` | Sequences and stops |
 | `GET` | `/api/v1/runs/{run_id}/checks` | Reconstructed constraint checks |
 | `GET` | `/api/v1/runs/{run_id}/export` | JSON or CSV zip |
+
+The Python core helper is `plan_optimise(..., time_limit_seconds=5)`; FastAPI maps that onto the request field `solver_time_limit_seconds`.
 
 Streamlit is a client of this API. It does not re-solve the CVRP.
 
@@ -323,10 +386,10 @@ Full write-up and versioned extensions: [`docs/limitations.md`](docs/limitations
 | V2 | Time windows, service duration, driver shift length |
 | V3 | Optional customers, split-delivery experiment, multi-trip experiment |
 
-Do not add these until the CVRP MVP is publicly demonstrable.
+These are not current capabilities.
 
 ## Licence
 
 [MIT](LICENSE). Copyright (c) 2026 SyedDanishAli.
 
-Source: [github.com/syeddanishali17/LastMileLab2](https://github.com/syeddanishali17/LastMileLab2). After the host is live, paste the HTTPS Streamlit URL into the live-demo table at the top of this README.
+Source: [github.com/syeddanishali17/LastMileLab2](https://github.com/syeddanishali17/LastMileLab2). Live demo: [lastmilelab.streamlit.app](https://lastmilelab.streamlit.app/).

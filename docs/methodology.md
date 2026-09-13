@@ -45,7 +45,7 @@ For every geographic pair:
 4. Fill one triangle of the matrix, then mirror it so the matrix is symmetric.
 5. Set the diagonal to 0.
 
-The detour factor is a synthetic urban allowance. It is not live traffic and not a road-network path. Route lines on OpenStreetMap are schematic connections based on this matrix.
+The detour factor is a synthetic urban allowance. It is not live traffic and not a road-network path. Route lines on the CARTO Positron map are schematic connections based on this matrix.
 
 Node order is depot first, then customer IDs sorted lexicographically. Matrix lookup is the only distance source for baseline construction, OR-Tools callbacks, KPI reconciliation, and the inspector.
 
