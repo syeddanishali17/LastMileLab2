@@ -29,7 +29,7 @@ DuckDBRepository  (data/runs/lastmile.duckdb)
 ```mermaid
 flowchart TD
   user[Recruiter or planner]
-  ui[Streamlit pages<br/>Overview, Scenarios, Plan,<br/>Methodology, Model validation]
+  ui[Streamlit pages<br/>Overview, Scenarios, Plan,<br/>Methodology, Solution verification]
   api[FastAPI<br/>GET /health<br/>/api/v1/scenarios<br/>/api/v1/plans<br/>/api/v1/runs]
   core[Core planning package]
   val[Validation and pre-checks]
@@ -67,15 +67,19 @@ Phase 6 used an in-memory repository. Phase 8 swapped in DuckDB behind the same 
 
 ## Frontend pages
 
-| Page | Role |
-|---|---|
-| Overview | Last-mile story, VRP then CVRP, published Vienna 24 proof |
-| Scenarios | Three curated presets or guided custom demand; one run-comparison action |
-| Plan | Baseline and OR-Tools KPIs, both schematic maps, van tables, JSON/CSV export |
-| Methodology | Short assumptions and solver notes (secondary) |
-| Model validation | Reconstruct `x_ijk`, `y_ik`, and `u_k` from returned stops (secondary) |
+Nav labels come from `frontend/workflow_copy.py`. Some files still use older names.
 
-`Home.py` registers those pages with `st.navigation`. LEARNING_6 remains a fixture and test suite; it is not in the primary UI. Session state keeps `scenario_id`, `baseline_run_id`, `optimised_run_id`, and `_plan_bundle`. Changing scenario drops stale run IDs so plans from different datasets cannot be compared.
+| Nav label | File | Role |
+|---|---|---|
+| Overview | `pages/0_Overview.py` | CVRP kicker, last-mile story, published Vienna 24 comparison |
+| Scenarios | `pages/1_Dispatch_Setup.py` | Three curated presets (`PRESETS`: Vienna Standard, Tight Capacity, Wide Geography) or guided custom demand; one run-comparison action |
+| Plan | `pages/3_Baseline_vs_Optimised.py` | Page heading **Route comparison**. Baseline and OR-Tools KPIs, both schematic maps, van tables, JSON/CSV export |
+| Methodology | `pages/6_Methodology.py` | Short assumptions and solver notes (secondary) |
+| Solution verification / Lösungsprüfung | `pages/4_Model_Inspector.py` | Reconstruct `x_ijk`, `y_ik`, and `u_k` from returned stops (secondary). Nav label is not “Model validation”. |
+
+`Home.py` registers those pages with `st.navigation` and `initial_sidebar_state="auto"` (the sidebar does not start collapsed). The sidebar also holds English/Deutsch. Every page footer has LinkedIn, GitHub, and email.
+
+LEARNING_6 remains a fixture and test suite. It is **not** in `PRESETS` and is not offered in the Streamlit scenario selector. Session state keeps `scenario_id`, `baseline_run_id`, `optimised_run_id`, and `_plan_bundle`. Changing scenario drops stale run IDs so plans from different datasets cannot be compared.
 
 OpenStreetMap tiles are schematic. Route lines are synthetic connections, not road geometry.
 
@@ -94,7 +98,7 @@ OR-Tools settings used by the optimiser:
 
 - first solution: `PATH_CHEAPEST_ARC`
 - local search: `GUIDED_LOCAL_SEARCH`
-- time limit: 1, 5, or 10 seconds
+- time limit: 1, 5, or 10 seconds (`solver_time_limit_seconds` on the API; `time_limit_seconds` in `backend/app/core`)
 
 Ordinary portfolio output is the best feasible plan found within that search limit. It is not labelled globally optimal. LEARNING_6 is the documented exception because its 31.000 km optimum is independently enumerated.
 
@@ -108,7 +112,7 @@ Local PowerShell (two processes on one machine):
 
 ```text
 127.0.0.1:8000   FastAPI / Uvicorn
-127.0.0.1:8501   Streamlit  (BACKEND_URL=http://localhost:8000)
+127.0.0.1:8501   Streamlit  (BACKEND_URL defaults to http://127.0.0.1:8000)
 ```
 
 Docker Compose (optional local / self-hosted):

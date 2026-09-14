@@ -1,25 +1,25 @@
 # LastMile Lab: ViennaCart CVRP Dispatch Planner
 
-Inspectable static morning dispatch: assign every unsplit tote order to one homogeneous van, sequence the stops, and show how much a capacity-aware nearest-neighbour plan improves under Google OR-Tools — with the model, the matrix, and the KPIs all reconcilable.
+Static morning dispatch for a fictional last-mile operator: assign every unsplit tote order to one homogeneous van, sequence the stops, and compare a capacity-aware nearest-neighbour baseline with Google OR-Tools. Distances, assignments, and KPIs are reconcilable from the returned routes.
+
+**Live demo:** [https://lastmilelab.streamlit.app/](https://lastmilelab.streamlit.app/)
 
 > LastMile Lab is a fictional portfolio case study. ViennaCart is a fictional operator. All depots, customers, order demands, routes, distances, and operating assumptions are synthetic. The application does not use proprietary customer data or live Vienna traffic information.
 
-![Vienna Standard 24 nearest-neighbour baseline versus OR-Tools. Lines are schematic synthetic connections, not roads.](docs/screenshots/hero_vienna_standard_24.png)
+![Vienna Standard 24 on Overview: nearest-neighbour baseline versus OR-Tools.](docs/screenshots/overview_vienna_standard_24.png)
 
-*Vienna Standard 24 at publish time (4 September 2026). Left: complete sequential nearest-neighbour baseline, 122.394 km. Right: OR-Tools 9.11.4210 with a 5-second limit, 97.193 km (20.6% shorter). Route lines are schematic synthetic connections, not road geometry or live traffic.*
+*Vienna Standard 24 published comparison (4 September 2026): 122.394 km sequential nearest-neighbour versus 97.193 km OR-Tools in 5 seconds (20.6% shorter). The diagrams are an illustrative routing view, not road geometry or live traffic. Live app: [lastmilelab.streamlit.app](https://lastmilelab.streamlit.app/).*
 
 ## Live demo
 
-Public deployment is in preparation. The final live URL will be added after successful deployment.
-
-The intended free demo is Streamlit Community Cloud for the UI and a Render FastAPI service for planning. Setup is in [`docs/deployment.md`](docs/deployment.md).
+The public UI is on Streamlit Community Cloud. Planning runs on a separate FastAPI service. Hosting notes: [`docs/deployment.md`](docs/deployment.md).
 
 | Surface | URL |
 |---|---|
-| Streamlit planner | `_paste HTTPS UI URL after deploy_` |
+| Streamlit planner | https://lastmilelab.streamlit.app/ |
 | GitHub (source) | https://github.com/syeddanishali17/LastMileLab2 |
 
-While developing with two local processes on this machine:
+Local two-process development on this machine:
 
 | Surface | Local URL |
 |---|---|
@@ -31,9 +31,9 @@ Docker Compose publishes only Streamlit (`http://localhost:8501` by default). AP
 
 ### Application journey
 
-**Overview → Scenarios → Plan.** Overview explains the delivery problem and distinguishes its published Vienna example from a live run. Scenarios offers exactly three presets: Standard 24, Tight Capacity 24 and Wide Geography 24, plus a custom tote-demand editor with live capacity checks. **Run comparison** executes the nearest-neighbour baseline and OR-Tools search, then opens Plan with both maps, API result metrics, route tables and JSON/CSV ZIP downloads.
+**Overview → Scenarios → Plan.** Overview opens with a CVRP kicker and the published Vienna Standard comparison. Scenarios offers three presets — Vienna Standard, Tight Capacity, and Wide Geography — plus a custom tote-demand editor with live capacity checks. **Run comparison** runs the nearest-neighbour baseline and OR-Tools search, then opens Plan. That page heading is **Route comparison**; it shows both maps, API KPIs, route tables, and JSON/CSV ZIP downloads.
 
-Methodology and Model validation are secondary pages. The six-customer teaching example remains in the documentation and regression tests, outside the normal application journey. The sidebar starts collapsed and contains the single navigation and English/Deutsch control. The current page is also named above its heading. The UI still starts with `streamlit run frontend/Home.py`. [UX research and file map](docs/ux_rewrite.md).
+Methodology and **Solution verification** (German: **Lösungsprüfung**) are secondary pages. The sidebar holds that navigation and the English/Deutsch control. The footer has LinkedIn, GitHub, and email. Start the UI with `streamlit run frontend/Home.py`.
 
 ## Contents
 
@@ -41,18 +41,17 @@ Methodology and Model validation are secondary pages. The six-customer teaching 
 2. [MVP assumptions](#mvp-assumptions)
 3. [Demand and capacity](#demand-and-capacity)
 4. [Vienna Standard 24 demo](#vienna-standard-24-demo)
-5. [LEARNING_6](#learning_6)
-6. [Application screenshots](#application-screenshots)
-7. [Architecture](#architecture)
-8. [Mathematical formulation](#mathematical-formulation)
-9. [Methodology and synthetic data](#methodology-and-synthetic-data)
-10. [Technology stack](#technology-stack)
-11. [Local setup (Windows PowerShell)](#local-setup-windows-powershell)
-12. [Tests](#tests)
-13. [API](#api)
-14. [Limitations](#limitations)
-15. [Roadmap](#roadmap)
-16. [Licence](#licence)
+5. [Application screenshots](#application-screenshots)
+6. [Architecture](#architecture)
+7. [Mathematical formulation](#mathematical-formulation)
+8. [Methodology and synthetic data](#methodology-and-synthetic-data)
+9. [Technology stack](#technology-stack)
+10. [Local setup (Windows PowerShell)](#local-setup-windows-powershell)
+11. [Tests](#tests)
+12. [API](#api)
+13. [Limitations](#limitations)
+14. [Roadmap](#roadmap)
+15. [Licence](#licence)
 
 ---
 
@@ -105,7 +104,7 @@ Vienna Standard 24:
 
 Z1 (35 totes) does not fit on one 30-tote van. The planner cannot assign one van per geographic zone; at least one Z1 customer must ride with another route. That is the intended CVRP challenge.
 
-The Scenarios page also offers two further curated presets with the same 108-tote demand: **Tight Capacity 24** (4 vans × 28 totes, 4 totes spare) and **Wide Geography 24** (same fleet as Standard, stops spread farther across Vienna). LEARNING_6 remains a six-customer teaching fixture in tests and docs (20 totes, 2 vans × 10); it is not in the primary UI selector.
+The Scenarios page also offers two further curated presets with the same 108-tote demand: **Tight Capacity** (4 vans × 28 totes, 4 totes spare) and **Wide Geography** (same fleet as Standard, stops spread farther across Vienna).
 
 ## Vienna Standard 24 demo
 
@@ -153,46 +152,13 @@ The OR-Tools plan is the **best feasible solution found within the configured se
 
 V04 is loaded to capacity (30/30). That is reconstructed tote demand, not an MTZ potential.
 
-## LEARNING_6
-
-Do **not** read sequential nearest neighbour as a complete 34 km baseline.
-
-| Plan | Status | Distance | What it is |
-|---|---|---|---|
-| Sequential NN | `heuristic_incomplete`, C4 unserved | **27.000 km partial** (`partial_distance_metres=27000`). Objective is null. Not comparison-eligible. | Required greedy construction. Tie-break from the depot picks C1 over C6. V01 then takes C2 and C3 and cannot take C4. |
-| Named packing | Teaching reference only | **34.000 km** | `{C1,C2,C6}` and `{C5,C4,C3}`. Not sequential NN. |
-| Verified optimum | `feasible` | **31.000 km** (31000 m) | Independent enumeration of the two feasible 3-and-3 partitions, matched by OR-Tools. |
-
-Stored depot id: `DEPOT_L6`. Display label: `Depot`.
-
-Walkthrough: [`docs/learning_6_sequential_nn.md`](docs/learning_6_sequential_nn.md). Enumeration: [`docs/learning_6_enumeration.md`](docs/learning_6_enumeration.md).
-
-![LEARNING_6 incomplete nearest neighbour, 34 km named packing, and 31 km verified optimum. Schematic node diagram, not a map.](docs/screenshots/learning_6_teaching.png)
-
-*Node positions are a teaching layout. Distances come from the backend matrix, not from this drawing.*
-
 ## Application screenshots
 
-![Nearest-neighbour baseline schematic for Vienna Standard 24.](docs/screenshots/vienna_baseline_schematic.png)
-
-*Dispatch-style schematic of the complete baseline. Same numbers as the demo table. Not OSM tiles; the live UI draws these connections on OpenStreetMap and captions them as synthetic.*
-
-![OR-Tools 5-second feasible plan schematic for Vienna Standard 24.](docs/screenshots/vienna_optimised_schematic.png)
-
-*Publish-time OR-Tools plan. Compact clusters versus the crossing NN rays. Still labelled feasible, not optimal.*
+The Overview capture at the top of this README is the live Streamlit UI. Walk the remaining pages — Scenarios, Plan, Methodology, and Solution verification — at [https://lastmilelab.streamlit.app/](https://lastmilelab.streamlit.app/).
 
 ![Architecture: Streamlit to FastAPI to core to DuckDB.](docs/screenshots/architecture.svg)
 
 *Streamlit never solves. FastAPI never owns KPI formulae. Pytest calls `backend/app/core` directly.*
-
-The live Streamlit pages (Overview, Scenarios, Plan, plus optional Methodology and Model validation) are the interactive screenshots. Capture those from the running UI after deploy if a recruiter walkthrough needs browser chrome.
-
-Regenerate schematic figures:
-
-```powershell
-cd c:\Users\danis\Desktop\LastMileLab2
-.\.venv\Scripts\python.exe scripts\generate_portfolio_figures.py
-```
 
 ## Architecture
 
@@ -205,7 +171,7 @@ Browser → Streamlit (published :8501) → FastAPI /api/v1 (internal :8000)
                               └─ DuckDB run history + JSON/CSV export
 ```
 
-OR-Tools does **not** solve the documented three-index MILP. The Model Inspector reconstructs `x_ijk`, `y_ik`, and `u_k` from returned stop sequences. Displayed load is the cumulative tote sum, not MTZ `w_ik`.
+OR-Tools does **not** solve the documented three-index MILP. Solution verification reconstructs `x_ijk`, `y_ik`, and `u_k` from returned stop sequences. Displayed load is the cumulative tote sum, not MTZ `w_ik`.
 
 Detail: [`docs/architecture.md`](docs/architecture.md).
 
@@ -213,7 +179,7 @@ Detail: [`docs/architecture.md`](docs/architecture.md).
 
 The three-index CVRP with assignment-linked MTZ potentials is in [`docs/mathematical_formulation.md`](docs/mathematical_formulation.md).
 
-That note includes the corrected inequality with right-hand side `Q_k − q_j y_jk`, the V01/C4 counter-example for the incorrect form, `u_k` linking, and the table mapping MILP symbols to reconstructed routes. It does not claim that OR-Tools solved the MILP as written.
+That note includes the corrected inequality with right-hand side `Q_k − q_j y_jk`, a counter-example for the incorrect form, `u_k` linking, and the table mapping MILP symbols to reconstructed routes. It does not claim that OR-Tools solved the MILP as written.
 
 Field catalogue: [`docs/data_dictionary.md`](docs/data_dictionary.md).
 
@@ -225,12 +191,11 @@ Field catalogue: [`docs/data_dictionary.md`](docs/data_dictionary.md).
 - why split delivery is excluded
 - why the MVP minimises distance rather than a financial cost
 - Haversine construction: Earth radius `6371000`, detour factor, `floor(x + 0.5)`, triangle-and-mirror symmetry
-- baseline tie-breaks, LEARNING_6 incompleteness, and `comparison_eligible`
+- baseline tie-breaks and `comparison_eligible`
 - OR-Tools unary demand callback and capacity dimension
 - why a timeout is `no_solution_found`, not `infeasible`
 - independent solution invariants
 - why ordinary solver output is feasible rather than globally optimal
-- why LEARNING_6 is the enumerated exception
 - why Checks 1 and 2 are necessary but not sufficient for unsplit feasibility
 
 ## Technology stack
@@ -281,11 +246,11 @@ cd c:\Users\danis\Desktop\LastMileLab2
 
 CI runs the same commands on Python 3.12 (`.github/workflows/ci.yml`). Tests call core planning directly; they do not require a running Uvicorn process.
 
-Vienna optimiser kilometres are intentionally **not** frozen. LEARNING_6 optimum **is** frozen at 31000 m.
+Vienna optimiser kilometres are intentionally **not** frozen. An enumerated six-customer fixture remains in tests and docs only; it is not in the Streamlit scenario selector.
 
 ## API
 
-Interactive docs when the API is running locally: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs). Compose keeps FastAPI internal. The free demo uses a public Render service; see [`docs/deployment.md`](docs/deployment.md).
+Interactive docs when the API is running locally: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs). Compose keeps FastAPI internal. The public demo uses a Render service behind Streamlit; see [`docs/deployment.md`](docs/deployment.md).
 
 | Method | Path | Role |
 |---|---|---|
@@ -295,7 +260,7 @@ Interactive docs when the API is running locally: [http://127.0.0.1:8000/docs](h
 | `POST` | `/api/v1/scenarios/generate` | Synthetic geographic scenario |
 | `POST` | `/api/v1/scenarios/validate` | Pre-checks only |
 | `POST` | `/api/v1/plans/baseline` | Sequential nearest neighbour |
-| `POST` | `/api/v1/plans/optimise` | OR-Tools (`time_limit_seconds` 1, 5, or 10) |
+| `POST` | `/api/v1/plans/optimise` | OR-Tools (`solver_time_limit_seconds` 1, 5, or 10) |
 | `GET` | `/api/v1/runs/{run_id}` | Stored plan and KPIs |
 | `GET` | `/api/v1/runs/{run_id}/routes` | Sequences and stops |
 | `GET` | `/api/v1/runs/{run_id}/checks` | Reconstructed constraint checks |
@@ -306,8 +271,7 @@ Streamlit is a client of this API. It does not re-solve the CVRP.
 ## Limitations
 
 - Distances are synthetic Haversine estimates with a detour factor, not live Vienna roads.
-- Ordinary OR-Tools output is feasible within a time limit, not globally optimal (LEARNING_6 excepted).
-- Sequential NN on LEARNING_6 is incomplete; 27.000 km is partial and 34.000 km is a named packing, not that baseline.
+- Ordinary OR-Tools output is feasible within a time limit, not globally optimal.
 - No time windows, split deliveries, dropped customers, or heterogeneous fleet.
 - No public authentication; fixtures must stay synthetic.
 - The free demo stores planning runs on ephemeral Render disk; presets remain, stored custom runs may disappear after a backend restart.
@@ -323,10 +287,10 @@ Full write-up and versioned extensions: [`docs/limitations.md`](docs/limitations
 | V2 | Time windows, service duration, driver shift length |
 | V3 | Optional customers, split-delivery experiment, multi-trip experiment |
 
-Do not add these until the CVRP MVP is publicly demonstrable.
+These remain out of scope for the current CVRP MVP.
 
 ## Licence
 
 [MIT](LICENSE). Copyright (c) 2026 SyedDanishAli.
 
-Source: [github.com/syeddanishali17/LastMileLab2](https://github.com/syeddanishali17/LastMileLab2). After the host is live, paste the HTTPS Streamlit URL into the live-demo table at the top of this README.
+Source: [github.com/syeddanishali17/LastMileLab2](https://github.com/syeddanishali17/LastMileLab2). Live UI: [lastmilelab.streamlit.app](https://lastmilelab.streamlit.app/).

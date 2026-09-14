@@ -127,7 +127,7 @@ w_ik ≥ 0           ∀ i ∈ N, k ∈ K
 
 When `y_ik = 0`, the bounds in Section 6.7 force `w_ik = 0`. When `y_ik = 1` and `x_ijk = 1`, the potential on `j` is at least the potential on `i` plus `q_j`. Slack can remain when the van is not filled, so two feasible potentials can differ while representing the same route.
 
-The exact load shown on route cards, KPIs, and the Model Inspector is reconstructed by summing tote demand along the returned stop sequence. Do not read `w_ik` from OR-Tools. OR-Tools enforces capacity with a dimension, not with these variables.
+The exact load shown on route cards, KPIs, and Solution verification is reconstructed by summing tote demand along the returned stop sequence. Do not read `w_ik` from OR-Tools. OR-Tools enforces capacity with a dimension, not with these variables.
 
 ---
 

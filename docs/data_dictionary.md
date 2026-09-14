@@ -23,7 +23,7 @@ This dictionary defines fields, units, allowed values, and validation rules for 
 
 ### LEARNING_6 depot label convention
 
-Fixture files store the depot node as `DEPOT_L6`, matching `depot_id`. The specification teaching table labels that node `Depot`. UI copy may display `Depot`; stored identifiers remain `DEPOT_L6`.
+Fixture files store the depot node as `DEPOT_L6`, matching `depot_id`. The specification teaching table labels that node `Depot`. Display code maps that identifier to `Depot`; stored identifiers remain `DEPOT_L6`. This fixture is not in the Streamlit scenario selector.
 
 ---
 
@@ -46,7 +46,7 @@ Rules:
 - `infeasible` is **only** for hard pre-checks (Check 1 or Check 2). A missing OR-Tools solution is not infeasibility.
 - Invalid input and infeasible demand are different statuses. A broken CSV is `invalid`, not `infeasible`.
 - The optimiser must never silently drop a customer in order to return a partial plan.
-- Page 3 baseline-versus-optimised comparison is shown only when **both** runs have `comparison_eligible = true`.
+- The Plan page (heading **Route comparison**) is shown as a complete comparison only when **both** runs have `comparison_eligible = true`.
 
 HTTP mapping (locked; implemented in Phase 6):
 
@@ -292,7 +292,7 @@ service count per customer = 1
 
 | Fixture | Role | Demand | Fleet | Expected Phase 0 record |
 |---|---|---|---|---|
-| `LEARNING_6` | teaching CVRP (tests/docs, not primary UI) | 20 totes | 2 × 10 | NN `heuristic_incomplete` with C4 unserved; verified optimum 31000 m |
+| `LEARNING_6` | teaching CVRP (tests/docs fixture; not in the Streamlit scenario selector) | 20 totes | 2 × 10 | NN `heuristic_incomplete` with C4 unserved; verified optimum 31000 m |
 | `VIENNA_STANDARD_24` | public demo | 108 totes | 4 × 30 | NN complete, loads 29, 28, 29, 22 |
 | `VIENNA_TIGHT_24` | curated preset | 108 totes | 4 × 28 | Same stops as Standard; 4 totes spare |
 | `VIENNA_WIDE_24` | curated preset | 108 totes | 4 × 30 | Same demand/fleet as Standard; wider coordinates |

@@ -15,14 +15,14 @@
 
 | Surface | File | Flow |
 |---|---|---|
-| Entry/router | frontend/Home.py | Register three primary pages and two secondary pages; collapsed sidebar |
-| Overview | frontend/pages/0_Overview.py | Business context → VRP → capacity → comparison → published proof → Scenarios |
-| Scenarios | frontend/pages/1_Dispatch_Setup.py | Exactly three curated presets or guided demand editor → capacity feedback → generate → run pair |
-| Plan | frontend/pages/3_Baseline_vs_Optimised.py | API KPIs + paired maps + van tables + JSON/CSV exports; automatic arrival after the pair |
-| Methodology | frontend/pages/6_Methodology.py | Brief assumptions, methods and validation link |
-| Model validation | frontend/pages/4_Model_Inspector.py | Secondary inspection with stored run type and search limit |
+| Entry/router | frontend/Home.py | Register three primary pages and two secondary pages; `initial_sidebar_state="auto"` (not collapsed). Sidebar: EN/DE |
+| Overview | frontend/pages/0_Overview.py | CVRP kicker → business context → capacity → comparison → published proof → Scenarios |
+| Scenarios | frontend/pages/1_Dispatch_Setup.py | Exactly three curated presets (`PRESETS`: Vienna Standard, Tight Capacity, Wide Geography) or guided demand editor → capacity feedback → generate → run pair |
+| Plan | frontend/pages/3_Baseline_vs_Optimised.py | Heading **Route comparison**. API KPIs + paired maps + van tables + JSON/CSV exports; automatic arrival after the pair |
+| Methodology | frontend/pages/6_Methodology.py | Brief assumptions, methods and solution-verification link |
+| Solution verification | frontend/pages/4_Model_Inspector.py | Nav: Solution verification / Lösungsprüfung. Secondary inspection with stored run type and search limit |
 
-Shared components, maps and translations retain the navy/teal design. The old standalone Route Plan and Learning Lab pages were removed from `frontend/pages/`. Teaching fixtures, mathematical documentation and regression tests remain available in the repository.
+Shared components, maps and translations retain the navy/teal design. Footer links: LinkedIn, GitHub, and email. The old standalone Route Plan and Learning Lab pages were removed from `frontend/pages/`. LEARNING_6 is not in the Streamlit selector. Teaching fixtures, mathematical documentation and regression tests remain in the repository.
 
 ## Scenario and API changes
 

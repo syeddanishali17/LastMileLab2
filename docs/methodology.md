@@ -13,7 +13,7 @@ Totes were chosen instead of kilograms, litres, or mixed SKU volumes because:
 - demand and capacity stay in the same integer unit
 - every capacity check is auditable without unit conversion
 - unsplit service is obvious: 7 totes either fit on the van or they do not
-- the Model Inspector can reconstruct operational load as a running tote sum
+- Solution verification can reconstruct operational load as a running tote sum
 
 The MVP does not model cube, weight, or multi-commodity packing inside a tote.
 
@@ -84,7 +84,7 @@ That 27.000 km figure is a partial constructed distance. It is not a complete pl
 100 * (baseline_metres - optimised_metres) / baseline_metres
 ```
 
-The UI formats that value to one decimal place. LEARNING_6 shows no improvement percentage.
+The UI formats that value to one decimal place. LEARNING_6 is not comparison-eligible, so no improvement percentage is defined. That fixture is not in the Streamlit scenario selector.
 
 ## How OR-Tools implements capacity
 
@@ -137,11 +137,11 @@ Do not freeze ordinary OR-Tools kilometres in tests. The Vienna baseline kilomet
 
 ## Why LEARNING_6 is the exception
 
-LEARNING_6 has six customers, two vans of 10 totes, and total demand 20. Both vans must load exactly 10 totes. Only two capacity-feasible 3-and-3 partitions exist. Enumerating all depot-start sequences on those partitions proves that the minimum complete distance is 31.000 km.
+LEARNING_6 is a documented math and test exception, not a Streamlit scenario page. It has six customers, two vans of 10 totes, and total demand 20. Both vans must load exactly 10 totes. Only two capacity-feasible 3-and-3 partitions exist. Enumerating all depot-start sequences on those partitions proves that the minimum complete distance is 31.000 km.
 
 OR-Tools on LEARNING_6 is therefore checked against 31000 metres. The 34.000 km named packing `{C1,C2,C6}` / `{C5,C4,C3}` is a teaching comparison, not sequential nearest neighbour and not the optimum. Sequential NN remains `heuristic_incomplete` with C4 unserved and partial distance 27.000 km.
 
-The stored depot id is `DEPOT_L6`. The UI label is `Depot`.
+The stored depot id is `DEPOT_L6`. Display code maps that identifier to the label `Depot`.
 
 ## Why aggregate capacity checks are not a complete unsplit-feasibility test
 

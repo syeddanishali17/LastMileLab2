@@ -2,12 +2,14 @@
 
 LastMile Lab is a Streamlit UI plus a FastAPI planning service. The browser talks only to Streamlit. Streamlit calls FastAPI with server-side HTTP (`BACKEND_URL`). There are no Mapbox tokens or other secrets. Distances remain synthetic.
 
+Live Streamlit UI: https://lastmilelab.streamlit.app/
+
 This document distinguishes two topologies. **Free recruiter/demo deployment** is Streamlit Community Cloud plus a Render FastAPI service. **Docker Compose** remains available for local or self-hosted use; it is not required for the free demo.
 
 ## A. Free recruiter/demo deployment
 
 ```text
-Browser  →  Streamlit Community Cloud (https://<subdomain>.streamlit.app)
+Browser  →  Streamlit Community Cloud (https://lastmilelab.streamlit.app)
                 →  HTTPS (server-side httpx)
                 →  Render Free FastAPI (https://<service>.onrender.com)
                 →  ephemeral local DuckDB
@@ -17,6 +19,7 @@ Browser  →  Streamlit Community Cloud (https://<subdomain>.streamlit.app)
 
 | Setting | Value |
 |---|---|
+| Public URL | https://lastmilelab.streamlit.app/ |
 | Main file | `frontend/Home.py` |
 | Working directory | repository root |
 | Python | 3.12 |
