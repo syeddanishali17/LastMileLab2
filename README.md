@@ -31,7 +31,7 @@ Docker Compose publishes only Streamlit (`http://localhost:8501` by default). AP
 
 ### Application journey
 
-**Overview → Scenarios → Plan.** Overview opens with a CVRP kicker and the published Vienna Standard comparison. Scenarios offers three presets — Vienna Standard, Tight Capacity, and Wide Geography — plus a custom tote-demand editor with live capacity checks. **Run comparison** runs the nearest-neighbour baseline and OR-Tools search, then opens Plan. That page heading is **Route comparison**; it shows both maps, API KPIs, route tables, and JSON/CSV ZIP downloads.
+**Overview → Scenarios → Plan.** Overview teaches the routing instance → feasible vehicle routes. Scenarios offers three presets — Vienna Standard, Tight Capacity, and Wide Geography — plus a custom tote-demand editor with live capacity checks. **Run comparison** runs the nearest-neighbour baseline and OR-Tools search, then opens Plan. That page heading is **Route comparison**; it shows both maps, API KPIs (including the published Vienna Standard distances after a run), route tables, and JSON/CSV ZIP downloads.
 
 Methodology and **Solution verification** (German: **Lösungsprüfung**) are secondary pages. The sidebar holds that navigation and the English/Deutsch control. The footer has LinkedIn, GitHub, and email. Start the UI with `streamlit run frontend/Home.py`.
 

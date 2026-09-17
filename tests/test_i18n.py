@@ -78,24 +78,21 @@ def test_overview_english_copy_is_locked() -> None:
     assert STRINGS["de"]["footer"] == "© 2026 Syed Danish Ali · LastMile Lab"
     assert "ux.over.proof" not in en
     assert "ux.over.proof.cap" not in en
+    assert "ux.over.proof.kicker" not in en
+    assert "ux.over.proof.scenario" not in en
+    assert "ux.over.proof.line" not in en
+    assert "ux.over.proof.tech" not in en
     assert "ux.over.disclosure" not in en
     assert "ux.over.future" not in en
     assert "ux.over.carbon" not in en
     assert "ux.over.anim.what" not in en
-    assert en["ux.over.proof.kicker"] == "REFERENCE SCENARIO"
-    assert STRINGS["de"]["ux.over.proof.kicker"] == "REFERENZSZENARIO"
-    assert en["ux.over.proof.scenario"] == "Vienna Standard"
-    assert STRINGS["de"]["ux.over.proof.scenario"] == "Wien Standard"
-    assert en["ux.over.proof.line"] == (
-        "122.394 km → 97.193 km · 20.6% shorter · 24/24 customers served"
-    )
-    assert STRINGS["de"]["ux.over.proof.line"] == (
-        "122,394 km → 97,193 km · 20,6 % kürzer · 24/24 Kunden bedient"
-    )
-    assert en["ux.over.stage.kicker"] == "ROUTE COMPARISON"
-    assert STRINGS["de"]["ux.over.stage.kicker"] == "TOURENVERGLEICH"
-    assert en["ux.over.stage.title"] == "Baseline versus optimized"
-    assert STRINGS["de"]["ux.over.stage.title"] == "Baseline und optimierte Lösung"
+    assert en["ux.over.stage.kicker"] == "ROUTING MODEL"
+    assert STRINGS["de"]["ux.over.stage.kicker"] == "ROUTING-MODELL"
+    assert en["ux.over.stage.title"] == "From delivery demand to feasible vehicle routes"
+    assert STRINGS["de"]["ux.over.stage.title"] == "Von Zustellbedarf zu zulässigen Fahrzeugtouren"
+    assert en["ux.over.stage.model.tag"] == "CVRP"
+    assert en["ux.over.stage.model"] == "Routing model"
+    assert STRINGS["de"]["ux.over.stage.model"] == "Routing-Modell"
     assert en["ux.over.model.kicker"] == "MODEL LOGIC"
     assert en["ux.over.vrp.label"] == "OBJECTIVE"
     assert en["ux.over.cvrp.label"] == "CAPACITY CONSTRAINT"
@@ -104,19 +101,19 @@ def test_overview_english_copy_is_locked() -> None:
     assert STRINGS["de"]["ux.over.cvrp.label"] == "KAPAZITÄTSBESCHRÄNKUNG"
     assert STRINGS["de"]["ux.over.feas.label"] == "ZULÄSSIGKEIT"
     assert en["ux.over.stage.lead"] == (
-        "Compare the nearest-neighbour baseline with the optimized route plan for the "
-        "same scenario."
+        "A Capacitated Vehicle Routing Problem begins with customer demand, vehicle "
+        "capacity, and a depot. The routing model then assigns customers to vehicles and "
+        "determines the route sequence needed to serve them efficiently."
     )
     assert STRINGS["de"]["ux.over.stage.lead"] == (
-        "Nächster-Nachbar-Baseline und optimierten Tourenplan für dasselbe Szenario vergleichen."
+        "Ein Capacitated Vehicle Routing Problem beginnt mit Kundenbedarf, Fahrzeugkapazität "
+        "und einem Depot. Das Routing-Modell weist Kunden anschließend Fahrzeugen zu und "
+        "bestimmt die Tourreihenfolge, mit der sie effizient bedient werden."
     )
     assert "One comparison frame keeps both planning states visible" not in en["ux.over.stage.lead"]
     assert "ViennaCart" not in en["ux.over.about.body1"]
     assert "ViennaCart" not in en["ux.over.about.body2"]
-    assert "Published result" not in en["ux.over.proof.kicker"]
-    assert "OR-Tools" not in en["ux.over.proof.kicker"]
     assert "OR-Tools" not in en["ux.over.intro"]
-    assert "OR-Tools" not in en["ux.over.proof.line"]
     assert "ux.over.context" not in en
     overview_copy = " ".join(value for key, value in en.items() if key.startswith("ux.over."))
     assert "Published reference" not in overview_copy
@@ -151,29 +148,20 @@ def test_overview_english_copy_is_locked() -> None:
         "LastMile Lab modelliert ein statisches Capacitated Vehicle Routing Problem"
     )
     assert (
-        "The reference distances are from the Vienna Standard scenario, not from this schematic."
+        "The figure is explanatory and does not represent live road geometry."
         in en["ux.over.diagram"]
     )
     assert (
-        "Die Referenzdistanzen stammen vom Szenario Wien Standard, nicht von dieser Skizze."
+        "Die Darstellung ist erklärend und bildet keine reale Straßengeometrie ab."
         in STRINGS["de"]["ux.over.diagram"]
     )
     assert "Vienna Standard 24" not in en["ux.over.diagram"]
     assert "Wien Standard 24" not in STRINGS["de"]["ux.over.diagram"]
     assert en["ux.over.vrp.tip"].startswith("The objective is to reduce combined fleet travel")
     assert en["ux.over.compare.tip"].startswith("The baseline provides a transparent reference")
-    assert en["ux.over.proof.tech"] == (
-        "This comparison shows a feasible optimized plan for Vienna Standard 24; global "
-        "optimality is not claimed."
-    )
-    assert STRINGS["de"]["ux.over.proof.tech"] == (
-        "Dieser Vergleich zeigt einen zulässigen optimierten Plan für Wien Standard 24; "
-        "globale Optimalität wird nicht behauptet."
-    )
     assert en["ux.motion.pause"] == "Pause animations"
-    assert en["ux.motion.replay"] == "Replay comparison"
+    assert "ux.motion.replay" not in en
     assert STRINGS["de"]["ux.motion.pause"] == "Animationen pausieren"
-    assert STRINGS["de"]["ux.motion.replay"] == "Vergleich erneut abspielen"
     assert "ux.over.diagram.note" not in en
     assert en["ux.source"] == "Scenario Selection"
     assert en["ux.scenarios.title"] == "Scenarios"

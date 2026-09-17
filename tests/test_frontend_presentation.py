@@ -519,49 +519,46 @@ def test_plan_validation_uses_passed_failed_labels() -> None:
     assert "is-fail" in source
 
 
-def test_overview_animation_teaches_baseline_versus_optimized():
-    markup = components.cvrp_animation_html(
-        "122.4 km → 97.2 km · 20.6% shorter",
-        "diagram",
-    )
+def test_overview_explainer_shows_instance_to_routes():
+    markup = components.cvrp_animation_html()
     assert "lm-cvrp-panel" in markup
-    assert "lm-cvrp-compare" in markup
-    assert 'class="lm-cvrp-pane lm-cvrp-pane-baseline"' in markup
-    assert 'class="lm-cvrp-pane lm-cvrp-pane-optimized"' in markup
-    assert markup.count("lm-cvrp-pane-baseline") == 1
-    assert markup.count("lm-cvrp-pane-optimized") == 1
-    assert markup.count("<svg") == 2
-    assert "Nearest-neighbour baseline" in markup
-    assert "Optimized solution" in markup
-    assert "122.4 km" in markup
-    assert "97.2 km" in markup
-    assert "Total distance: 122.4 km" not in markup
-    assert "Total distance: 97.2 km" not in markup
-    assert ">1</text>" in markup
-    assert ">2</text>" in markup
-    assert ">3</text>" in markup
-    assert markup.count(">C1</text>") == 2
-    assert markup.count(">C12</text>") == 2
-    assert "lm-cvrp-ids" in markup
+    assert "lm-cvrp-explainer" in markup
+    assert 'class="lm-cvrp-pane lm-cvrp-pane-instance"' in markup
+    assert 'class="lm-cvrp-pane lm-cvrp-pane-solution"' in markup
+    assert markup.count("lm-cvrp-pane-instance") == 1
+    assert markup.count("lm-cvrp-pane-solution") == 1
+    assert markup.count("<svg") == 3
+    assert "lm-cvrp-transform" in markup
+    assert "lm-cvrp-arrow" in markup
+    assert "CVRP" in markup
+    assert "Routing model" in markup
+    assert "From delivery demand to feasible vehicle routes" in markup
+    assert "A Capacitated Vehicle Routing Problem begins with customer demand" in markup
+    assert "122.4 km" not in markup
+    assert "97.2 km" not in markup
+    assert "Nearest-neighbour baseline" not in markup
+    assert "BASELINE" not in markup
+    assert "OPTIMIZED" not in markup
+    assert "Vienna Standard 24" not in markup
     assert "lm-cvrp-dot-nn" not in markup
     assert "lm-cvrp-dot-opt" not in markup
     assert "lm-nn-track" not in markup
     assert "lm-opt-track" not in markup
     assert "◂" not in components.THEME_CSS
     assert "lm-cvrp-route-tracks" in markup
+    assert "lm-cvrp-network" in markup
     assert "lm-cvrp-cust" in markup
     assert "lm-cvrp-arr-0-0-0" not in markup
     assert "lm-cvrp-arr-1-3-2" not in markup
     assert 'fill="#64748B"' not in markup
-    assert "r=\"10.5\" fill=" not in markup
+    assert 'r="10.5" fill=' not in markup
     assert "@keyframes lm-cvrp-arr-0-0-0" not in components.THEME_CSS
     assert "fill: var(--lm-visit)" in components.THEME_CSS
     assert markup.count('class="lm-cvrp-cust') == 24
     assert "5s linear infinite" not in components.THEME_CSS
-    assert "lm-cvrp-running" in markup
-    assert 'type="button"' in markup
-    assert "lm-cvrp-replay" in markup
-    assert "Replay comparison" in markup
+    assert "lm-cvrp-running" not in markup
+    assert "lm-cvrp-replay" not in markup
+    assert "Replay comparison" not in markup
     assert "Pause animations" not in markup
     assert ".lm-num" in components.THEME_CSS
     assert "text-align: right" in components.THEME_CSS
@@ -575,9 +572,7 @@ def test_overview_animation_teaches_baseline_versus_optimized():
     assert "max-width: none" in components.THEME_CSS
     assert "text-align: justify" not in components.THEME_CSS
     assert "font-size: 18px" in components.THEME_CSS
-    assert markup.find('class="lm-cvrp-pane-title"') < markup.find("<svg")
     assert "padding-top: 0" in components.THEME_CSS
-    assert ".lm-proof-kicker" in components.THEME_CSS
     assert ".lm-overview-flag" in components.THEME_CSS
     assert ".lm-about" in components.THEME_CSS
     assert ".lm-about-body" in components.THEME_CSS
@@ -645,46 +640,57 @@ def test_overview_animation_teaches_baseline_versus_optimized():
     assert "var(--lm-navy)" in dd_css
 
 
-def test_overview_route_story_is_one_shot_and_sequential():
+def test_overview_explainer_viewbox_matches_geometry():
+    x, y, w, h = components._cvrp_viewbox()
+    radius = components._CVRP_NODE_R
+    for px, py in components._cvrp_customers():
+        assert x < px - radius
+        assert y < py - radius
+        assert px + radius < x + w
+        assert py + radius < y + h
+    depot_min_x, depot_min_y, depot_max_x, depot_max_y = components._cvrp_depot_extent()
+    assert x < depot_min_x
+    assert depot_max_x < x + w
+    assert y < depot_min_y
+    assert depot_max_y < y + h
+    markup = components.cvrp_animation_html()
+    assert f'viewBox="{x} {y} {w} {h}"' in markup
+    assert markup.count(f'viewBox="{x} {y} {w} {h}"') == 2
+    assert 'preserveAspectRatio="xMidYMid meet"' in markup
+    assert f'width="{w}"' in markup
+    assert f'height="{h}"' in markup
+    pane_rule = components.THEME_CSS.split(".lm-cvrp-pane .lm-cvrp {", 1)[1].split("}", 1)[0]
+    assert "height: auto" in pane_rule
+    assert "28vw" not in pane_rule
+    assert "clamp(" not in pane_rule
+
+
+def test_overview_explainer_loops_calmly():
     css = components.THEME_CSS
-    markup = components.cvrp_animation_html("97.2 km", "diagram")
+    markup = components.cvrp_animation_html()
     assert "animation: lm-pane-route 5s linear infinite" not in css
     assert "lm-cvrp-arr-" not in css
     assert "lm-cvrp-arr-" not in markup
     assert "opacity:.75" not in css
-    assert "cx:" not in css.split("@keyframes lm-cust-activate", 1)[1].split("@keyframes", 1)[0]
-    assert "cy:" not in css.split("@keyframes lm-cust-activate", 1)[1].split("@keyframes", 1)[0]
-    assert ".lm-cvrp-running .lm-cvrp-pane-baseline .lm-cvrp-routes path {" in css
-    assert "animation-name: lm-baseline-soften;" in css
-    assert "animation-delay: 1.6s;" in css
-    assert "animation-iteration-count: 1;" in css
-    assert "animation-fill-mode: forwards;" in css
+    assert "@keyframes lm-explainer-route-1" in css
+    assert "@keyframes lm-explainer-route-2" in css
+    assert "@keyframes lm-explainer-route-3" in css
+    assert "@keyframes lm-explainer-route-4" in css
     assert "path:nth-child(1)" in css
     assert "path:nth-child(2)" in css
     assert "path:nth-child(3)" in css
     assert "path:nth-child(4)" in css
-    assert "animation-delay: 2.0s;" in css
-    assert "animation-delay: 2.8s;" in css
-    assert "animation-delay: 3.6s;" in css
-    assert "animation-delay: 4.4s;" in css
-    assert "animation-delay: 5.2s;" in css
-    assert "@keyframes lm-opt-reveal" in css
-    assert "from { stroke-dashoffset: 100; opacity: 0; }" in css
-    assert "to { stroke-dashoffset: 0; opacity: 1; }" in css
-    assert "to { opacity: 0.6; }" in css
-    assert ".lm-cvrp-pane-baseline .lm-cvrp-routes path { opacity: 0.6 !important; }" in css
-    assert ".lm-cvrp-pane-optimized .lm-cvrp-pane-km { opacity: 1 !important; }" in css
-    assert ".lm-motion-tools, .lm-cvrp-replay-tools { display: none; }" in css
-    assert "button.lm-cvrp-replay" in css
-    assert "type=\"button\"" in markup
-    assert "hidden" in markup
-    assert "classList.remove(\"lm-cvrp-running\")" in markup
-    assert "classList.add(\"lm-cvrp-running\")" in markup
-    assert "animation-iteration-count: infinite" not in css.split(".lm-cvrp-running", 1)[1].split(
-        ".lm-motion-tools", 1
-    )[0]
-    assert components.CVRP_STORY_MS == 6200
-    assert "var STORY_MS = 6200;" in components._CVRP_STORY_JS
+    assert "animation: lm-explainer-arrow 7.5s ease-in-out infinite" in css
+    assert "animation-iteration-count: infinite;" in css
+    assert "animation-name: lm-explainer-route-1;" in css
+    assert "animation-name: lm-explainer-cust-4;" in css
+    assert ".lm-cvrp-pane-solution .lm-cvrp-nodes .lm-cvrp-cust" in css
+    assert ".lm-cvrp-pane-instance .lm-cvrp-nodes .lm-cvrp-cust" in css
+    assert ".lm-cvrp-pane-solution .lm-cvrp-routes path { opacity: 1 !important; }" in css
+    assert "lm-cvrp-replay" not in css
+    assert "lm-cvrp-replay" not in markup
+    assert "lm-cvrp-running" not in markup
+    assert components.CVRP_EXPLAINER_MS == 7500
     method = components.methodology_animation_html()
     assert "Pause animations" in method
     assert "lm-motion-pause" in method
@@ -694,17 +700,16 @@ def test_overview_route_story_is_one_shot_and_sequential():
 def test_overview_page_puts_animation_and_cta_before_concept_cards():
     source = Path("frontend/pages/0_Overview.py").read_text(encoding="utf-8")
     header_at = source.index("page_header(")
-    proof_at = source.index("render_overview_reference_proof(")
     animation_at = source.index("render_cvrp_animation(")
     cta_at = source.index('st.button(t("ux.over.cta")')
     cards_at = source.index("concept_cards(")
     footer_at = source.index("render_footer()")
     about_at = source.index("render_overview_about()")
-    assert header_at < proof_at < animation_at < cta_at < cards_at < about_at < footer_at
+    assert header_at < animation_at < cta_at < cards_at < about_at < footer_at
     assert source.count("concept_cards(") == 1
     assert source.count('st.button(t("ux.over.cta")') == 1
     assert source.count("render_cvrp_animation(") == 1
-    assert source.count("render_overview_reference_proof(") == 1
+    assert "render_overview_reference_proof" not in source
     assert "extra=" not in source
     assert "ux.over.feas.hero" not in source
     assert "ux.over.compare.body" not in source
@@ -722,49 +727,29 @@ def test_overview_page_puts_animation_and_cta_before_concept_cards():
     assert source.count("ux.over.feas.title") == 1
     assert source.count("ux.over.compare.label") == 1
     css = components.THEME_CSS
-    proof_rule = css.split(".lm-overview-proof {", 1)[1].split("}", 1)[0]
-    assert "box-shadow: none" in proof_rule
-    assert "border: none" in proof_rule
+    assert ".lm-overview-proof" not in css
     assert ".stApp:has(.lm-overview-flag) .lm-hero-route" in css
     assert "animation: lm-hero-route 7s ease-in-out infinite" in css
-    markup = components.cvrp_animation_html("97.2 km", "diagram")
+    markup = components.cvrp_animation_html()
     cap_at = markup.index('class="lm-cvrp-cap"')
-    replay_at = markup.index("lm-cvrp-replay")
-    panel_end = markup.index("</div>", replay_at)
-    assert cap_at < replay_at < panel_end
-    assert markup.count("lm-cvrp-replay") >= 1
-    assert 'type="button"' in markup
+    assert 'class="lm-cvrp-explainer"' in markup
+    assert cap_at > markup.index('class="lm-cvrp-explainer"')
+    assert "lm-cvrp-replay" not in markup
     assert "lm-motion-control" not in markup
     assert markup.count("st.button") == 0
 
 
-def test_overview_reference_proof_is_lightweight_typography(monkeypatch):
-    monkeypatch.setattr(
-        components,
-        "t",
-        lambda key: {
-            "ux.over.proof.kicker": "REFERENCE SCENARIO",
-            "ux.over.proof.scenario": "Vienna Standard",
-            "ux.over.proof.line": (
-                "122.394 km → 97.193 km · 20.6% shorter · 24/24 customers served"
-            ),
-        }[key],
-    )
-    markup = components.overview_reference_proof_html()
-    assert 'class="lm-overview-proof"' in markup
-    assert 'class="lm-proof-kicker">REFERENCE SCENARIO</p>' in markup
-    assert 'class="lm-proof-name">Vienna Standard</p>' in markup
-    assert "122.394 km → 97.193 km" in markup
-    assert "20.6% shorter" in markup
-    assert "24/24 customers served" in markup
-    assert "Reference scenario · Vienna Standard" not in markup
+def test_overview_explainer_omits_benchmark_proof(monkeypatch):
+    markup = components.cvrp_animation_html()
+    assert "lm-overview-proof" not in markup
+    assert "REFERENCE SCENARIO" not in markup
+    assert "122.394 km" not in markup
     assert "Vienna Standard 24" not in markup
     assert "lm-card" not in markup
-    assert "style=" not in markup
     assert "optimal route" not in markup.lower()
     ui = MagicMock()
     monkeypatch.setattr(components, "st", ui)
-    components.render_overview_reference_proof()
+    components.render_cvrp_animation()
     ui.markdown.assert_called_once()
     assert ui.markdown.call_args.kwargs["unsafe_allow_html"] is True
     assert ui.markdown.call_args.args[0] == markup
@@ -812,20 +797,14 @@ def test_hero_author_stays_inside_html_without_blank_gaps(monkeypatch):
 def test_p0g_overview_visual_locks():
     overview = Path("frontend/pages/0_Overview.py").read_text(encoding="utf-8")
     css = components.THEME_CSS
-    markup = components.cvrp_animation_html(
-        "122.4 km → 97.2 km · 20.6% shorter",
-        "diagram",
-    )
-    proof = components.overview_reference_proof_html()
-    assert "REFERENCE SCENARIO" in proof or "ux.over.proof.kicker" in overview
-    assert "lm-proof-name" in proof
-    assert "Vienna Standard 24" not in proof
+    markup = components.cvrp_animation_html()
+    assert "render_overview_reference_proof" not in overview
     assert "Vienna Standard 24" not in markup
     assert "Wien Standard 24" not in markup
     assert "VIENNA_STANDARD_24" in Path("frontend/workflow_copy.py").read_text(encoding="utf-8")
-    assert "ROUTE COMPARISON" in markup
-    assert "Baseline versus optimized" in markup
-    assert "for the same scenario." in markup
+    assert "ROUTING MODEL" in markup
+    assert "From delivery demand to feasible vehicle routes" in markup
+    assert "assigns customers to vehicles" in markup
     heading_at = markup.index('class="lm-cvrp-heading"')
     lead_at = markup.index('class="lm-cvrp-lead"')
     intro_copy_close = markup.index("</div>", heading_at)
@@ -836,7 +815,7 @@ def test_p0g_overview_visual_locks():
     lead_rule = css.split(".lm-cvrp-lead {", 1)[1].split("}", 1)[0]
     assert "text-align: left" in lead_rule
     assert "text-align: right" not in lead_rule
-    assert "max-width: 640px" in lead_rule
+    assert "max-width: 720px" in lead_rule
     about_rule = css.split(".stApp:has(.lm-overview-flag) .lm-about {", 1)[1].split("}", 1)[0]
     assert "text-align: left" in about_rule
     assert "text-align: center" not in about_rule
@@ -845,14 +824,60 @@ def test_p0g_overview_visual_locks():
     assert markup.count('class="lm-cvrp-frame"') == 1
     assert "lm-cvrp-well" in markup
     assert markup.count("lm-cvrp-well") == 2
-    assert "BASELINE" in markup
-    assert "OPTIMIZED" in markup
-    assert "OPTIMIZED SOLUTION" not in markup
-    assert "122.4 km" in markup
-    assert "97.2 km" in markup
-    assert components.CVRP_STORY_MS == 6200
-    assert "lm-cvrp-running" in markup
-    assert "classList.remove(\"lm-cvrp-running\")" in markup
+    assert "lm-cvrp-explainer" in markup
+    assert "BASELINE" not in markup
+    assert "122.4 km" not in markup
+    assert "97.2 km" not in markup
+    assert components.CVRP_EXPLAINER_MS == 7500
+    assert "lm-cvrp-running" not in markup
+    assert "--lm-surface-soft: #EAF1F3" in css
+    assert "--lm-well: #F7FAFB" in css
+    assert "--lm-border: #CCD9DF" in css
+    assert "--lm-teal-hover: #096864" in css
+    assert "background: var(--lm-teal) !important" in css
+    assert "st-key-overview-cta" in css
+    assert 'key="overview-cta"' in overview
+    assert "#184866" in css
+    assert "3px solid #62D6C8" in css
+    assert "3px solid transparent" in css
+    assert ".stApp:has(.lm-overview-flag) [data-testid=\"stSidebarNavLink\"][href$=\"/\"]" in css
+    assert "[href*=\"/scenarios\"]" in css
+    assert ".stApp:has(.lm-plan-flag) [data-testid=\"stSidebarNavLink\"][href*=\"/plan\"]" in css
+    assert "st.radio(" in Path("frontend/components.py").read_text(encoding="utf-8")
+    assert "planning_availability()" in Path("frontend/components.py").read_text(encoding="utf-8")
+    assert ".lm-api-status" in css
+    assert ".lm-api-dot" in css
+    assert "#087A5A" in css
+    concept_rule = css.split(".lm-concept {", 1)[1].split("}", 1)[0]
+    assert "border-top" not in concept_rule
+    assert "box-shadow: none" in concept_rule
+    home = Path("frontend/Home.py").read_text(encoding="utf-8")
+    assert "st.navigation(" in home
+    assert 'position="sidebar"' in home
+    scenarios = Path("frontend/pages/1_Dispatch_Setup.py").read_text(encoding="utf-8")
+    plan = Path("frontend/pages/3_Baseline_vs_Optimised.py").read_text(encoding="utf-8")
+    method = Path("frontend/pages/6_Methodology.py").read_text(encoding="utf-8")
+    inspect = Path("frontend/pages/4_Model_Inspector.py").read_text(encoding="utf-8")
+    assert "lm-cvrp-section" not in scenarios
+    assert "lm-cvrp-section" not in plan
+    assert "lm-cvrp-section" not in method
+    assert "lm-cvrp-section" not in inspect
+    assert "render_plan_verdict" in plan
+    assert "st.segmented_control(" in plan
+    assert 'key="plan_view"' in plan
+    assert 'st.button(t("ux.method.inspect")' in method
+    assert "st.page_link" not in method
+    assert "pages/4_Model_Inspector.py" in method
+    assert "inspect.subtitle" in inspect
+    footer_src = Path("frontend/components.py").read_text(encoding="utf-8")
+    assert "https://www.linkedin.com/in/syeddanishali16/" in footer_src
+    assert "https://github.com/syeddanishali17/LastMileLab2" in footer_src
+    brand = Path("frontend/assets/brand.svg").read_text(encoding="utf-8")
+    assert 'rx="7"' not in brand
+    assert 'rx="7"' not in components.HERO_MARK_SVG
+    assert 'class="lm-hero-mark"' in components.HERO_MARK_SVG
+    assert "truck" not in brand.lower()
+    assert "<rect width=\"32\" height=\"32\"" not in brand
     assert "--lm-surface-soft: #EAF1F3" in css
     assert "--lm-well: #F7FAFB" in css
     assert "--lm-border: #CCD9DF" in css
@@ -905,7 +930,9 @@ def test_p0g_overview_visual_locks():
 
 def test_p0g1_rhythm_motion_and_shared_primitives():
     css = components.THEME_CSS
-    running = css.split(".lm-cvrp-running", 1)[1].split(".lm-motion-tools", 1)[0]
+    explainer = css.split(".lm-cvrp-pane-solution .lm-cvrp-routes path {", 1)[1].split(
+        "@keyframes lm-explainer-depot", 1
+    )[0]
     nav_rule = css.split('[data-testid="stSidebarNavLink"] {', 1)[1].split("}", 1)[0]
     hover_rule = css.split('[data-testid="stSidebarNavLink"]:hover {', 1)[1].split("}", 1)[0]
     active_rule = css.split(
@@ -915,18 +942,10 @@ def test_p0g1_rhythm_motion_and_shared_primitives():
     overview_width = css.split(
         ".stApp:has(.lm-overview-flag) [data-testid=\"stMainBlockContainer\"] {", 1
     )[1].split("}", 1)[0]
-    assert components.CVRP_STORY_MS == 6200
-    assert f"var STORY_MS = {components.CVRP_STORY_MS};" in components._CVRP_STORY_JS
-    assert "animation-iteration-count: infinite" not in running
-    assert "animation-iteration-count: 1;" in running
-    assert "animation-fill-mode: forwards;" in running
+    assert components.CVRP_EXPLAINER_MS == 7500
+    assert "animation-iteration-count: infinite;" in explainer
+    assert "animation-name: lm-explainer-route-1;" in css
     assert components._CVRP_DEPOT == (320, 185)
-    assert components._CVRP_NN_ROUTES == [
-        ("#2563EB", [(200, 70), (445, 65), (140, 95)]),
-        ("#D8893B", [(520, 100), (175, 145), (500, 250)]),
-        ("#6775C9", [(485, 155), (125, 245), (545, 285)]),
-        ("#C026D3", [(430, 295), (200, 265), (155, 305)]),
-    ]
     assert components._CVRP_OPT_ROUTES == [
         ("#2563EB", [(200, 70), (140, 95), (175, 145)]),
         ("#D8893B", [(445, 65), (520, 100), (485, 155)]),
@@ -1623,7 +1642,7 @@ def test_solution_verification_page_hierarchy_and_states() -> None:
     assert ".lm-inspect-verdict.is-fail" in components.THEME_CSS
     assert "lm-inspect-runid" in components.THEME_CSS
     assert "concept_cards" in overview
-    assert "render_overview_reference_proof" in overview
+    assert "render_cvrp_animation" in overview
     assert "ux.plan.why.title" in plan
     assert "render_plan_verdict" in plan
     assert "render_route_legend" in plan

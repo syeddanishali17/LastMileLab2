@@ -3,7 +3,6 @@
 # Keeping each pair together makes reviews of new product copy straightforward.
 COPY = {
     "ux.motion.pause": ("Pause animations", "Animationen pausieren"),
-    "ux.motion.replay": ("Replay comparison", "Vergleich erneut abspielen"),
     "ux.export.prepare": ("Prepare JSON and CSV", "JSON und CSV vorbereiten"),
     "ux.preview.empty": (
         "Select a preset and generate the scenario to preview customer locations and fleet capacity.",
@@ -19,10 +18,10 @@ COPY = {
         "Zahlen zeigen die Kundenstopp-Reihenfolge. Depotstart und -rückkehr sind nicht nummeriert.",
     ),
     "ux.over.diagram": (
-        "Illustrative routing structure, not road navigation. The reference distances "
-        "are from the Vienna Standard scenario, not from this schematic.",
-        "Illustrative Tourenstruktur, keine Straßennavigation. Die Referenzdistanzen "
-        "stammen vom Szenario Wien Standard, nicht von dieser Skizze.",
+        "Illustrative CVRP structure: customer demand is transformed into feasible vehicle "
+        "routes. The figure is explanatory and does not represent live road geometry.",
+        "Illustrative CVRP-Struktur: Kundenbedarf wird in zulässige Fahrzeugtouren überführt. "
+        "Die Darstellung ist erklärend und bildet keine reale Straßengeometrie ab.",
     ),
     "check.audit.DEMAND_SATISFACTION": (
         "Every customer served exactly once",
@@ -162,44 +161,26 @@ COPY = {
         "Die Baseline liefert einen transparenten Referenzpunkt, um die Verbesserung durch den "
         "optimierten Plan zu bewerten.",
     ),
-    "ux.over.proof.kicker": (
-        "REFERENCE SCENARIO",
-        "REFERENZSZENARIO",
-    ),
-    "ux.over.proof.scenario": (
-        "Vienna Standard",
-        "Wien Standard",
-    ),
-    "ux.over.proof.line": (
-        "122.394 km → 97.193 km · 20.6% shorter · 24/24 customers served",
-        "122,394 km → 97,193 km · 20,6 % kürzer · 24/24 Kunden bedient",
-    ),
     "ux.over.stage.kicker": (
-        "ROUTE COMPARISON",
-        "TOURENVERGLEICH",
+        "ROUTING MODEL",
+        "ROUTING-MODELL",
     ),
     "ux.over.stage.title": (
-        "Baseline versus optimized",
-        "Baseline und optimierte Lösung",
+        "From delivery demand to feasible vehicle routes",
+        "Von Zustellbedarf zu zulässigen Fahrzeugtouren",
     ),
     "ux.over.stage.lead": (
-        "Compare the nearest-neighbour baseline with the optimized route plan for the "
-        "same scenario.",
-        "Nächster-Nachbar-Baseline und optimierten Tourenplan für dasselbe Szenario vergleichen.",
+        "A Capacitated Vehicle Routing Problem begins with customer demand, vehicle "
+        "capacity, and a depot. The routing model then assigns customers to vehicles and "
+        "determines the route sequence needed to serve them efficiently.",
+        "Ein Capacitated Vehicle Routing Problem beginnt mit Kundenbedarf, Fahrzeugkapazität "
+        "und einem Depot. Das Routing-Modell weist Kunden anschließend Fahrzeugen zu und "
+        "bestimmt die Tourreihenfolge, mit der sie effizient bedient werden.",
     ),
-    "ux.over.stage.view": (
-        "Illustrative route view",
-        "Illustrative Touransicht",
-    ),
-    "ux.over.anim.label.baseline": ("BASELINE", "BASELINE"),
-    "ux.over.anim.label.optimized": ("OPTIMIZED", "OPTIMIERT"),
-    "ux.over.anim.note.baseline": (
-        "Deterministic starting plan for comparison.",
-        "Deterministischer Startplan zum Vergleich.",
-    ),
-    "ux.over.anim.note.optimized": (
-        "Capacity-feasible plan with reduced fleet distance.",
-        "Kapazitätszulässiger Plan mit reduzierter Flottendistanz.",
+    "ux.over.stage.model.tag": ("CVRP", "CVRP"),
+    "ux.over.stage.model": (
+        "Routing model",
+        "Routing-Modell",
     ),
     "ux.over.model.kicker": (
         "MODEL LOGIC",
@@ -221,18 +202,7 @@ COPY = {
         "COMPARISON",
         "VERGLEICH",
     ),
-    "ux.over.proof.tech": (
-        "This comparison shows a feasible optimized plan for Vienna Standard 24; global "
-        "optimality is not claimed.",
-        "Dieser Vergleich zeigt einen zulässigen optimierten Plan für Wien Standard 24; "
-        "globale Optimalität wird nicht behauptet.",
-    ),
     "ux.over.cta": ("Choose a scenario", "Szenario auswählen"),
-    "ux.over.result": ("122.4 km → 97.2 km · 20.6% shorter", "122,4 km → 97,2 km · 20,6 % kürzer"),
-    "ux.over.anim.baseline": ("Nearest-neighbour baseline", "Nächster-Nachbar-Baseline"),
-    "ux.over.anim.optimized": ("Optimized solution", "Optimierte Lösung"),
-    "ux.over.anim.km": ("122.4 km", "122,4 km"),
-    "ux.over.anim.total": ("Total distance", "Gesamtdistanz"),
     "ux.over.anim.depot": ("Depot", "Depot"),
     "empty.open": ("Go to Scenarios", "Zu Szenarien"),
     "empty.plan.title": ("No route comparison yet", "Noch kein Tourenvergleich"),

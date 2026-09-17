@@ -52,7 +52,7 @@ Open:
 
 These local API URLs apply to this two-process setup only. Docker Compose does not publish FastAPI; see [`deployment.md`](deployment.md).
 
-In the UI, follow **Overview → Scenarios → Vienna Standard → Run comparison**. The default five-second search opens **Plan** (heading **Route comparison**) with both route maps and visible JSON/CSV ZIP exports. The Overview proof card is the published snapshot; Plan shows the current API run.
+In the UI, follow **Overview → Scenarios → Vienna Standard → Run comparison**. Overview teaches instance → routes; the default five-second search opens **Plan** (heading **Route comparison**) with both route maps, the current API run, and visible JSON/CSV ZIP exports.
 
 For a custom delivery wave, choose **Custom scenario**, edit tote demand, then **Generate scenario**. Generation is disabled if an order exceeds a van's capacity or total demand exceeds fleet capacity. A passed input check is not a guarantee that unsplit orders can be packed. Generated locations use the existing Vienna zones. **Methodology** and **Solution verification** (German: **Lösungsprüfung**) are optional sidebar links. The sidebar language control is English/Deutsch; the footer has LinkedIn, GitHub, and email. LEARNING_6 is not a Streamlit preset.
 

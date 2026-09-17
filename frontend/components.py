@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 import re
 from collections.abc import Callable
 from html import escape
@@ -659,60 +660,6 @@ section[data-testid="stSidebar"] > div:first-child {
   gap: 16px;
   margin: 0.35rem 0 0.75rem;
 }
-.lm-proof-kicker {
-  margin: 1rem 0 0.4rem;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--lm-teal);
-}
-.lm-overview-proof {
-  margin: 0.35rem 0 1.35rem;
-  padding: 0;
-  border: none;
-  background: none;
-  box-shadow: none;
-}
-.lm-overview-proof .lm-proof-kicker {
-  margin: 0 0 0.35rem;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: var(--lm-teal);
-  opacity: 1;
-}
-.lm-overview-proof .lm-proof-name {
-  margin: 0 0 0.2rem;
-  font-size: 17px;
-  font-weight: 650;
-  line-height: 1.3;
-  color: var(--lm-navy);
-}
-.lm-overview-proof .lm-proof-line {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.35rem 0.7rem;
-  margin: 0;
-  font-size: 26px;
-  font-weight: 650;
-  line-height: 1.25;
-  color: var(--lm-navy);
-  font-variant-numeric: tabular-nums;
-  overflow-wrap: break-word;
-}
-.lm-overview-proof .lm-proof-metrics { margin: 0; }
-.lm-overview-proof .lm-proof-gain {
-  font-size: 16px;
-  font-weight: 650;
-  color: var(--lm-teal);
-}
-.lm-overview-proof .lm-proof-served {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--lm-muted);
-}
 .lm-method {
   max-width: 720px;
 }
@@ -1207,6 +1154,7 @@ div[data-testid="stDataFrame"] [data-testid="stDataFrameResizable"] td {
 }
 .lm-cvrp-section {
   margin: 0 0 0.25rem;
+  width: 100%;
 }
 .lm-cvrp-intro {
   display: block;
@@ -1236,7 +1184,7 @@ div[data-testid="stDataFrame"] [data-testid="stDataFrameResizable"] td {
 }
 .lm-cvrp-lead {
   margin: 10px 0 0;
-  max-width: 640px;
+  max-width: 720px;
   font-size: 15px;
   font-weight: 400;
   line-height: 1.55;
@@ -1244,48 +1192,67 @@ div[data-testid="stDataFrame"] [data-testid="stDataFrameResizable"] td {
   text-align: left;
 }
 .lm-cvrp-frame {
-  background: var(--lm-surface-soft);
+  background: var(--lm-surface);
   border: 1px solid var(--lm-border);
   border-radius: 12px;
   box-shadow: none;
   overflow: hidden;
 }
-.lm-cvrp-frame-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 14px 22px;
-  border-bottom: 1px solid var(--lm-border);
-  background: var(--lm-surface-soft);
-}
-.lm-cvrp-frame-scenario {
-  font-size: 13.5px;
-  font-weight: 650;
-  color: var(--lm-navy);
-}
-.lm-cvrp-frame-view {
-  font-size: 13.5px;
-  font-weight: 400;
-  color: var(--lm-muted);
-}
-.lm-cvrp-compare {
+.lm-cvrp-explainer {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: stretch;
   gap: 0;
   width: 100%;
   margin: 0;
+  background: var(--lm-surface);
 }
-@container (max-width: 620px) {
-  .lm-cvrp-compare { grid-template-columns: 1fr; }
-  .lm-cvrp-section .lm-cvrp-pane-optimized {
-    border-left: 0;
-    border-top: 1px solid var(--lm-border);
-  }
+.lm-cvrp-transform {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 92px;
+  padding: 16px 10px;
+  border-left: 1px solid var(--lm-border);
+  border-right: 1px solid var(--lm-border);
+}
+.lm-cvrp-transform-kicker {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--lm-teal);
+}
+.lm-cvrp-transform-label {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 650;
+  line-height: 1.3;
+  color: var(--lm-navy);
+  text-align: center;
+  max-width: 7.5rem;
+}
+.lm-cvrp-arrow {
+  width: 48px;
+  height: 24px;
+  display: block;
+  color: var(--lm-navy);
+  opacity: 0.22;
+  animation: lm-explainer-arrow 7.5s ease-in-out infinite;
+}
+.lm-cvrp-arrow path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 @media (max-width: 760px) {
   .lm-cvrp-intro { margin-bottom: 18px; }
-  .lm-cvrp-lead { max-width: 640px; }
+  .lm-cvrp-lead { max-width: 720px; }
   .lm-cvrp-frame-foot { flex-direction: column; align-items: stretch; }
   .lm-hero h1, .stApp:has(.lm-overview-flag) .lm-hero h1 {
     font-size: clamp(26px, 7vw, 32px);
@@ -1296,8 +1263,8 @@ div[data-testid="stDataFrame"] [data-testid="stDataFrameResizable"] td {
   display: flex;
   flex-direction: column;
   background: var(--lm-surface);
-  border: 1px solid var(--lm-border);
-  border-radius: 12px;
+  border: 0;
+  border-radius: 0;
   padding: 4px 8px 12px;
   min-width: 0;
 }
@@ -1309,93 +1276,56 @@ div[data-testid="stDataFrame"] [data-testid="stDataFrameResizable"] td {
   background: transparent;
   border: 0;
   border-radius: 0;
-  padding: 26px;
+  padding: 22px 20px 18px;
   box-shadow: none;
 }
-.lm-cvrp-section .lm-cvrp-pane-optimized {
-  border-left: 1px solid var(--lm-border);
-}
-.lm-cvrp-pane-kicker {
-  margin: 0 0 6px;
-  font-size: 11.5px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--lm-muted);
-}
-.lm-cvrp-pane-optimized .lm-cvrp-pane-kicker { color: var(--lm-teal); }
-.stMarkdown .lm-cvrp-pane-title {
-  margin: 8px 0 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--lm-navy);
-  text-align: center;
-}
-.lm-cvrp-section .stMarkdown .lm-cvrp-pane-title,
-.lm-cvrp-section .lm-cvrp-pane-title {
-  margin: 0 0 4px;
-  font-size: 20px;
-  font-weight: 650;
-  line-height: 1.25;
-  text-align: left;
-}
-.stMarkdown .lm-cvrp-pane-km {
-  margin: 2px 0 2px;
-  font-size: 14px;
-  color: var(--lm-muted);
-  text-align: center;
-}
-.lm-cvrp-section .stMarkdown .lm-cvrp-pane-km,
-.lm-cvrp-section .lm-cvrp-pane-km {
-  margin: 0 0 8px;
-  font-size: 32px;
-  font-weight: 700;
-  line-height: 1.15;
-  font-variant-numeric: tabular-nums;
-  color: var(--lm-navy);
-  text-align: left;
-}
-.lm-cvrp-section .lm-cvrp-pane-optimized .lm-cvrp-pane-km {
-  color: var(--lm-teal);
-}
-.lm-cvrp-pane-note {
-  margin: 0 0 14px;
-  font-size: 14.5px;
-  font-weight: 400;
-  line-height: 1.5;
-  color: var(--lm-muted);
-}
 .lm-cvrp-well {
-  background: var(--lm-well);
+  background:
+    radial-gradient(ellipse 62% 55% at 50% 58%, rgba(16, 47, 70, 0.06), transparent 70%),
+    var(--lm-well);
   border: 1px solid var(--lm-border);
   border-radius: 8px;
   box-shadow: none;
-  padding: 8px 6px;
+  padding: 6px;
   min-width: 0;
 }
 .lm-cvrp-pane .lm-cvrp {
   width: 100%;
-  height: clamp(190px, 18vw, 250px);
+  height: auto;
   display: block;
+  overflow: visible;
 }
 .lm-cvrp-section .lm-cvrp-pane .lm-cvrp {
-  height: clamp(220px, 20vw, 280px);
+  height: auto;
+  max-height: none;
 }
 .lm-cvrp-frame-foot {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
+  display: block;
   padding: 14px 22px;
   border-top: 1px solid var(--lm-border);
   background: var(--lm-surface-soft);
 }
+@container (max-width: 720px) {
+  .lm-cvrp-explainer { grid-template-columns: 1fr; }
+  .lm-cvrp-transform {
+    flex-direction: row;
+    min-width: 0;
+    padding: 10px 16px;
+    border-left: 0;
+    border-right: 0;
+    border-top: 1px solid var(--lm-border);
+    border-bottom: 1px solid var(--lm-border);
+    gap: 12px;
+  }
+  .lm-cvrp-arrow { transform: rotate(90deg); }
+  .lm-cvrp-transform-label { max-width: none; text-align: left; }
+  .lm-cvrp-section .lm-cvrp-pane-solution { border-top: 0; }
+}
 @media (max-width: 760px) {
-  .lm-cvrp-pane .lm-cvrp { height: auto; max-height: 250px; }
-  .lm-cvrp-section .lm-cvrp-pane .lm-cvrp { height: auto; max-height: 280px; }
-  .lm-cvrp-section .lm-cvrp-pane { padding: 20px 16px; }
+  .lm-cvrp-pane .lm-cvrp,
+  .lm-cvrp-section .lm-cvrp-pane .lm-cvrp { height: auto; max-height: none; }
+  .lm-cvrp-section .lm-cvrp-pane { padding: 16px 14px 12px; }
   .stMarkdown .lm-cvrp-heading, .lm-cvrp-heading { font-size: 24px; }
-  .lm-cvrp-section .lm-cvrp-pane-km { font-size: 28px; }
 }
 .lm-cvrp-panel .lm-assign {
   width: 100%;
@@ -1414,7 +1344,7 @@ div[data-testid="stDataFrame"] [data-testid="stDataFrameResizable"] td {
 }
 .lm-cvrp-section .lm-cvrp-cap {
   margin: 0;
-  max-width: none;
+  max-width: 72ch;
   text-align: left;
   font-size: 13px;
   line-height: 1.45;
@@ -2240,109 +2170,155 @@ div[data-testid="stDataFrame"] [data-testid="stDataFrameResizable"] td {
 }
 .lm-figure-title { color: var(--lm-navy); font-size: 16px; font-weight: 600; }
 
+.lm-cvrp-pane .lm-cvrp-network path {
+  fill: none;
+  stroke: #184866;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.lm-cvrp-pane .lm-cvrp-network .lm-cvrp-spoke {
+  stroke-width: 1.1;
+  opacity: 0.42;
+}
+.lm-cvrp-pane .lm-cvrp-network .lm-cvrp-mesh {
+  stroke: #10324A;
+}
+.lm-cvrp-pane .lm-cvrp-node-halo { fill: #FFFFFF; }
 .lm-cvrp-pane .lm-cvrp-route-tracks path,
 .lm-cvrp-pane .lm-cvrp-routes path {
   fill: none; stroke-width: 2.8; stroke-linejoin: round; stroke-linecap: round;
 }
+.lm-cvrp-pane .lm-cvrp-routes-halo path {
+  stroke: #FFFFFF;
+  stroke-width: 5.4;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
 .lm-cvrp-pane .lm-cvrp-nodes .lm-cvrp-cust {
   fill: #F8FAFC;
-  stroke: #94A3B8;
-  stroke-width: 1.55;
+  stroke: #4E6270;
+  stroke-width: 1.7;
+  filter: drop-shadow(0 1px 1.5px rgba(16, 47, 70, 0.28));
 }
 .lm-cvrp-pane .lm-cvrp-nodes .lm-cvrp-r1 { --lm-visit: #2563EB; }
 .lm-cvrp-pane .lm-cvrp-nodes .lm-cvrp-r2 { --lm-visit: #D8893B; }
 .lm-cvrp-pane .lm-cvrp-nodes .lm-cvrp-r3 { --lm-visit: #6775C9; }
 .lm-cvrp-pane .lm-cvrp-nodes .lm-cvrp-r4 { --lm-visit: #C026D3; }
-.lm-cvrp-pane .lm-cvrp-stops {
-  paint-order: stroke;
-  stroke: rgba(23, 59, 87, 0.42);
-  stroke-width: 2.6px;
+.lm-cvrp-depot-face {
+  stroke: rgba(16, 47, 70, 0.45);
+  stroke-width: 0.6;
+  stroke-linejoin: round;
 }
-.lm-cvrp-pane .lm-cvrp-ids {
-  fill: #586879; font-size: 16px; font-weight: 600;
-  paint-order: stroke; stroke: white; stroke-width: 3px; pointer-events: none;
+.lm-cvrp-depot-top { fill: #2C5170; }
+.lm-cvrp-depot-left { fill: #081722; }
+.lm-cvrp-depot-right { fill: #102F46; }
+.lm-cvrp-depot-edge { stroke: rgba(255, 255, 255, 0.32); stroke-width: 0.9; }
+.lm-cvrp-depot-door { fill: #62D6C8; opacity: 0.9; }
+.lm-cvrp-depot-shadow { fill: rgba(16, 47, 70, 0.22); }
+.lm-cvrp-depot {
+  animation: lm-explainer-depot 7.5s ease-in-out infinite;
 }
-.lm-cvrp-pane-baseline .lm-cvrp-route-tracks { opacity: 0.35; }
-.lm-cvrp-pane-baseline .lm-cvrp-routes path {
-  stroke-dasharray: none;
-  opacity: 1;
-}
-.lm-cvrp-pane-baseline .lm-cvrp-nodes .lm-cvrp-cust {
-  fill: var(--lm-visit);
-  stroke: var(--lm-visit);
-}
-.lm-cvrp-pane-optimized .lm-cvrp-route-tracks { opacity: 0.22; }
-.lm-cvrp-pane-optimized .lm-cvrp-routes path {
+.lm-cvrp-pane-instance .lm-cvrp-network { opacity: 1; }
+.lm-cvrp-pane-solution .lm-cvrp-context { opacity: 0.12; }
+.lm-cvrp-pane-solution .lm-cvrp-route-tracks { opacity: 0.45; }
+.lm-cvrp-pane-solution .lm-cvrp-routes-halo path {
   stroke-dasharray: 100;
   stroke-dashoffset: 100;
   opacity: 0;
+  animation-duration: 7.5s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
 }
-.lm-cvrp-pane-optimized .lm-cvrp-nodes .lm-cvrp-cust {
-  fill: #F8FAFC;
-  stroke: #94A3B8;
+.lm-cvrp-pane-solution .lm-cvrp-routes-halo path:nth-child(1) {
+  animation-name: lm-explainer-route-1;
 }
-.lm-cvrp-pane-optimized .lm-cvrp-pane-km { opacity: 0.4; }
-.lm-cvrp-running .lm-cvrp-pane-baseline .lm-cvrp-routes path {
-  animation-name: lm-baseline-soften;
-  animation-duration: 0.4s;
-  animation-delay: 1.6s;
-  animation-fill-mode: forwards;
-  animation-timing-function: ease;
-  animation-iteration-count: 1;
+.lm-cvrp-pane-solution .lm-cvrp-routes-halo path:nth-child(2) {
+  animation-name: lm-explainer-route-2;
 }
-.lm-cvrp-running .lm-cvrp-pane-optimized .lm-cvrp-routes path {
-  animation-name: lm-opt-reveal;
-  animation-duration: 0.8s;
-  animation-fill-mode: forwards;
-  animation-timing-function: ease-out;
-  animation-iteration-count: 1;
+.lm-cvrp-pane-solution .lm-cvrp-routes-halo path:nth-child(3) {
+  animation-name: lm-explainer-route-3;
 }
-.lm-cvrp-running .lm-cvrp-pane-optimized .lm-cvrp-routes path:nth-child(1) {
-  animation-delay: 2.0s;
+.lm-cvrp-pane-solution .lm-cvrp-routes-halo path:nth-child(4) {
+  animation-name: lm-explainer-route-4;
 }
-.lm-cvrp-running .lm-cvrp-pane-optimized .lm-cvrp-routes path:nth-child(2) {
-  animation-delay: 2.8s;
+.lm-cvrp-pane-solution .lm-cvrp-routes path {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  opacity: 0;
+  animation-duration: 7.5s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
 }
-.lm-cvrp-running .lm-cvrp-pane-optimized .lm-cvrp-routes path:nth-child(3) {
-  animation-delay: 3.6s;
+.lm-cvrp-pane-solution .lm-cvrp-routes path:nth-child(1) {
+  animation-name: lm-explainer-route-1;
 }
-.lm-cvrp-running .lm-cvrp-pane-optimized .lm-cvrp-routes path:nth-child(4) {
-  animation-delay: 4.4s;
+.lm-cvrp-pane-solution .lm-cvrp-routes path:nth-child(2) {
+  animation-name: lm-explainer-route-2;
 }
-.lm-cvrp-running .lm-cvrp-pane-optimized .lm-cvrp-nodes .lm-cvrp-cust {
-  animation-name: lm-cust-activate;
-  animation-duration: 0.35s;
-  animation-fill-mode: forwards;
-  animation-timing-function: ease;
-  animation-iteration-count: 1;
+.lm-cvrp-pane-solution .lm-cvrp-routes path:nth-child(3) {
+  animation-name: lm-explainer-route-3;
 }
-.lm-cvrp-running .lm-cvrp-pane-optimized .lm-cvrp-nodes .lm-cvrp-r1 { animation-delay: 2.0s; }
-.lm-cvrp-running .lm-cvrp-pane-optimized .lm-cvrp-nodes .lm-cvrp-r2 { animation-delay: 2.8s; }
-.lm-cvrp-running .lm-cvrp-pane-optimized .lm-cvrp-nodes .lm-cvrp-r3 { animation-delay: 3.6s; }
-.lm-cvrp-running .lm-cvrp-pane-optimized .lm-cvrp-nodes .lm-cvrp-r4 { animation-delay: 4.4s; }
-.lm-cvrp-running .lm-cvrp-pane-optimized .lm-cvrp-pane-km {
-  animation-name: lm-opt-km;
-  animation-duration: 0.45s;
-  animation-delay: 5.2s;
-  animation-fill-mode: forwards;
-  animation-timing-function: ease;
-  animation-iteration-count: 1;
+.lm-cvrp-pane-solution .lm-cvrp-routes path:nth-child(4) {
+  animation-name: lm-explainer-route-4;
 }
-@keyframes lm-baseline-soften {
-  from { opacity: 1; }
-  to { opacity: 0.6; }
+.lm-cvrp-pane-solution .lm-cvrp-nodes .lm-cvrp-cust {
+  animation-duration: 7.5s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
 }
-@keyframes lm-opt-reveal {
-  from { stroke-dashoffset: 100; opacity: 0; }
-  to { stroke-dashoffset: 0; opacity: 1; }
+.lm-cvrp-pane-solution .lm-cvrp-nodes .lm-cvrp-r1 { animation-name: lm-explainer-cust-1; }
+.lm-cvrp-pane-solution .lm-cvrp-nodes .lm-cvrp-r2 { animation-name: lm-explainer-cust-2; }
+.lm-cvrp-pane-solution .lm-cvrp-nodes .lm-cvrp-r3 { animation-name: lm-explainer-cust-3; }
+.lm-cvrp-pane-solution .lm-cvrp-nodes .lm-cvrp-r4 { animation-name: lm-explainer-cust-4; }
+@keyframes lm-explainer-depot {
+  0%, 12% { filter: none; }
+  16%, 22% { filter: drop-shadow(0 0 7px rgba(16, 47, 70, 0.38)); }
+  30%, 100% { filter: none; }
 }
-@keyframes lm-cust-activate {
-  from { fill: #F8FAFC; stroke: #94A3B8; }
-  to { fill: var(--lm-visit); stroke: var(--lm-visit); }
+@keyframes lm-explainer-arrow {
+  0%, 22% { opacity: 0.18; }
+  30%, 90% { opacity: 1; }
+  100% { opacity: 0.18; }
 }
-@keyframes lm-opt-km {
-  from { opacity: 0.4; }
-  to { opacity: 1; }
+@keyframes lm-explainer-route-1 {
+  0%, 34% { stroke-dashoffset: 100; opacity: 0; }
+  44%, 90% { stroke-dashoffset: 0; opacity: 1; }
+  100% { stroke-dashoffset: 100; opacity: 0; }
+}
+@keyframes lm-explainer-route-2 {
+  0%, 44% { stroke-dashoffset: 100; opacity: 0; }
+  54%, 90% { stroke-dashoffset: 0; opacity: 1; }
+  100% { stroke-dashoffset: 100; opacity: 0; }
+}
+@keyframes lm-explainer-route-3 {
+  0%, 54% { stroke-dashoffset: 100; opacity: 0; }
+  64%, 90% { stroke-dashoffset: 0; opacity: 1; }
+  100% { stroke-dashoffset: 100; opacity: 0; }
+}
+@keyframes lm-explainer-route-4 {
+  0%, 64% { stroke-dashoffset: 100; opacity: 0; }
+  74%, 90% { stroke-dashoffset: 0; opacity: 1; }
+  100% { stroke-dashoffset: 100; opacity: 0; }
+}
+@keyframes lm-explainer-cust-1 {
+  0%, 34% { fill: #F8FAFC; stroke: #94A3B8; }
+  44%, 90% { fill: var(--lm-visit); stroke: var(--lm-visit); }
+  100% { fill: #F8FAFC; stroke: #94A3B8; }
+}
+@keyframes lm-explainer-cust-2 {
+  0%, 44% { fill: #F8FAFC; stroke: #94A3B8; }
+  54%, 90% { fill: var(--lm-visit); stroke: var(--lm-visit); }
+  100% { fill: #F8FAFC; stroke: #94A3B8; }
+}
+@keyframes lm-explainer-cust-3 {
+  0%, 54% { fill: #F8FAFC; stroke: #94A3B8; }
+  64%, 90% { fill: var(--lm-visit); stroke: var(--lm-visit); }
+  100% { fill: #F8FAFC; stroke: #94A3B8; }
+}
+@keyframes lm-explainer-cust-4 {
+  0%, 64% { fill: #F8FAFC; stroke: #94A3B8; }
+  74%, 90% { fill: var(--lm-visit); stroke: var(--lm-visit); }
+  100% { fill: #F8FAFC; stroke: #94A3B8; }
 }
 .lm-motion-tools { display: flex; justify-content: flex-end; margin-top: 6px; }
 .lm-motion-control {
@@ -2350,44 +2326,8 @@ div[data-testid="stDataFrame"] [data-testid="stDataFrameResizable"] td {
   font-size: 14px; color: var(--lm-muted); cursor: pointer;
 }
 .lm-motion-control input { accent-color: var(--lm-teal); width: 16px; height: 16px; }
-.stApp:has(.lm-motion-pause input:checked) :is(.lm-hero, .lm-cvrp-panel) * {
+.stApp:has(.lm-motion-pause input:checked) :is(.lm-hero, .lm-cvrp-panel, .lm-cvrp-explainer) * {
   animation-play-state: paused !important;
-}
-.lm-cvrp-replay-tools {
-  display: flex; justify-content: flex-end; margin-top: 6px;
-}
-.lm-cvrp-section .lm-cvrp-replay-tools {
-  margin: 0;
-  flex: 0 0 auto;
-}
-button.lm-cvrp-replay {
-  appearance: none; background: #FFFFFF; border: 1px solid var(--lm-border);
-  display: inline-flex; align-items: center; min-height: 44px;
-  margin: 0; padding: 8px 16px; border-radius: 8px;
-  font: inherit; font-size: 14px; font-weight: 650;
-  color: var(--lm-navy); cursor: pointer;
-  box-shadow: none; transform: none;
-}
-button.lm-cvrp-replay:hover {
-  background: rgba(11, 122, 117, 0.06);
-  border-color: color-mix(in srgb, var(--lm-teal) 35%, var(--lm-border));
-  transform: none;
-}
-button.lm-cvrp-replay:focus,
-button.lm-cvrp-replay:focus-visible {
-  outline: 3px solid var(--lm-focus) !important;
-  outline-offset: 3px !important;
-}
-.stApp:has(.lm-overview-flag) iframe[height="0"] {
-  height: 0 !important; min-height: 0 !important; border: 0 !important;
-  position: absolute !important; width: 0 !important; overflow: hidden !important;
-}
-.stApp:has(.lm-overview-flag) [data-testid="stElementContainer"]:has(iframe[height="0"]) {
-  height: 0 !important;
-  min-height: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  overflow: hidden !important;
 }
 .lm-assign-sheet, .lm-assign-sheet-label {
   opacity: 0; animation: lm-assign-sheet 10s ease-in-out infinite;
@@ -2451,18 +2391,23 @@ button.lm-cvrp-replay:focus-visible {
     stroke-dasharray: none !important;
   }
   .lm-cvrp-depot, .lm-cvrp-nodes circle, .lm-cvrp-routes path,
-  .lm-cvrp-stops, .lm-assign-routes path { opacity: 1 !important; }
-  .lm-cvrp-ids { opacity: 1 !important; }
-  .lm-motion-tools, .lm-cvrp-replay-tools { display: none; }
-  .lm-cvrp-routes path, .lm-hero-route { stroke-dasharray: none !important; }
+  .lm-cvrp-routes-halo path, .lm-assign-routes path { opacity: 1 !important; }
+  .lm-cvrp-arrow { opacity: 1 !important; }
+  .lm-motion-tools { display: none; }
+  .lm-cvrp-routes path, .lm-cvrp-routes-halo path,
+  .lm-hero-route { stroke-dasharray: none !important; }
   .lm-assign-sheet, .lm-assign-sheet-label { opacity: 0 !important; }
-  .lm-cvrp-routes path, .lm-assign-routes path {
+  .lm-cvrp-routes path, .lm-cvrp-routes-halo path, .lm-assign-routes path {
     stroke-dashoffset: 0 !important;
   }
-  .lm-cvrp-pane-baseline .lm-cvrp-routes path { opacity: 0.6 !important; }
-  .lm-cvrp-pane-optimized .lm-cvrp-routes path { opacity: 1 !important; }
-  .lm-cvrp-pane-optimized .lm-cvrp-pane-km { opacity: 1 !important; }
-  .lm-cvrp-pane .lm-cvrp-nodes .lm-cvrp-cust {
+  .lm-cvrp-pane-solution .lm-cvrp-routes path { opacity: 1 !important; }
+  .lm-cvrp-pane-solution .lm-cvrp-routes-halo path { opacity: 1 !important; }
+  .lm-cvrp-pane-instance .lm-cvrp-nodes .lm-cvrp-cust {
+    fill: #F8FAFC !important;
+    stroke: #94A3B8 !important;
+    opacity: 1 !important;
+  }
+  .lm-cvrp-pane-solution .lm-cvrp-nodes .lm-cvrp-cust {
     fill: var(--lm-visit) !important;
     stroke: var(--lm-visit) !important;
     opacity: 1 !important;
@@ -2496,8 +2441,7 @@ abbr.lm-tip {
 .stApp:has(.lm-overview-flag) .lm-kicker,
 .stApp:has(.lm-overview-flag) .lm-cvrp-kicker,
 .stApp:has(.lm-overview-flag) .lm-model-kicker,
-.stApp:has(.lm-overview-flag) .lm-concept-kicker,
-.stApp:has(.lm-overview-flag) .lm-overview-proof .lm-proof-kicker {
+.stApp:has(.lm-overview-flag) .lm-concept-kicker {
   font-size: 11.5px;
   font-weight: 700;
   letter-spacing: 0.10em;
@@ -2532,21 +2476,7 @@ abbr.lm-tip {
 .stApp:has(.lm-overview-flag) .lm-cvrp-heading {
   font-size: 26px;
   font-weight: 650;
-  max-width: 640px;
-}
-.stApp:has(.lm-overview-flag) .stMarkdown .lm-cvrp-pane-title,
-.stApp:has(.lm-overview-flag) .lm-cvrp-pane-title {
-  font-size: 19px;
-  font-weight: 650;
-}
-.stApp:has(.lm-overview-flag) .stMarkdown .lm-cvrp-pane-km,
-.stApp:has(.lm-overview-flag) .lm-cvrp-pane-km {
-  font-size: 30px;
-  font-weight: 650;
-}
-.stApp:has(.lm-overview-flag) .lm-cvrp-pane-note {
-  font-size: 14.5px;
-  font-weight: 400;
+  max-width: 720px;
 }
 .stApp:has(.lm-overview-flag) .lm-hero-depot {
   animation: lm-hero-depot 7s ease-in-out infinite;
@@ -2567,25 +2497,6 @@ abbr.lm-tip {
 .stApp:has(.lm-overview-flag) .lm-cvrp-cap {
   font-size: 13px;
   line-height: 1.45;
-}
-.stApp:has(.lm-overview-flag) .lm-motion-control,
-.stApp:has(.lm-overview-flag) button.lm-cvrp-replay { font-size: 13.5px; }
-.stApp:has(.lm-overview-flag) .lm-overview-proof .lm-proof-kicker {
-  color: var(--lm-teal);
-  opacity: 1;
-}
-.stApp:has(.lm-overview-flag) .lm-overview-proof .lm-proof-name {
-  font-size: 16.5px;
-  font-weight: 650;
-}
-.stApp:has(.lm-overview-flag) .lm-overview-proof .lm-proof-line {
-  font-size: 26px;
-  font-weight: 650;
-}
-@media (max-width: 520px) {
-  .stApp:has(.lm-overview-flag) .lm-overview-proof .lm-proof-line {
-    font-size: 20px;
-  }
 }
 .stApp:has(.lm-overview-flag) .st-key-overview-cta {
   margin-top: 2rem;
@@ -2643,7 +2554,7 @@ abbr.lm-tip {
 }
 .stApp:has(.lm-overview-flag) .lm-cvrp-lead {
   margin: 10px 0 0;
-  max-width: 640px;
+  max-width: 720px;
   text-align: left;
   font-size: 15px;
   font-weight: 400;
@@ -2653,6 +2564,16 @@ abbr.lm-tip {
 .stApp:has(.lm-overview-flag) .stMarkdown:has(.lm-about) {
   max-width: none !important;
   width: 100%;
+}
+.stApp:has(.lm-overview-flag) [data-testid="stMarkdownContainer"]:has(.lm-cvrp-section),
+.stApp:has(.lm-overview-flag) .stMarkdown:has(.lm-cvrp-section),
+.stApp:has(.lm-overview-flag) [data-testid="stElementContainer"]:has(.lm-cvrp-section) {
+  max-width: none !important;
+  width: 100% !important;
+}
+.stApp:has(.lm-overview-flag) [data-testid="stMainBlockContainer"] [data-testid="stVerticalBlock"] {
+  width: 100% !important;
+  max-width: none !important;
 }
 .stApp:has(.lm-overview-flag) .lm-about {
   display: grid;
@@ -2723,7 +2644,7 @@ abbr.lm-tip {
     padding-right: 40px !important;
   }
   .stApp:has(.lm-overview-flag) .lm-hero { margin-bottom: 32px; }
-  .stApp:has(.lm-overview-flag) .lm-overview-proof { margin: 0 0 40px; }
+  .stApp:has(.lm-overview-flag) .lm-cvrp-section { margin-bottom: 8px; }
   .stApp:has(.lm-overview-flag) .st-key-overview-cta {
     margin-top: 42px;
     margin-bottom: 56px;
@@ -2737,7 +2658,7 @@ abbr.lm-tip {
     padding-right: 28px !important;
   }
   .stApp:has(.lm-overview-flag) .lm-hero { margin-bottom: 24px; }
-  .stApp:has(.lm-overview-flag) .lm-overview-proof { margin: 0 0 28px; }
+  .stApp:has(.lm-overview-flag) .lm-cvrp-section { margin-bottom: 4px; }
   .stApp:has(.lm-overview-flag) .st-key-overview-cta {
     margin-top: 32px;
     margin-bottom: 44px;
@@ -3077,32 +2998,96 @@ def constraint_cards(items: list[tuple[str, str]]) -> None:
 
 
 _CVRP_DEPOT = (320, 185)
-_CVRP_CUSTOMER_IDS: dict[tuple[int, int], str] = {
-    (200, 70): "C1",
-    (140, 95): "C2",
-    (175, 145): "C3",
-    (445, 65): "C4",
-    (520, 100): "C5",
-    (485, 155): "C6",
-    (500, 250): "C7",
-    (545, 285): "C8",
-    (430, 295): "C9",
-    (200, 265): "C10",
-    (125, 245): "C11",
-    (155, 305): "C12",
-}
-_CVRP_NN_ROUTES: list[tuple[str, list[tuple[int, int]]]] = [
-    ("#2563EB", [(200, 70), (445, 65), (140, 95)]),
-    ("#D8893B", [(520, 100), (175, 145), (500, 250)]),
-    ("#6775C9", [(485, 155), (125, 245), (545, 285)]),
-    ("#C026D3", [(430, 295), (200, 265), (155, 305)]),
-]
+_CVRP_NODE_R = 10
+_CVRP_VIEW_PAD = 22
 _CVRP_OPT_ROUTES: list[tuple[str, list[tuple[int, int]]]] = [
     ("#2563EB", [(200, 70), (140, 95), (175, 145)]),
     ("#D8893B", [(445, 65), (520, 100), (485, 155)]),
     ("#6775C9", [(500, 250), (545, 285), (430, 295)]),
     ("#C026D3", [(200, 265), (125, 245), (155, 305)]),
 ]
+CVRP_EXPLAINER_MS = 7500
+
+# Isometric warehouse glyph. Three shaded faces (top/left/right) read as a depot
+# block with real depth, instead of the flat square used before.
+_CVRP_DEPOT_HALF_W = 13.0
+_CVRP_DEPOT_TOP_H = 7.0
+_CVRP_DEPOT_WALL_H = 13.0
+_CVRP_DEPOT_SHADOW_PAD = 5.0
+_CVRP_DEPOT_LABEL_GAP = 20.0
+# Nearest-neighbour count for the background routing-graph mesh (Section D below).
+_CVRP_MESH_NEIGHBOURS = 3
+
+
+def _cvrp_customers() -> list[tuple[int, int]]:
+    seen: list[tuple[int, int]] = []
+    for _colour, stops in _CVRP_OPT_ROUTES:
+        for point in stops:
+            if point not in seen:
+                seen.append(point)
+    return seen
+
+
+def _cvrp_mesh_edges(
+    neighbours: int = _CVRP_MESH_NEIGHBOURS,
+) -> list[tuple[tuple[int, int], tuple[int, int], float]]:
+    """K-nearest-neighbour graph over the customer points, longest edge first.
+
+    A geometric mesh among the customers (not just depot spokes) is what actually
+    reads as a routing *network*. Each edge carries its own length so the renderer
+    can fade and thin the longer, farther-reaching connections for a sense of depth,
+    and draw the shorter, nearer ones last so they sit visually on top.
+    """
+    points = _cvrp_customers()
+    lengths: dict[tuple[int, int], float] = {}
+    for i, (ax, ay) in enumerate(points):
+        ranked = sorted(
+            (j for j in range(len(points)) if j != i),
+            key=lambda j: math.hypot(points[j][0] - ax, points[j][1] - ay),
+        )
+        for j in ranked[:neighbours]:
+            bx, by = points[j]
+            key = (min(i, j), max(i, j))
+            lengths[key] = math.hypot(bx - ax, by - ay)
+    edges = [(points[a], points[b], length) for (a, b), length in lengths.items()]
+    edges.sort(key=lambda item: item[2], reverse=True)
+    return edges
+
+
+def _cvrp_depot_extent() -> tuple[float, float, float, float]:
+    """(min_x, min_y, max_x, max_y) reach of the depot glyph, including its label."""
+    dx, dy = _CVRP_DEPOT
+    mid_y = dy - _CVRP_DEPOT_WALL_H / 2
+    top_y = mid_y - _CVRP_DEPOT_TOP_H
+    base_y = dy + _CVRP_DEPOT_WALL_H / 2
+    bottom_y = base_y + _CVRP_DEPOT_TOP_H
+    shadow_bottom = bottom_y + _CVRP_DEPOT_SHADOW_PAD
+    label_bottom = bottom_y + _CVRP_DEPOT_LABEL_GAP + 4
+    half_w = _CVRP_DEPOT_HALF_W + _CVRP_DEPOT_SHADOW_PAD
+    return (dx - half_w, top_y, dx + half_w, max(shadow_bottom, label_bottom))
+
+
+def _cvrp_viewbox() -> tuple[int, int, int, int]:
+    """Tight even crop around depot, customers, and the depot label."""
+    xs = [x for x, _y in _cvrp_customers()]
+    ys = [y for _x, y in _cvrp_customers()]
+    depot_min_x, depot_min_y, depot_max_x, depot_max_y = _cvrp_depot_extent()
+    min_x = min(min(xs) - _CVRP_NODE_R, depot_min_x) - _CVRP_VIEW_PAD
+    min_y = min(min(ys) - _CVRP_NODE_R, depot_min_y) - _CVRP_VIEW_PAD
+    max_x = max(max(xs) + _CVRP_NODE_R, depot_max_x) + _CVRP_VIEW_PAD
+    max_y = max(max(ys) + _CVRP_NODE_R, depot_max_y) + _CVRP_VIEW_PAD
+    x0, y0 = math.floor(min_x), math.floor(min_y)
+    x1, y1 = math.ceil(max_x), math.ceil(max_y)
+    return (x0, y0, x1 - x0, y1 - y0)
+
+
+def _cvrp_svg_open(aria: str) -> str:
+    x, y, w, h = _cvrp_viewbox()
+    return (
+        f'<svg class="lm-cvrp" viewBox="{x} {y} {w} {h}" width="{w}" height="{h}" '
+        'preserveAspectRatio="xMidYMid meet" role="img" '
+        f'aria-label="{escape(aria)}">'
+    )
 
 
 def _cvrp_route_path(depot: tuple[int, int], stops: list[tuple[int, int]]) -> str:
@@ -3113,159 +3098,141 @@ def _cvrp_route_path(depot: tuple[int, int], stops: list[tuple[int, int]]) -> st
     return " ".join(parts)
 
 
-def _cvrp_id_label(point: tuple[int, int], customer_id: str) -> str:
+def _cvrp_depot_mark(label: str, uid: str) -> str:
+    """Isometric three-face warehouse glyph with a glossy roof sheen for real depth.
+
+    `uid` keeps the gradient ids unique between the instance and solution panes,
+    which share one HTML document.
+    """
     dx, dy = _CVRP_DEPOT
-    x, y = point
-    vx, vy = x - dx, y - dy
-    length = max((vx * vx + vy * vy) ** 0.5, 1.0)
-    tx = min(max(x + 23 * vx / length, 18), 622)
-    ty = min(max(y + 19 * vy / length, 14), 328)
-    if tx < x - 4:
-        anchor = "end"
-    elif tx > x + 4:
-        anchor = "start"
-    else:
-        anchor = "middle"
+    w, th, wall = _CVRP_DEPOT_HALF_W, _CVRP_DEPOT_TOP_H, _CVRP_DEPOT_WALL_H
+    mid_y = dy - wall / 2
+    top_y = mid_y - th
+    front_y = mid_y + th
+    base_y = dy + wall / 2
+    bottom_y = base_y + th
+    top_face = f"{dx},{top_y:g} {dx + w:g},{mid_y:g} {dx},{front_y:g} {dx - w:g},{mid_y:g}"
+    left_face = f"{dx - w:g},{mid_y:g} {dx},{front_y:g} {dx},{bottom_y:g} {dx - w:g},{base_y:g}"
+    right_face = f"{dx},{front_y:g} {dx + w:g},{mid_y:g} {dx + w:g},{base_y:g} {dx},{bottom_y:g}"
+    door_w, door_h = 5.2, 6.4
+    door_x, door_y = dx - door_w / 2, bottom_y - door_h
+    shadow_cy = bottom_y + 3.5
+    label_y = bottom_y + _CVRP_DEPOT_LABEL_GAP
+    top_grad, right_grad = f"lm-cvrp-top-grad-{uid}", f"lm-cvrp-right-grad-{uid}"
     return (
-        f'<text x="{tx:.0f}" y="{ty:.0f}" text-anchor="{anchor}">{escape(customer_id)}</text>'
+        '<g class="lm-cvrp-depot">'
+        "<defs>"
+        f'<linearGradient id="{top_grad}" x1="0" y1="0" x2="1" y2="1">'
+        '<stop offset="0" stop-color="#5686AC"/><stop offset="1" stop-color="#1D4463"/>'
+        "</linearGradient>"
+        f'<linearGradient id="{right_grad}" x1="0" y1="0" x2="0.4" y2="1">'
+        '<stop offset="0" stop-color="#1B3E5C"/><stop offset="1" stop-color="#0B2033"/>'
+        "</linearGradient>"
+        "</defs>"
+        f'<ellipse class="lm-cvrp-depot-shadow" cx="{dx}" cy="{shadow_cy:g}" '
+        f'rx="{w + _CVRP_DEPOT_SHADOW_PAD:g}" ry="4"/>'
+        f'<polygon class="lm-cvrp-depot-face lm-cvrp-depot-left" points="{left_face}"/>'
+        f'<polygon class="lm-cvrp-depot-face lm-cvrp-depot-right" '
+        f'style="fill:url(#{right_grad})" points="{right_face}"/>'
+        f'<polygon class="lm-cvrp-depot-face lm-cvrp-depot-top" '
+        f'style="fill:url(#{top_grad})" points="{top_face}"/>'
+        f'<line class="lm-cvrp-depot-edge" x1="{dx:g}" y1="{top_y:g}" '
+        f'x2="{dx:g}" y2="{front_y:g}"/>'
+        f'<rect class="lm-cvrp-depot-door" x="{door_x:g}" y="{door_y:g}" '
+        f'width="{door_w:g}" height="{door_h:g}" rx="0.8"/>'
+        f'<text x="{dx}" y="{label_y:g}" text-anchor="middle" fill="#102F46" '
+        f'font-size="13" font-weight="650">{escape(label)}</text></g>'
     )
 
 
-def _cvrp_pane_svg(
-    title: str,
-    subtitle: str,
-    depot_label: str,
-    routes: list[tuple[str, list[tuple[int, int]]]],
-    aria: str,
-    pane: int,
-    *,
-    kicker: str = "",
-    note: str = "",
-) -> str:
+def _cvrp_network_paths() -> str:
+    """Faint depot spokes under a denser customer-to-customer mesh.
+
+    The mesh (not the spokes) is the dominant motif: it is what reads as a routing
+    *network* rather than a hub-and-spoke diagram. Edges are depth-cued by length so
+    farther-reaching connections fade and thin, and the nearest ones are drawn last
+    so they sit visually in front at every crossing.
+    """
     dx, dy = _CVRP_DEPOT
-    customers = [point for _, stops in routes for point in stops]
+    spokes = "".join(
+        f'<path class="lm-cvrp-spoke" d="M{dx} {dy} L{x} {y}"/>' for x, y in _cvrp_customers()
+    )
+    edges = _cvrp_mesh_edges()
+    lengths = [length for *_ends, length in edges]
+    lo, hi = min(lengths), max(lengths)
+    span = (hi - lo) or 1.0
+    mesh = "".join(
+        f'<path class="lm-cvrp-mesh" style="opacity:{0.98 - 0.22 * (length - lo) / span:.2f};'
+        f'stroke-width:{2.3 - 0.8 * (length - lo) / span:.2f}" d="M{ax} {ay} L{bx} {by}"/>'
+        for (ax, ay), (bx, by), length in edges
+    )
+    return spokes + mesh
+
+
+def _cvrp_node_markup(x: int, y: int, extra_class: str = "") -> str:
+    """A customer node with a white halo, so it visually lifts off the mesh beneath it."""
+    halo_r = _CVRP_NODE_R + 3
+    cls = f"lm-cvrp-cust {extra_class}".strip()
+    return (
+        f'<circle class="lm-cvrp-node-halo" cx="{x}" cy="{y}" r="{halo_r}"/>'
+        f'<circle class="{cls}" cx="{x}" cy="{y}" r="{_CVRP_NODE_R}"/>'
+    )
+
+
+def _cvrp_instance_svg(aria: str, depot_label: str) -> str:
+    nodes = "".join(_cvrp_node_markup(x, y) for x, y in _cvrp_customers())
+    return (
+        '<article class="lm-cvrp-pane lm-cvrp-pane-instance">'
+        '<div class="lm-cvrp-well">'
+        f"{_cvrp_svg_open(aria)}"
+        f'<g class="lm-cvrp-network" aria-hidden="true">{_cvrp_network_paths()}</g>'
+        f'<g class="lm-cvrp-nodes">{nodes}</g>'
+        f"{_cvrp_depot_mark(depot_label, 'a')}"
+        "</svg></div></article>"
+    )
+
+
+def _cvrp_solution_svg(aria: str, depot_label: str) -> str:
     nodes: list[str] = []
-    marks: list[str] = []
-    for route_index, (_colour, stops) in enumerate(routes):
+    for route_index, (_colour, stops) in enumerate(_CVRP_OPT_ROUTES):
         route_class = f"lm-cvrp-r{route_index + 1}"
-        for stop_index, (x, y) in enumerate(stops):
-            nodes.append(
-                f'<circle class="lm-cvrp-cust {route_class}" '
-                f'cx="{x}" cy="{y}" r="10.5"/>'
-            )
-            marks.append(f'<text x="{x}" y="{y + 4}">{stop_index + 1}</text>')
+        for x, y in stops:
+            nodes.append(_cvrp_node_markup(x, y, route_class))
     paths = "".join(
         f'<path pathLength="100" stroke="{colour}" d="{_cvrp_route_path(_CVRP_DEPOT, stops)}"/>'
-        for colour, stops in routes
+        for colour, stops in _CVRP_OPT_ROUTES
     )
-    ids = "".join(
-        _cvrp_id_label(point, _CVRP_CUSTOMER_IDS[point])
-        for point in customers
-        if point in _CVRP_CUSTOMER_IDS
+    # A white halo under the live colour, following the same reveal animation via
+    # matching CSS :nth-child selectors, lifts each route off the mesh beneath it.
+    halo_paths = "".join(
+        f'<path pathLength="100" d="{_cvrp_route_path(_CVRP_DEPOT, stops)}"/>'
+        for _colour, stops in _CVRP_OPT_ROUTES
     )
-    kind = "baseline" if pane == 0 else "optimized"
-    kicker_html = f'<p class="lm-cvrp-pane-kicker">{escape(kicker)}</p>' if kicker else ""
-    note_html = f'<p class="lm-cvrp-pane-note">{escape(note)}</p>' if note else ""
     return (
-        f'<article class="lm-cvrp-pane lm-cvrp-pane-{kind}">'
-        f"{kicker_html}"
-        f'<p class="lm-cvrp-pane-title">{escape(title)}</p>'
-        f'<p class="lm-cvrp-pane-km">{escape(subtitle)}</p>'
-        f"{note_html}"
-        f'<div class="lm-cvrp-well">'
-        f'<svg class="lm-cvrp" viewBox="60 20 540 315" role="img" '
-        f'aria-label="{escape(f"{title}. {aria}")}">'
+        '<article class="lm-cvrp-pane lm-cvrp-pane-solution">'
+        '<div class="lm-cvrp-well">'
+        f"{_cvrp_svg_open(aria)}"
+        f'<g class="lm-cvrp-network lm-cvrp-context" aria-hidden="true">'
+        f"{_cvrp_network_paths()}</g>"
         f'<g class="lm-cvrp-route-tracks" aria-hidden="true">{paths}</g>'
+        f'<g class="lm-cvrp-routes-halo" fill="none" aria-hidden="true">{halo_paths}</g>'
         f'<g class="lm-cvrp-routes" fill="none">{paths}</g>'
         f'<g class="lm-cvrp-nodes">{"".join(nodes)}</g>'
-        f'<g class="lm-cvrp-ids">{ids}</g>'
-        f'<g class="lm-cvrp-stops" font-size="14" font-weight="700" '
-        f'text-anchor="middle" fill="#FFFFFF">{"".join(marks)}</g>'
-        f'<g class="lm-cvrp-depot">'
-        f'<rect x="{dx - 10}" y="{dy - 10}" width="20" height="20" rx="3" fill="#102F46"/>'
-        f'<text x="{dx}" y="{dy + 28}" text-anchor="middle" fill="#102F46" '
-        f'font-size="16">{escape(depot_label)}</text></g></svg></div>'
-        f"</article>"
+        f"{_cvrp_depot_mark(depot_label, 'b')}"
+        "</svg></div></article>"
     )
 
 
-CVRP_STORY_MS = 6200
-_CVRP_STORY_JS = """
-(function() {
-  var STORY_MS = 6200;
-  var tries = 0;
-  function storyDocument() {
-    if (document.querySelector("[data-lm-cvrp-story]")) {
-      return document;
-    }
-    try {
-      if (window.parent && window.parent.document
-          && window.parent.document.querySelector("[data-lm-cvrp-story]")) {
-        return window.parent.document;
-      }
-    } catch (err) {}
-    return document;
-  }
-  function prefersReduced(doc) {
-    var view = doc.defaultView || window;
-    try {
-      return view.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    } catch (err) {
-      return false;
-    }
-  }
-  function bindPanel(panel, doc) {
-    if (panel.getAttribute("data-lm-bound") === "1") {
-      return;
-    }
-    var button = panel.querySelector("button.lm-cvrp-replay");
-    if (!button) {
-      return;
-    }
-    panel.setAttribute("data-lm-bound", "1");
-    var view = doc.defaultView || window;
-    var timer = null;
-    function armReplay() {
-      if (timer) {
-        view.clearTimeout(timer);
-      }
-      timer = view.setTimeout(function() {
-        button.hidden = false;
-      }, STORY_MS);
-    }
-    if (prefersReduced(doc)) {
-      panel.classList.remove("lm-cvrp-running");
-      button.hidden = true;
-      return;
-    }
-    button.hidden = true;
-    armReplay();
-    button.addEventListener("click", function() {
-      button.hidden = true;
-      panel.classList.remove("lm-cvrp-running");
-      void panel.offsetWidth;
-      panel.classList.add("lm-cvrp-running");
-      armReplay();
-    });
-  }
-  function scan(doc) {
-    var panels = doc.querySelectorAll("[data-lm-cvrp-story]");
-    for (var i = 0; i < panels.length; i += 1) {
-      bindPanel(panels[i], doc);
-    }
-    return panels.length > 0;
-  }
-  function start() {
-    var doc = storyDocument();
-    if (scan(doc) || tries > 40) {
-      return;
-    }
-    tries += 1;
-    window.setTimeout(start, 50);
-  }
-  start();
-})();
-"""
+def _cvrp_transform_html() -> str:
+    return (
+        '<div class="lm-cvrp-transform">'
+        f'<p class="lm-cvrp-transform-kicker">{escape(t("ux.over.stage.model.tag"))}</p>'
+        '<svg class="lm-cvrp-arrow" viewBox="0 0 48 24" aria-hidden="true">'
+        '<path d="M4 12 H34 M28 5 L40 12 L28 19"/>'
+        "</svg>"
+        f'<p class="lm-cvrp-transform-label">{escape(t("ux.over.stage.model"))}</p>'
+        "</div>"
+    )
 
 
 def animation_control_html() -> str:
@@ -3275,45 +3242,11 @@ def animation_control_html() -> str:
     )
 
 
-def cvrp_replay_html() -> str:
-    label = escape(t("ux.motion.replay"))
-    return (
-        '<div class="lm-cvrp-replay-tools">'
-        f'<button type="button" class="lm-cvrp-replay" hidden>{label}</button>'
-        "</div>"
-    )
-
-
-def _cvrp_pane_km(result_label: str) -> str:
-    text = result_label
-    if "→" in text:
-        text = text.split("→", 1)[1].strip()
-    if "·" in text:
-        text = text.split("·", 1)[0].strip()
-    return text
-
-
-def cvrp_animation_html(result_label: str, aria_label: str) -> str:
-    optimized_km = _cvrp_pane_km(result_label)
-    panes = _cvrp_pane_svg(
-        t("ux.over.anim.baseline"),
-        t("ux.over.anim.km"),
-        t("ux.over.anim.depot"),
-        _CVRP_NN_ROUTES,
-        aria_label,
-        0,
-        kicker=t("ux.over.anim.label.baseline"),
-        note=t("ux.over.anim.note.baseline"),
-    ) + _cvrp_pane_svg(
-        t("ux.over.anim.optimized"),
-        optimized_km,
-        t("ux.over.anim.depot"),
-        _CVRP_OPT_ROUTES,
-        aria_label,
-        1,
-        kicker=t("ux.over.anim.label.optimized"),
-        note=t("ux.over.anim.note.optimized"),
-    )
+def cvrp_animation_html(aria_label: str | None = None) -> str:
+    caption = aria_label or t("ux.over.diagram")
+    depot_label = t("ux.over.anim.depot")
+    instance = _cvrp_instance_svg(caption, depot_label)
+    solution = _cvrp_solution_svg(caption, depot_label)
     return (
         '<section class="lm-cvrp-section">'
         '<header class="lm-cvrp-intro">'
@@ -3323,51 +3256,18 @@ def cvrp_animation_html(result_label: str, aria_label: str) -> str:
         f'<p class="lm-cvrp-lead">{escape(t("ux.over.stage.lead"))}</p>'
         "</div>"
         "</header>"
-        '<div class="lm-cvrp-panel lm-cvrp-running" data-lm-cvrp-story>'
+        '<div class="lm-cvrp-panel">'
         '<div class="lm-cvrp-frame">'
-        '<div class="lm-cvrp-frame-head">'
-        f'<span class="lm-cvrp-frame-scenario">{escape(t("ux.over.proof.scenario"))}</span>'
-        f'<span class="lm-cvrp-frame-view">{escape(t("ux.over.stage.view"))}</span>'
-        "</div>"
-        f'<div class="lm-cvrp-compare">{panes}</div>'
+        f'<div class="lm-cvrp-explainer">{instance}{_cvrp_transform_html()}{solution}</div>'
         '<div class="lm-cvrp-frame-foot">'
-        f'<p class="lm-cvrp-cap">{escape(t("ux.over.diagram"))}</p>'
-        f"{cvrp_replay_html()}"
+        f'<p class="lm-cvrp-cap">{escape(caption)}</p>'
         "</div></div>"
-        f"<script>{_CVRP_STORY_JS}</script>"
         "</div></section>"
     )
 
 
-def overview_reference_proof_html() -> str:
-    parts = [part.strip() for part in t("ux.over.proof.line").split("·")]
-    metrics = parts[0] if parts else t("ux.over.proof.line")
-    gain = parts[1] if len(parts) > 1 else ""
-    served = parts[2] if len(parts) > 2 else ""
-    gain_html = f'<span class="lm-proof-gain">{escape(gain)}</span>' if gain else ""
-    served_html = (
-        f'<span class="lm-proof-served">{escape(served)}</span>' if served else ""
-    )
-    return (
-        '<div class="lm-overview-proof">'
-        f'<p class="lm-proof-kicker">{escape(t("ux.over.proof.kicker"))}</p>'
-        f'<p class="lm-proof-name">{escape(t("ux.over.proof.scenario"))}</p>'
-        f'<p class="lm-proof-line">'
-        f'<span class="lm-proof-metrics">{escape(metrics)}</span>'
-        f"{gain_html}{served_html}"
-        "</p></div>"
-    )
-
-
-def render_overview_reference_proof() -> None:
-    st.markdown(overview_reference_proof_html(), unsafe_allow_html=True)
-
-
-def render_cvrp_animation(result_label: str, aria_label: str) -> None:
-    st.markdown(cvrp_animation_html(result_label, aria_label), unsafe_allow_html=True)
-    import streamlit.components.v1 as st_components
-
-    st_components.html(f"<script>{_CVRP_STORY_JS}</script>", height=0, width=0)
+def render_cvrp_animation() -> None:
+    st.markdown(cvrp_animation_html(), unsafe_allow_html=True)
 
 
 def methodology_animation_html() -> str:

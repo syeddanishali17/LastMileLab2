@@ -1,4 +1,4 @@
-"""Business context, VRP to CVRP, and the Vienna Standard 24 route comparison."""
+"""Business context, VRP to CVRP, and the routing-model explainer."""
 
 import streamlit as st
 
@@ -8,7 +8,6 @@ from components import (
     render_cvrp_animation,
     render_footer,
     render_overview_about,
-    render_overview_reference_proof,
 )
 from i18n import t
 
@@ -20,8 +19,7 @@ page_header(
     compact=False,
 )
 
-render_overview_reference_proof()
-render_cvrp_animation(t("ux.over.result"), t("ux.over.diagram"))
+render_cvrp_animation()
 
 if st.button(t("ux.over.cta"), type="primary", key="overview-cta"):
     st.switch_page("pages/1_Dispatch_Setup.py")
