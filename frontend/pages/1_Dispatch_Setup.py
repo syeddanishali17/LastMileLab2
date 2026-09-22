@@ -3,6 +3,7 @@
 from html import escape
 
 import streamlit as st
+from streamlit.delta_generator import DeltaGenerator
 
 from api_client import (
     ApiError,
@@ -187,10 +188,10 @@ def reset_custom_defaults() -> None:
             del st.session_state[key]
 
 
-def compare(scenario_id: str, seconds: int) -> bool:
+def compare(scenario_id: str, seconds: int, progress: DeltaGenerator) -> bool:
     # Publish the pair to session state only after both responses and audit data arrive.
     clear_planner_runs()
-    with st.status(t("ux.stage.load"), expanded=True) as status:
+    with progress, st.status(t("ux.stage.load"), expanded=True) as status:
         try:
             scenario = get_scenario(scenario_id)
             st.write(t("ux.stage.load") + " ✓")
@@ -368,9 +369,10 @@ def render_search_limit() -> int:
     return seconds
 
 
-def run_comparison_button(ready: bool) -> None:
+def run_comparison_button(ready: bool, progress: DeltaGenerator) -> None:
     if st.button(t("ux.run"), type="primary", disabled=not ready):
-        if compare(st.session_state.scenario_id, st.session_state.solver_time_limit_seconds):
+        seconds = st.session_state.solver_time_limit_seconds
+        if compare(st.session_state.scenario_id, seconds, progress):
             st.switch_page("pages/3_Baseline_vs_Optimised.py")
 
 
@@ -468,15 +470,17 @@ with preview_panel:
             )
 
 with st.container(key="scenario-action"):
+    # Progress renders above the action row so it stays in view while planning runs.
+    progress = st.container()
     if custom_open:
         action, _ = st.columns([0.38, 0.62], gap="medium")
         with action:
-            run_comparison_button(ready)
+            run_comparison_button(ready, progress)
     else:
         search, action = st.columns([0.62, 0.38], gap="medium")
         with search:
             render_search_limit()
         with action:
-            run_comparison_button(ready)
+            run_comparison_button(ready, progress)
 
 render_footer()

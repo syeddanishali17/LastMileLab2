@@ -40,7 +40,8 @@ st.write(t("ux.method.cvrp.unused"))
 section(t("ux.method.obj.title"))
 st.write(t("ux.method.obj"))
 with st.expander(t("ux.method.obj.formula.title")):
-    st.code(t("ux.method.obj.formula"))
+    # Plain text: Python highlighting would colour "and"/"of" in the formula as keywords.
+    st.code(t("ux.method.obj.formula"), language=None)
     st.caption(t("ux.method.obj.formula.note"))
 
 section(t("ux.method.cons.title"))

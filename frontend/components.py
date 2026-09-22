@@ -46,6 +46,8 @@ THEME_CSS = """
   --lm-orange: #D8893B;
   --lm-purple: #6775C9;
   --lm-border: #CCD9DF;
+  /* Interactive controls need a crisper edge than decorative cards (~2:1 on canvas). */
+  --lm-border-strong: #A3B5C0;
   --lm-shadow: 0 2px 8px rgba(16, 47, 70, 0.06);
   --lm-shadow-btn: 0 1px 2px rgba(16, 47, 70, 0.12);
   --lm-shadow-btn-hover: 0 2px 8px rgba(11, 122, 117, 0.28);
@@ -59,8 +61,18 @@ THEME_CSS = """
   --lm-focus: #62D6C8;
 }
 html, body, .stApp, .stApp button, .stApp input, .stApp textarea,
-[data-testid="stMarkdownContainer"], [data-testid="stMarkdownContainer"] :is(h1, h2, h3) {
+[data-testid="stMarkdownContainer"], [data-testid="stMarkdownContainer"] :is(h1, h2, h3),
+[data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] p,
+[data-testid="stAlertContainer"] p, [data-testid="stTooltipContent"] {
   font-family: var(--lm-font);
+}
+/* Streamlit's default inline code is bright green and 10.5px inside captions. */
+[data-testid="stMain"] :not(pre) > code {
+  color: var(--lm-navy);
+  background: var(--lm-surface-soft);
+  font-size: 0.92em;
+  padding: 0.08em 0.36em;
+  border-radius: 4px;
 }
 /* Native heading padding otherwise inflates every custom card and page title. */
 :is(.lm-hero, .lm-inner, .lm-section, .lm-card, .lm-concept) :is(h1, h2, h3) {
@@ -269,9 +281,19 @@ section[data-testid="stSidebar"] > div:first-child {
   margin: 16px 0 6px !important;
   padding: 0 22px !important;
 }
-[data-testid="stSidebarNav"] ul:first-of-type [data-testid="stNavSectionHeader"],
+/* All sections share one <ul>, so only the very first header may drop its top margin. */
+[data-testid="stSidebarNavItems"] > [data-testid="stNavSectionHeader"]:first-child,
 [data-testid="stSidebarNav"] li:first-child [data-testid="stMarkdownContainer"] p {
   margin-top: 0 !important;
+}
+/* Quiet divider between navigation and the language / service-status settings. */
+[data-testid="stSidebarNavSeparator"] {
+  height: 1px !important;
+  min-height: 1px !important;
+  margin: 18px 22px 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: rgba(255, 255, 255, 0.10) !important;
 }
 [data-testid="stSidebarNavLink"][aria-current="page"],
 [data-testid="stSidebarNav"] a[aria-current="page"],
@@ -297,10 +319,9 @@ section[data-testid="stSidebar"] > div:first-child {
 .stApp:has(.lm-inspect-flag) [data-testid="stSidebarNavLink"][href*="/validation"] span {
   color: #FFFFFF !important;
 }
-[data-testid="stSidebarNavLink"]:focus,
 [data-testid="stSidebarNavLink"]:focus-visible,
 [data-testid="stSidebar"] [data-testid="stRadio"] label:focus-visible,
-[data-testid="stSidebar"] [data-baseweb="radio"]:focus-within,
+[data-testid="stSidebar"] [data-baseweb="radio"]:has(input:focus-visible),
 [data-testid="stSidebarCollapseButton"]:focus-visible {
   outline: 3px solid var(--lm-focus) !important;
   outline-offset: 2px !important;
@@ -334,7 +355,7 @@ section[data-testid="stSidebar"] > div:first-child {
 }
 .lm-lang-label {
   font-size: 11px; font-weight: 700; letter-spacing: 0.10em;
-  text-transform: uppercase; opacity: 1; margin: 16px 0 6px; padding: 0 24px;
+  text-transform: uppercase; opacity: 1; margin: 14px 0 6px; padding: 0 24px;
   color: var(--lm-sidebar-label);
 }
 [data-testid="stSidebar"] [data-testid="stRadio"] {
@@ -355,7 +376,7 @@ section[data-testid="stSidebar"] > div:first-child {
   gap: 8px;
   font-size: 12.5px;
   opacity: 1;
-  margin: 14px 0 0;
+  margin: 2px 0 0;
   padding: 0 22px;
   color: var(--lm-sidebar-sub);
   line-height: 1.35;
@@ -578,6 +599,7 @@ section[data-testid="stSidebar"] > div:first-child {
   padding: 16px;
   min-height: 108px;
   height: 100%;
+  container-type: inline-size;
 }
 .lm-kpi .lm-kpi-label {
   color: var(--lm-muted);
@@ -588,9 +610,12 @@ section[data-testid="stSidebar"] > div:first-child {
 .lm-kpi .lm-kpi-value {
   color: var(--lm-navy);
   font-size: 34px;
+  /* Scale with the card so values such as "122.394 km" stay on one line. */
+  font-size: clamp(24px, 15cqi, 34px);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   line-height: 1.15;
+  white-space: nowrap;
   margin: 0;
 }
 .lm-concept-grid {
@@ -704,6 +729,31 @@ section[data-testid="stSidebar"] > div:first-child {
   text-align: center;
   color: var(--lm-muted);
 }
+/* In-page navigation links read as secondary buttons, not stray plain text. */
+[data-testid="stMain"] [data-testid="stPageLink-NavLink"] {
+  min-height: 40px;
+  padding: 8px 16px !important;
+  border: 1px solid var(--lm-border-strong) !important;
+  border-radius: 8px !important;
+  background: #FFFFFF !important;
+  transition: background 0.16s ease, border-color 0.16s ease;
+}
+[data-testid="stMain"] [data-testid="stPageLink-NavLink"]:hover {
+  background: rgba(11, 122, 117, 0.06) !important;
+  border-color: color-mix(in srgb, var(--lm-teal) 55%, var(--lm-border-strong)) !important;
+}
+[data-testid="stMain"] [data-testid="stPageLink-NavLink"] p {
+  margin: 0;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: var(--lm-navy) !important;
+}
+[data-testid="stElementContainer"]:has(.lm-empty) + [data-testid="stElementContainer"]
+  [data-testid="stPageLink"] {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+}
 .lm-pill {
   display: inline-block;
   border-radius: 999px;
@@ -733,11 +783,17 @@ section[data-testid="stSidebar"] > div:first-child {
   align-items: center;
   gap: 0;
 }
+/* Flex items trim the spaces inside " · ", so restore the breathing room here. */
+.lm-footer-sep {
+  padding: 0 0.5rem;
+  color: var(--lm-border-strong);
+}
 .lm-footer a {
   color: var(--lm-navy);
   text-decoration: none;
   font-weight: 600;
-  padding: 0.12rem 0.08rem;
+  /* Keeps each link at least 24px tall (WCAG 2.5.8 target size). */
+  padding: 0.22rem 0.1rem;
 }
 .lm-footer a:hover {
   color: var(--lm-teal);
@@ -963,7 +1019,7 @@ div[data-testid="stMetricDelta"] { font-size: 0.78rem; }
 [data-testid="stBaseButton-secondary"] {
   background: #FFFFFF !important;
   color: var(--lm-navy) !important;
-  border: 1px solid var(--lm-border) !important;
+  border: 1px solid var(--lm-border-strong) !important;
   box-shadow: none !important;
 }
 .stButton > button:not(:disabled):hover,
@@ -986,8 +1042,14 @@ div[data-testid="stMetricDelta"] { font-size: 0.78rem; }
 .stDownloadButton > button:not(:disabled):hover,
 [data-testid="stBaseButton-secondary"]:not(:disabled):hover {
   background: rgba(11, 122, 117, 0.06) !important;
-  border-color: color-mix(in srgb, var(--lm-teal) 35%, var(--lm-border)) !important;
+  border-color: color-mix(in srgb, var(--lm-teal) 55%, var(--lm-border-strong)) !important;
   box-shadow: none !important;
+}
+.stButton > button[kind="secondary"]:not(:disabled):active,
+.stButton > button[kind="tertiary"]:not(:disabled):active,
+.stDownloadButton > button:not(:disabled):active,
+[data-testid="stBaseButton-secondary"]:not(:disabled):active {
+  background: rgba(11, 122, 117, 0.12) !important;
 }
 .stButton > button:disabled, .stDownloadButton > button:disabled {
   opacity: 0.45;
@@ -995,13 +1057,22 @@ div[data-testid="stMetricDelta"] { font-size: 0.78rem; }
   box-shadow: none !important;
   pointer-events: none;
 }
-.stButton > button[kind="primary"]:focus,
-.stButton > button[kind="primary"]:focus-visible,
+/* Keyboard focus only: a mouse click must not leave a 3px ring on the button. */
+.stButton > button:focus:not(:focus-visible),
+.stDownloadButton > button:focus:not(:focus-visible),
+[data-testid="stSidebarNavLink"]:focus:not(:focus-visible) {
+  outline: none !important;
+}
 .stButton > button:focus-visible,
-.stDownloadButton > button:focus-visible,
-.st-key-overview-cta:focus-within button {
+.stDownloadButton > button:focus-visible {
   outline: 3px solid var(--lm-focus) !important;
   outline-offset: 3px !important;
+}
+/* Streamlit fades re-running elements to 33% opacity, which reads as a broken page
+   after every click. Keep content legible and only dim it gently on slow reruns. */
+[data-testid="stElementContainer"][data-stale="true"] {
+  opacity: 0.78 !important;
+  transition: opacity 0.25s ease-in 0.6s !important;
 }
 [data-testid="stSidebarNavLink"] { transition: background-color 150ms ease; }
 .lm-lang-wrap {
@@ -1033,7 +1104,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, summary:focus-visibl
 [data-baseweb="input"] {
   min-height: 42px !important;
   border-radius: 8px !important;
-  border-color: var(--lm-border) !important;
+  border-color: var(--lm-border-strong) !important;
   background: #FFFFFF !important;
 }
 [data-testid="stNumberInput"] input:focus,
@@ -1655,6 +1726,15 @@ div[data-testid="stDataFrame"] [data-testid="stDataFrameResizable"] td {
 }
 .st-key-scenario-action { margin-top: 24px; }
 .st-key-scenario-action [data-testid="stHorizontalBlock"] { align-items: end; }
+/* Preset layout: the run action sits in the last column; align it to the preview edge.
+   (Custom layout keeps the action in the first column, beside the builder.) Columns
+   stack below 640px, where a right-aligned button would look stranded. */
+@media (min-width: 641px) {
+  .st-key-scenario-action [data-testid="stColumn"]:last-child .stButton {
+    display: flex;
+    justify-content: flex-end;
+  }
+}
 .st-key-scenario-generate { margin-top: 4px; }
 .st-key-scenario-generate [data-testid="stHorizontalBlock"] {
   align-items: stretch;
@@ -1883,8 +1963,11 @@ div[data-testid="stDataFrame"] [data-testid="stDataFrameResizable"] td {
 .lm-plan-matrix td.lm-plan-check.is-fail { color: var(--lm-danger); }
 .lm-plan-matrix tr:last-child th, .lm-plan-matrix tr:last-child td { border-bottom: 0; }
 .stApp:has(.lm-plan-flag) .lm-kpi-grid .lm-kpi:nth-child(3) {
-  border-color: color-mix(in srgb, var(--lm-navy) 28%, var(--lm-border));
-  box-shadow: 0 2px 10px rgba(16, 47, 70, 0.08);
+  border-color: color-mix(in srgb, var(--lm-teal) 45%, var(--lm-border));
+  box-shadow: 0 2px 10px rgba(11, 122, 117, 0.10);
+}
+.stApp:has(.lm-plan-flag) .lm-kpi-grid .lm-kpi:nth-child(3) .lm-kpi-value {
+  color: var(--lm-teal);
 }
 .stApp:has(.lm-plan-flag) .st-key-plan_view {
   margin: 0.2rem 0 1rem;
@@ -1970,7 +2053,6 @@ div[data-testid="stDataFrame"] [data-testid="stDataFrameResizable"] td {
 .stApp:has(.lm-plan-flag) .st-key-plan_view button[aria-checked="true"] span {
   color: #FFFFFF !important;
 }
-.stApp:has(.lm-plan-flag) .st-key-plan_view button:focus,
 .stApp:has(.lm-plan-flag) .st-key-plan_view button:focus-visible {
   outline: 3px solid var(--lm-focus) !important;
   outline-offset: 2px !important;
@@ -2133,6 +2215,24 @@ div[data-testid="stDataFrame"] [data-testid="stDataFrameResizable"] td {
 .stApp:has(.lm-plan-flag) .st-key-plan-review {
   margin-top: 1.15rem;
   margin-bottom: 0.35rem;
+}
+/* Export actions: the section is capped at ~690px, so a side-by-side download pair
+   always wrapped unevenly ("Download CSV zip" grew to two lines). Stack each run's
+   actions as equal-width, single-line buttons instead. */
+.st-key-plan-exports [data-testid="stColumn"] [data-testid="stHorizontalBlock"] {
+  flex-wrap: wrap;
+  row-gap: 0.5rem;
+}
+.st-key-plan-exports [data-testid="stColumn"] [data-testid="stHorizontalBlock"]
+  > [data-testid="stColumn"] {
+  flex: 1 1 100% !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+.st-key-plan-exports .stButton button,
+.st-key-plan-exports .stDownloadButton button {
+  width: 100% !important;
+  white-space: nowrap;
 }
 .stApp:has(.lm-plan-flag) .st-key-plan-pair .lm-table {
   min-width: 0;
@@ -2320,6 +2420,53 @@ div[data-testid="stDataFrame"] [data-testid="stDataFrameResizable"] td {
   74%, 90% { fill: var(--lm-visit); stroke: var(--lm-visit); }
   100% { fill: #F8FAFC; stroke: #94A3B8; }
 }
+/* Route vans: hidden unless the browser supports CSS motion paths, so a van can
+   never sit stranded at the SVG origin. Each van shares its route's draw window. */
+.lm-cvrp-pane-solution .lm-cvrp-van {
+  display: none;
+  opacity: 0;
+  stroke: #FFFFFF;
+  stroke-width: 2;
+  filter: drop-shadow(0 1px 2px rgba(16, 47, 70, 0.35));
+}
+@supports (offset-path: path("M0 0 L1 1")) {
+  .lm-cvrp-pane-solution .lm-cvrp-van {
+    display: inline;
+    offset-rotate: 0deg;
+    offset-distance: 0%;
+    animation-duration: 7.5s;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+  }
+  .lm-cvrp-pane-solution .lm-cvrp-van:nth-child(1) { animation-name: lm-explainer-van-1; }
+  .lm-cvrp-pane-solution .lm-cvrp-van:nth-child(2) { animation-name: lm-explainer-van-2; }
+  .lm-cvrp-pane-solution .lm-cvrp-van:nth-child(3) { animation-name: lm-explainer-van-3; }
+  .lm-cvrp-pane-solution .lm-cvrp-van:nth-child(4) { animation-name: lm-explainer-van-4; }
+}
+@keyframes lm-explainer-van-1 {
+  0%, 34% { offset-distance: 0%; opacity: 0; }
+  35% { opacity: 1; }
+  44% { offset-distance: 100%; opacity: 1; }
+  47%, 100% { offset-distance: 100%; opacity: 0; }
+}
+@keyframes lm-explainer-van-2 {
+  0%, 44% { offset-distance: 0%; opacity: 0; }
+  45% { opacity: 1; }
+  54% { offset-distance: 100%; opacity: 1; }
+  57%, 100% { offset-distance: 100%; opacity: 0; }
+}
+@keyframes lm-explainer-van-3 {
+  0%, 54% { offset-distance: 0%; opacity: 0; }
+  55% { opacity: 1; }
+  64% { offset-distance: 100%; opacity: 1; }
+  67%, 100% { offset-distance: 100%; opacity: 0; }
+}
+@keyframes lm-explainer-van-4 {
+  0%, 64% { offset-distance: 0%; opacity: 0; }
+  65% { opacity: 1; }
+  74% { offset-distance: 100%; opacity: 1; }
+  77%, 100% { offset-distance: 100%; opacity: 0; }
+}
 .lm-motion-tools { display: flex; justify-content: flex-end; margin-top: 6px; }
 .lm-motion-control {
   display: inline-flex; align-items: center; gap: 7px; min-height: 32px;
@@ -2384,6 +2531,7 @@ div[data-testid="stDataFrame"] [data-testid="stDataFrameResizable"] td {
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
+  [data-testid="stElementContainer"][data-stale="true"] { transition: none !important; }
   .lm-hero-depot, .lm-hero-node { opacity: 1 !important; }
   .lm-hero-route {
     stroke-dashoffset: 0 !important;
@@ -2519,9 +2667,7 @@ abbr.lm-tip {
   box-shadow: var(--lm-shadow-btn-hover) !important;
   transform: none !important;
 }
-.stApp:has(.lm-overview-flag) .st-key-overview-cta button:focus,
-.stApp:has(.lm-overview-flag) .st-key-overview-cta button:focus-visible,
-.stApp:has(.lm-overview-flag) .st-key-overview-cta:focus-within button {
+.stApp:has(.lm-overview-flag) .st-key-overview-cta button:focus-visible {
   outline: 3px solid var(--lm-focus) !important;
   outline-offset: 3px !important;
 }
@@ -3098,29 +3244,30 @@ def _cvrp_route_path(depot: tuple[int, int], stops: list[tuple[int, int]]) -> st
     return " ".join(parts)
 
 
-def _cvrp_depot_mark(label: str, uid: str) -> str:
-    """Isometric three-face warehouse glyph with a glossy roof sheen for real depth.
+def _iso_depot_block(cx: float, cy: float, *, half_w: float, top_h: float, wall_h: float,
+                     uid: str) -> str:
+    """Isometric three-face depot block with a glossy roof sheen, centred on (cx, cy).
 
-    `uid` keeps the gradient ids unique between the instance and solution panes,
-    which share one HTML document.
+    Shared by the Overview explainer and the Methodology figure so both depots match.
+    `uid` keeps gradient ids unique, since several SVGs share one HTML document.
     """
-    dx, dy = _CVRP_DEPOT
-    w, th, wall = _CVRP_DEPOT_HALF_W, _CVRP_DEPOT_TOP_H, _CVRP_DEPOT_WALL_H
-    mid_y = dy - wall / 2
-    top_y = mid_y - th
-    front_y = mid_y + th
-    base_y = dy + wall / 2
-    bottom_y = base_y + th
-    top_face = f"{dx},{top_y:g} {dx + w:g},{mid_y:g} {dx},{front_y:g} {dx - w:g},{mid_y:g}"
-    left_face = f"{dx - w:g},{mid_y:g} {dx},{front_y:g} {dx},{bottom_y:g} {dx - w:g},{base_y:g}"
-    right_face = f"{dx},{front_y:g} {dx + w:g},{mid_y:g} {dx + w:g},{base_y:g} {dx},{bottom_y:g}"
-    door_w, door_h = 5.2, 6.4
-    door_x, door_y = dx - door_w / 2, bottom_y - door_h
-    shadow_cy = bottom_y + 3.5
-    label_y = bottom_y + _CVRP_DEPOT_LABEL_GAP
+    mid_y = cy - wall_h / 2
+    top_y = mid_y - top_h
+    front_y = mid_y + top_h
+    base_y = cy + wall_h / 2
+    bottom_y = base_y + top_h
+    w = half_w
+    top_face = f"{cx:g},{top_y:g} {cx + w:g},{mid_y:g} {cx:g},{front_y:g} {cx - w:g},{mid_y:g}"
+    left_face = (
+        f"{cx - w:g},{mid_y:g} {cx:g},{front_y:g} {cx:g},{bottom_y:g} {cx - w:g},{base_y:g}"
+    )
+    right_face = (
+        f"{cx:g},{front_y:g} {cx + w:g},{mid_y:g} {cx + w:g},{base_y:g} {cx:g},{bottom_y:g}"
+    )
+    door_w, door_h = round(w * 0.4, 2), round(wall_h * 0.49, 2)
+    door_x, door_y = cx - door_w / 2, bottom_y - door_h
     top_grad, right_grad = f"lm-cvrp-top-grad-{uid}", f"lm-cvrp-right-grad-{uid}"
     return (
-        '<g class="lm-cvrp-depot">'
         "<defs>"
         f'<linearGradient id="{top_grad}" x1="0" y1="0" x2="1" y2="1">'
         '<stop offset="0" stop-color="#5686AC"/><stop offset="1" stop-color="#1D4463"/>'
@@ -3129,17 +3276,31 @@ def _cvrp_depot_mark(label: str, uid: str) -> str:
         '<stop offset="0" stop-color="#1B3E5C"/><stop offset="1" stop-color="#0B2033"/>'
         "</linearGradient>"
         "</defs>"
-        f'<ellipse class="lm-cvrp-depot-shadow" cx="{dx}" cy="{shadow_cy:g}" '
-        f'rx="{w + _CVRP_DEPOT_SHADOW_PAD:g}" ry="4"/>'
         f'<polygon class="lm-cvrp-depot-face lm-cvrp-depot-left" points="{left_face}"/>'
         f'<polygon class="lm-cvrp-depot-face lm-cvrp-depot-right" '
         f'style="fill:url(#{right_grad})" points="{right_face}"/>'
         f'<polygon class="lm-cvrp-depot-face lm-cvrp-depot-top" '
         f'style="fill:url(#{top_grad})" points="{top_face}"/>'
-        f'<line class="lm-cvrp-depot-edge" x1="{dx:g}" y1="{top_y:g}" '
-        f'x2="{dx:g}" y2="{front_y:g}"/>'
+        # Light catches the front corner where the two walls meet.
+        f'<line class="lm-cvrp-depot-edge" x1="{cx:g}" y1="{front_y:g}" '
+        f'x2="{cx:g}" y2="{bottom_y:g}"/>'
         f'<rect class="lm-cvrp-depot-door" x="{door_x:g}" y="{door_y:g}" '
         f'width="{door_w:g}" height="{door_h:g}" rx="0.8"/>'
+    )
+
+
+def _cvrp_depot_mark(label: str, uid: str) -> str:
+    """Overview depot: the shared isometric block plus a ground shadow and its label."""
+    dx, dy = _CVRP_DEPOT
+    w, th, wall = _CVRP_DEPOT_HALF_W, _CVRP_DEPOT_TOP_H, _CVRP_DEPOT_WALL_H
+    bottom_y = dy + wall / 2 + th
+    shadow_cy = bottom_y + 3.5
+    label_y = bottom_y + _CVRP_DEPOT_LABEL_GAP
+    return (
+        '<g class="lm-cvrp-depot">'
+        f'<ellipse class="lm-cvrp-depot-shadow" cx="{dx}" cy="{shadow_cy:g}" '
+        f'rx="{w + _CVRP_DEPOT_SHADOW_PAD:g}" ry="4"/>'
+        f"{_iso_depot_block(dx, dy, half_w=w, top_h=th, wall_h=wall, uid=uid)}"
         f'<text x="{dx}" y="{label_y:g}" text-anchor="middle" fill="#102F46" '
         f'font-size="13" font-weight="650">{escape(label)}</text></g>'
     )
@@ -3208,6 +3369,13 @@ def _cvrp_solution_svg(aria: str, depot_label: str) -> str:
         f'<path pathLength="100" d="{_cvrp_route_path(_CVRP_DEPOT, stops)}"/>'
         for _colour, stops in _CVRP_OPT_ROUTES
     )
+    # One van per route rides the same motion path as its line, leading the drawing
+    # tip out of the depot and back. Shared keyframe timing keeps van and line in step.
+    vans = "".join(
+        f'<circle class="lm-cvrp-van" r="6" fill="{colour}" '
+        f"style=\"offset-path: path('{_cvrp_route_path(_CVRP_DEPOT, stops)}')\"/>"
+        for colour, stops in _CVRP_OPT_ROUTES
+    )
     return (
         '<article class="lm-cvrp-pane lm-cvrp-pane-solution">'
         '<div class="lm-cvrp-well">'
@@ -3218,6 +3386,7 @@ def _cvrp_solution_svg(aria: str, depot_label: str) -> str:
         f'<g class="lm-cvrp-routes-halo" fill="none" aria-hidden="true">{halo_paths}</g>'
         f'<g class="lm-cvrp-routes" fill="none">{paths}</g>'
         f'<g class="lm-cvrp-nodes">{"".join(nodes)}</g>'
+        f'<g class="lm-cvrp-vans" aria-hidden="true">{vans}</g>'
         f"{_cvrp_depot_mark(depot_label, 'b')}"
         "</svg></div></article>"
     )
@@ -3274,6 +3443,7 @@ def methodology_animation_html() -> str:
     sheet = escape(t("ux.method.figure.sheet"))
     label = escape(t("ux.method.figure.label"))
     caption = escape(t("ux.method.figure.caption"))
+    depot = _iso_depot_block(320, 258, half_w=11, top_h=6, wall_h=11, uid="method")
     cells = []
     for row in range(4):
         for col in range(8):
@@ -3329,13 +3499,13 @@ def methodology_animation_html() -> str:
           <rect x="202" y="180" width="208" height="18" rx="3" fill="#D8893B"/>
           <rect x="202" y="210" width="118" height="18" rx="3" fill="#6775C9"/>
         </g>
-        <rect x="310" y="248" width="20" height="20" rx="3" fill="#102F46"/>
       </g>
       <g class="lm-assign-routes" fill="none">
         <path stroke="#2563EB" d="M320 258 L230 238 L190 268 Z"/>
         <path stroke="#D8893B" d="M320 258 L410 232 L470 262 Z"/>
         <path stroke="#6775C9" d="M320 258 L300 292 L390 298 Z"/>
       </g>
+      <g class="lm-assign-bars lm-assign-depot">{depot}</g>
     </svg>
     <p class="lm-cvrp-cap">{caption}</p>
     {animation_control_html()}
@@ -3472,7 +3642,7 @@ def render_overview_about() -> None:
 
 FOOTER_LINKEDIN_URL = "https://www.linkedin.com/in/syeddanishali16/"
 FOOTER_GITHUB_URL = "https://github.com/syeddanishali17/LastMileLab2"
-FOOTER_EMAIL = "danishraza16@icloud.com"
+FOOTER_EMAIL = "danishraza16@gmail.com"
 
 
 def render_footer() -> None:
@@ -3510,18 +3680,9 @@ def classify_planning_availability(*, health_ok: bool, offline_confirmed: bool) 
 
 
 def planning_service_up() -> bool:
-    import httpx
+    from api_client import health_ok
 
-    from api_client import backend_url
-
-    try:
-        response = httpx.get(
-            f"{backend_url()}/health",
-            timeout=HEALTH_PROBE_TIMEOUT_SECONDS,
-        )
-        return response.is_success
-    except Exception:
-        return False
+    return health_ok(HEALTH_PROBE_TIMEOUT_SECONDS)
 
 
 def planning_availability() -> str:

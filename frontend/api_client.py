@@ -5,6 +5,7 @@ import os
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit, urlunsplit
 
 import httpx
 from dotenv import load_dotenv
@@ -44,8 +45,22 @@ def is_missing_run(exc: ApiError) -> bool:
     return "UNKNOWN_RUN" in text or ("Run '" in text and "was not found" in text)
 
 
+def _prefer_ipv4_loopback(url: str) -> str:
+    """Map a literal `localhost` host to 127.0.0.1.
+
+    On Windows `localhost` resolves to ::1 first, and a refused IPv6 connect takes about
+    two seconds before falling back to IPv4, while Uvicorn binds 127.0.0.1 only. That
+    delay hit every request and made each click feel frozen. Other hosts are unchanged.
+    """
+    parts = urlsplit(url)
+    if parts.hostname != "localhost":
+        return url
+    netloc = "127.0.0.1" + (f":{parts.port}" if parts.port else "")
+    return urlunsplit(parts._replace(netloc=netloc))
+
+
 def backend_url() -> str:
-    return os.getenv("BACKEND_URL", DEFAULT_BACKEND_URL).rstrip("/")
+    return _prefer_ipv4_loopback(os.getenv("BACKEND_URL", DEFAULT_BACKEND_URL).rstrip("/"))
 
 
 @lru_cache(maxsize=1)
@@ -123,6 +138,18 @@ def request_json(
 
 def get_health() -> dict[str, Any]:
     return request_json("GET", "/health", timeout=5.0)
+
+
+def health_ok(timeout: float) -> bool:
+    """Liveness probe on the shared pooled client.
+
+    A one-off `httpx.get` builds a new client (and SSL context) per call, which cost
+    about half a second on every page render.
+    """
+    try:
+        return _client().get(f"{backend_url()}/health", timeout=timeout).is_success
+    except Exception:
+        return False
 
 
 def list_scenarios() -> list[dict[str, Any]]:

@@ -40,6 +40,18 @@ def test_connection_errors_do_not_instruct_localhost_api() -> None:
     assert "port 8000 first" not in client_source
 
 
+def test_backend_url_avoids_windows_ipv6_localhost_delay(monkeypatch) -> None:
+    monkeypatch.setenv("BACKEND_URL", "http://localhost:8000/")
+    assert api_client.backend_url() == "http://127.0.0.1:8000"
+    for url in (
+        "http://backend:8000",
+        "https://lastmile-api.onrender.com",
+        "http://127.0.0.1:8000",
+    ):
+        monkeypatch.setenv("BACKEND_URL", url)
+        assert api_client.backend_url() == url
+
+
 def test_route_palette_and_camera_are_comparable():
     assert VEHICLE_COLOURS[:4] == ["#2563EB", "#D8893B", "#6775C9", "#C026D3"]
     assert len(set(VEHICLE_COLOURS[:4])) == 4
@@ -1013,13 +1025,13 @@ def test_overview_about_and_footer_markup(monkeypatch):
     assert "GitHub" in footer
     assert 'href="https://www.linkedin.com/in/syeddanishali16/"' in footer
     assert 'href="https://github.com/syeddanishali17/LastMileLab2"' in footer
-    assert 'href="mailto:danishraza16@icloud.com"' in footer
-    assert "danishraza16@icloud.com" in footer
+    assert 'href="mailto:danishraza16@gmail.com"' in footer
+    assert "danishraza16@gmail.com" in footer
     assert footer.count('target="_blank"') == 2
     assert footer.count('rel="noopener noreferrer"') == 2
     assert 'aria-label="Syed Danish Ali on LinkedIn"' in footer
     assert 'aria-label="LastMile Lab source code on GitHub">' in footer
-    assert 'aria-label="Email Syed Danish Ali at danishraza16@icloud.com"' in footer
+    assert 'aria-label="Email Syed Danish Ali at danishraza16@gmail.com"' in footer
     assert footer == (
         '<div class="lm-footer">'
         '<span class="lm-footer-copy">© 2026 Syed Danish Ali · LastMile Lab</span>'
@@ -1032,9 +1044,9 @@ def test_overview_about_and_footer_markup(monkeypatch):
         'target="_blank" rel="noopener noreferrer" '
         'aria-label="LastMile Lab source code on GitHub">GitHub</a>'
         '<span class="lm-footer-sep" aria-hidden="true"> · </span>'
-        '<a class="lm-footer-link" href="mailto:danishraza16@icloud.com" '
-        'aria-label="Email Syed Danish Ali at danishraza16@icloud.com">'
-        "danishraza16@icloud.com</a>"
+        '<a class="lm-footer-link" href="mailto:danishraza16@gmail.com" '
+        'aria-label="Email Syed Danish Ali at danishraza16@gmail.com">'
+        "danishraza16@gmail.com</a>"
         "</span>"
         "</div>"
     )
@@ -1086,12 +1098,13 @@ def test_health_probe_uses_short_timeout_and_succeeds(monkeypatch) -> None:
     class Response:
         is_success = True
 
-    def fake_get(url, timeout):
-        seen["url"] = url
-        seen["timeout"] = timeout
-        return Response()
+    class FakeClient:
+        def get(self, url, timeout):
+            seen["url"] = url
+            seen["timeout"] = timeout
+            return Response()
 
-    monkeypatch.setattr("httpx.get", fake_get)
+    monkeypatch.setattr(api_client, "_client", lambda: FakeClient())
     assert components.HEALTH_PROBE_TIMEOUT_SECONDS == 0.6
     assert components.planning_service_up() is True
     assert seen["timeout"] == 0.6
