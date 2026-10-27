@@ -136,6 +136,12 @@ def _legend_layout() -> dict[str, Any]:
     }
 
 
+def _with_alpha(hex_colour: str, alpha: float) -> str:
+    value = hex_colour.lstrip("#")
+    red, green, blue = (int(value[i : i + 2], 16) for i in (0, 2, 4))
+    return f"rgba({red}, {green}, {blue}, {alpha})"
+
+
 def _scattermap(**kwargs: Any) -> go.Scattermapbox:
     kwargs.setdefault("showlegend", False)
     return go.Scattermapbox(**kwargs)
@@ -270,6 +276,7 @@ def route_map(
     scenario: dict[str, Any],
     routes_payload: dict[str, Any],
     unserved_ids: list[str] | None = None,
+    territories: dict[str, list[tuple[float, float]]] | None = None,
 ) -> go.Figure:
     depot = scenario["depot"]
     customers = {customer["customer_id"]: customer for customer in scenario["customers"]}
@@ -401,6 +408,22 @@ def route_map(
             )
         )
 
+    for vehicle_id, hull in sorted((territories or {}).items()):
+        if len(hull) < 3:
+            continue
+        ring = hull + hull[:1]
+        fig.add_trace(
+            _scattermap(
+                lat=[lat for lat, _lon in ring],
+                lon=[lon for _lat, lon in ring],
+                mode="lines",
+                fill="toself",
+                fillcolor=_with_alpha(vehicle_colour(vehicle_id), 0.16),
+                line={"width": 1.2, "color": _with_alpha(vehicle_colour(vehicle_id), 0.7)},
+                hoverinfo="skip",
+                name=f"{vehicle_id} territory",
+            )
+        )
     for _vehicle_id, _colour, route_lats, route_lons in polylines:
         fig.add_trace(
             _scattermap(

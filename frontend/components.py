@@ -2892,7 +2892,9 @@ def inject_theme() -> None:
         unsafe_allow_html=True,
     )
     st.markdown(
-        THEME_CSS.replace("</style>", _vehicle_colour_css() + brand + "</style>"),
+        THEME_CSS.replace(
+            "</style>", _vehicle_colour_css() + console_motion_css() + brand + "</style>"
+        ),
         unsafe_allow_html=True,
     )
 
@@ -3523,75 +3525,89 @@ def render_cvrp_animation() -> None:
     st.markdown(cvrp_animation_html(), unsafe_allow_html=True)
 
 
+# Walkthrough instance: three vans of capacity 10, nine unsplit orders around one depot.
+_WALK_DEPOT = (245, 172)
+_WALK_ROUTES = (
+    ("#2A78D6", [(110, 82, 3), (68, 148, 4), (150, 132, 2)]),
+    ("#EB6834", [(356, 72, 4), (430, 112, 3), (330, 122, 2)]),
+    ("#1BAF7A", [(170, 262, 3), (330, 272, 4), (250, 292, 3)]),
+)
+# The green van is first sequenced G -> H -> I (crossing), then 2-opt reverses H..I.
+_WALK_BAD = [0, 1, 2]
+_WALK_GOOD = [0, 2, 1]
+_WALK_KM_SCALE = 0.03
+
+
+def _walk_path(stops: list[tuple[int, int, int]], order: list[int]) -> tuple[str, float]:
+    points = [_WALK_DEPOT, *[(stops[i][0], stops[i][1]) for i in order], _WALK_DEPOT]
+    length = sum(math.dist(a, b) for a, b in zip(points, points[1:]))
+    return "M" + " L".join(f"{x} {y}" for x, y in points), length * _WALK_KM_SCALE
+
+
 def methodology_animation_html() -> str:
-    sheet = escape(t("ux.method.figure.sheet"))
-    label = escape(t("ux.method.figure.label"))
-    caption = escape(t("ux.method.figure.caption"))
-    depot = _iso_depot_block(320, 258, half_w=11, top_h=6, wall_h=11, uid="method")
-    cells = []
-    for row in range(4):
-        for col in range(8):
-            x = 184 + col * 34
-            y = 40 + row * 20
-            cells.append(f'<rect x="{x}" y="{y}" width="28" height="16" rx="2"/>')
-    orders = (
-        '<g transform="translate(56,78)">'
-        '<circle cx="12" cy="8" r="6" fill="#64748B"/>'
-        '<rect x="0" y="20" width="8" height="8" fill="#94A3B8"/>'
-        '<rect x="9" y="20" width="8" height="8" fill="#94A3B8"/>'
-        '<rect x="18" y="20" width="8" height="8" fill="#94A3B8"/></g>'
-        '<g transform="translate(156,78)">'
-        '<circle cx="12" cy="8" r="6" fill="#64748B"/>'
-        '<rect x="4" y="20" width="8" height="8" fill="#94A3B8"/>'
-        '<rect x="13" y="20" width="8" height="8" fill="#94A3B8"/></g>'
-        '<g transform="translate(256,78)">'
-        '<circle cx="12" cy="8" r="6" fill="#64748B"/>'
-        '<rect x="-4" y="20" width="8" height="8" fill="#94A3B8"/>'
-        '<rect x="5" y="20" width="8" height="8" fill="#94A3B8"/>'
-        '<rect x="14" y="20" width="8" height="8" fill="#94A3B8"/>'
-        '<rect x="23" y="20" width="8" height="8" fill="#94A3B8"/></g>'
-        '<g transform="translate(356,78)">'
-        '<circle cx="12" cy="8" r="6" fill="#64748B"/>'
-        '<rect x="4" y="20" width="8" height="8" fill="#94A3B8"/>'
-        '<rect x="13" y="20" width="8" height="8" fill="#94A3B8"/></g>'
-        '<g transform="translate(456,78)">'
-        '<circle cx="12" cy="8" r="6" fill="#64748B"/>'
-        '<rect x="0" y="20" width="8" height="8" fill="#94A3B8"/>'
-        '<rect x="9" y="20" width="8" height="8" fill="#94A3B8"/>'
-        '<rect x="18" y="20" width="8" height="8" fill="#94A3B8"/></g>'
-        '<g transform="translate(556,78)">'
-        '<circle cx="12" cy="8" r="6" fill="#64748B"/>'
-        '<rect x="4" y="20" width="8" height="8" fill="#94A3B8"/>'
-        '<rect x="13" y="20" width="8" height="8" fill="#94A3B8"/></g>'
+    """Looping walkthrough: assign orders, sequence routes, then a 2-opt improvement."""
+    label = escape(t("ux.walk.label"))
+    steps = "".join(
+        f'<li class="lm-walk-step s{index}"><span>{index}</span>{escape(t(key))}</li>'
+        for index, key in enumerate(("ux.walk.assign", "ux.walk.sequence", "ux.walk.improve"), 1)
     )
+    nodes, totes, routes = [], [], []
+    for van, (colour, stops) in enumerate(_WALK_ROUTES, start=1):
+        for x, y, demand in stops:
+            nodes.append(
+                f'<g class="lm-walk-node v{van}">'
+                f'<circle cx="{x}" cy="{y}" r="13"/>'
+                f'<text x="{x}" y="{y + 4}" text-anchor="middle">{demand}</text></g>'
+            )
+        filled = 0
+        bar_y = 96 + (van - 1) * 58
+        for _x, _y, demand in stops:
+            for _ in range(demand):
+                delay = 0.18 * (van - 1) + 0.05 * filled
+                totes.append(
+                    f'<rect class="lm-walk-tote" x="{512 + filled * 17}" y="{bar_y + 3}" '
+                    f'width="14" height="18" rx="3" fill="{colour}" '
+                    f'style="animation-delay:{delay:.2f}s"/>'
+                )
+                filled += 1
+        totes.append(
+            f'<text class="lm-walk-load" x="690" y="{bar_y - 6}" text-anchor="end">'
+            f"{filled} / 10</text>"
+            f'<text class="lm-walk-van" x="510" y="{bar_y - 6}">V{van}</text>'
+        )
+        order = _WALK_BAD if van == 3 else [0, 1, 2]
+        d, _km = _walk_path(stops, order)
+        cls = "lm-walk-route is-bad" if van == 3 else "lm-walk-route"
+        routes.append(
+            f'<path class="{cls} r{van}" d="{d}" pathLength="1" stroke="{colour}"/>'
+        )
+    green = _WALK_ROUTES[2][1]
+    good_d, good_km = _walk_path(green, _WALK_GOOD)
+    _bad_d, bad_km = _walk_path(green, _WALK_BAD)
+    tracks = "".join(
+        f'<rect class="lm-walk-track" x="510" y="{96 + i * 58}" width="182" height="24" rx="6"/>'
+        for i in range(3)
+    )
+    depot = _iso_depot_block(*_WALK_DEPOT, half_w=12, top_h=6.5, wall_h=12, uid="walk")
+    bad_label = f"{format_decimal(bad_km, 1)} km"
+    good_label = f"{format_decimal(good_km, 1)} km ↓"
     return f"""
-    <div class="lm-cvrp-panel">
-    <div class="lm-figure-title">{label}</div>
-    <svg class="lm-assign" viewBox="0 0 640 320" role="img" aria-label="{label}">
-      <g class="lm-assign-sheet" fill="#E2E8F0" stroke="#CBD5E1" stroke-width="1">
-        {''.join(cells)}
+    <div class="lm-cvrp-panel lm-walk-panel">
+    <ol class="lm-walk-steps">{steps}</ol>
+    <svg class="lm-walk lm-assign" viewBox="0 0 720 320" role="img" aria-label="{label}">
+      <rect class="lm-walk-map" x="16" y="34" width="462" height="284" rx="14"/>
+      <g class="lm-walk-routes" fill="none">{"".join(routes)}
+        <path class="lm-walk-route is-good" d="{good_d}" pathLength="1" stroke="#1BAF7A"/>
       </g>
-      <text class="lm-assign-sheet-label" x="320" y="28" text-anchor="middle"
-        fill="#64748B" font-size="13">{sheet}</text>
-      <g class="lm-assign-orders">{orders}</g>
-      <g class="lm-assign-bars">
-        <rect x="200" y="148" width="240" height="22" rx="4" fill="#F8FAFC" stroke="#94A3B8"/>
-        <rect x="200" y="178" width="240" height="22" rx="4" fill="#F8FAFC" stroke="#94A3B8"/>
-        <rect x="200" y="208" width="240" height="22" rx="4" fill="#F8FAFC" stroke="#94A3B8"/>
-        <g class="lm-assign-fill">
-          <rect x="202" y="150" width="148" height="18" rx="3" fill="#2A78D6"/>
-          <rect x="202" y="180" width="208" height="18" rx="3" fill="#EB6834"/>
-          <rect x="202" y="210" width="118" height="18" rx="3" fill="#1BAF7A"/>
-        </g>
-      </g>
-      <g class="lm-assign-routes" fill="none">
-        <path stroke="#2A78D6" d="M320 258 L230 238 L190 268 Z"/>
-        <path stroke="#EB6834" d="M320 258 L410 232 L470 262 Z"/>
-        <path stroke="#1BAF7A" d="M320 258 L300 292 L390 298 Z"/>
-      </g>
-      <g class="lm-assign-bars lm-assign-depot">{depot}</g>
+      <circle class="lm-walk-cross" cx="247" cy="265" r="11"/>
+      <g class="lm-walk-nodes">{"".join(nodes)}</g>
+      <g class="lm-walk-depot">{depot}</g>
+      <text class="lm-walk-km is-bad" x="466" y="306" text-anchor="end">V3 {bad_label}</text>
+      <text class="lm-walk-km is-good" x="466" y="306" text-anchor="end">V3 {good_label}</text>
+      <text class="lm-walk-cap" x="510" y="62">{escape(t("ux.walk.capacity"))}</text>
+      {tracks}{"".join(totes)}
     </svg>
-    <p class="lm-cvrp-cap">{caption}</p>
+    <p class="lm-cvrp-cap">{escape(t("ux.walk.caption"))}</p>
     {animation_control_html()}
     </div>
     """
@@ -3623,66 +3639,131 @@ _CONSOLE_VAN_SVG = (
 )
 
 
+def _console_position(stage: int, total: int) -> float:
+    """Left offset (%) of the stop reached after `stage` completed stages."""
+    return 2 + 96 * max(0, min(stage, total)) / total
+
+
+# OR-Tools local-search neighbourhoods that guided local search cycles through.
+CONSOLE_MOVES = ("relocate", "exchange", "2-opt", "or-opt", "cross-exchange")
+_TWO_OPT_GLYPH = (
+    '<svg class="lm-two-opt" viewBox="0 0 44 28" aria-hidden="true">'
+    '<path class="lm-2opt-a" d="M4 4 L40 24 M4 24 L40 4"/>'
+    '<path class="lm-2opt-b" d="M4 4 L40 4 M4 24 L40 24"/>'
+    '<circle cx="4" cy="4" r="3"/><circle cx="40" cy="4" r="3"/>'
+    '<circle cx="4" cy="24" r="3"/><circle cx="40" cy="24" r="3"/></svg>'
+)
+
+
+def console_motion_css() -> str:
+    """Per-stage van and road positions.
+
+    Streamlit strips custom properties from inline styles, so each stage gets a
+    class whose keyframes drive from the previous stop to the next one.
+    """
+    total = len(CONSOLE_STAGES)
+    rules = []
+    for stage in range(total + 1):
+        start = _console_position(max(stage - 1, 0), total)
+        end = _console_position(stage, total)
+        rules.append(
+            f".lm-console-road.at-{stage} .lm-console-van{{left:{end:.1f}%;"
+            f"animation-name:lm-van-{stage}}}"
+            f"@keyframes lm-van-{stage}{{from{{left:{start:.1f}%}}to{{left:{end:.1f}%}}}}"
+            f".lm-console-road.at-{stage} .lm-road-done{{width:{end - 2:.1f}%;"
+            f"animation-name:lm-road-{stage}}}"
+            f"@keyframes lm-road-{stage}{{from{{width:{start - 2:.1f}%}}"
+            f"to{{width:{end - 2:.1f}%}}}}"
+        )
+    rules.extend(
+        f".lm-budget-{n} .lm-console-budget span{{animation-duration:{n}s}}" for n in (1, 5, 10)
+    )
+    return "".join(rules)
+
+
 def dispatch_console_html(
     stage: int,
     *,
     seconds: int,
     scenario_name: str,
     error: bool = False,
+    timings: list[float] | None = None,
+    result: tuple[str, str] | None = None,
 ) -> str:
-    """Run progress as a route: the van advances one stop per completed planning stage.
+    """Run progress as a route: the van drives one stop further per completed stage.
 
     `stage` is the index of the active stage in CONSOLE_STAGES; len(CONSOLE_STAGES)
-    means every stage is complete.
+    means every stage is complete. `timings` are measured seconds per completed
+    stage, and `result` is the (distance, reduction) pair shown once the plan is ready.
     """
     total = len(CONSOLE_STAGES)
     stage = max(0, min(stage, total))
+    timings = timings or []
     running = stage < total and not error
+    searching = running and CONSOLE_STAGES[stage] == "ux.stage.optimise"
     steps = []
     for index, key in enumerate(CONSOLE_STAGES):
+        timing = ""
         if index < stage:
             state = "is-done"
+            if index < len(timings):
+                timing = f'<span class="lm-step-time">{format_decimal(timings[index], 2)} s</span>'
         elif index == stage and error:
             state = "is-error"
         elif index == stage:
             state = "is-active"
         else:
             state = ""
-        steps.append(f'<li class="{state}">{escape(t(key))}</li>')
-    # Depot at 2%, one stop per stage, back at the depot icon on the right.
-    xs = [2 + 96 * index / total for index in range(total + 1)]
-    road = "".join(
-        f'<circle class="lm-road-stop" cx="{x:.1f}%" cy="31" r="5"/>' for x in xs[1:]
+        steps.append(f'<li class="{state}">{escape(t(key))}{timing}</li>')
+    stops = "".join(
+        f'<span class="lm-road-stop{" is-reached" if index <= stage else ""}'
+        f'{" is-new" if index == stage and stage > 0 else ""}" '
+        f'style="left:{_console_position(index, total):.1f}%"></span>'
+        for index in range(1, total + 1)
     )
-    progress = xs[stage]
     if error:
         title, state_class = t("ux.stage.failed"), "is-error"
     elif running:
         title, state_class = t("ux.console.title"), "is-running"
     else:
-        title, state_class = t("ux.stage.done"), "is-done"
+        title, state_class = t("ux.console.ready"), "is-done"
+    subtitle = scenario_name
+    if result and not running and not error:
+        subtitle = t("ux.console.result", km=result[0], pct=result[1])
+    if searching:
+        clock = (
+            f'<span class="lm-console-clock is-live lm-tick-{seconds}">'
+            f'{escape(t("ux.console.searching"))} '
+            f'<b class="lm-console-elapsed" aria-hidden="true"></b> / {seconds} s</span>'
+        )
+    else:
+        clock = f'<span class="lm-console-clock">{escape(t("ux.console.budget", n=seconds))}</span>'
+    moves = ""
+    if searching:
+        words = "".join(f"<span>{escape(move)}</span>" for move in CONSOLE_MOVES)
+        moves = (
+            '<div class="lm-console-moves">'
+            f"{_TWO_OPT_GLYPH}"
+            f'<p>{escape(t("ux.console.moves"))} <span class="lm-move-list">{words}</span></p>'
+            "</div>"
+        )
     budget = (
-        f'<div class="lm-console-budget" style="--lm-budget:{seconds}s" aria-hidden="true">'
-        "<span></span></div>"
-        if running and CONSOLE_STAGES[stage] == "ux.stage.optimise"
+        '<div class="lm-console-budget" aria-hidden="true"><span></span></div>'
+        if searching
         else ""
     )
+    badge = '<span class="lm-console-check" aria-hidden="true"></span>' if result else ""
     return (
-        f'<section class="lm-console {state_class}" role="status" aria-live="polite">'
-        '<div class="lm-console-head"><div>'
+        f'<section class="lm-console {state_class} lm-budget-{seconds}" role="status" '
+        'aria-live="polite">'
+        f'<div class="lm-console-head"><div class="lm-console-heading">{badge}<div>'
         f'<p class="lm-console-title">{escape(title)}</p>'
-        f'<p class="lm-console-sub">{escape(scenario_name)}</p></div>'
-        f'<span class="lm-console-clock">{escape(t("ux.console.budget", n=seconds))}</span>'
-        "</div>"
-        '<div class="lm-console-road" aria-hidden="true"><svg>'
-        f'<line class="lm-road" x1="2%" y1="31" x2="98%" y2="31"/>'
-        f'<line class="lm-road-done" x1="2%" y1="31" x2="{progress:.1f}%" y2="31"/>'
-        f"{road}"
-        '<rect class="lm-road-depot" x="2%" y="25" width="12" height="12" rx="2" '
-        'transform="translate(-6 0)"/>'
-        "</svg>"
-        f'<div class="lm-console-van" style="left:{progress:.1f}%">{_CONSOLE_VAN_SVG}</div></div>'
-        f'<ol class="lm-console-steps">{"".join(steps)}</ol>{budget}</section>'
+        f'<p class="lm-console-sub">{escape(subtitle)}</p></div></div>{clock}</div>'
+        f'<div class="lm-console-road at-{stage}" aria-hidden="true">'
+        '<span class="lm-road-track"></span><span class="lm-road-done"></span>'
+        f'<span class="lm-road-depot"></span>{stops}'
+        f'<div class="lm-console-van">{_CONSOLE_VAN_SVG}</div></div>'
+        f'<ol class="lm-console-steps">{"".join(steps)}</ol>{moves}{budget}</section>'
     )
 
 
@@ -3742,6 +3823,39 @@ def continuum_check_html(estimate_km: float, rows: list[tuple[str, float, str]])
         f'<p class="lm-cac-estimate"><i aria-hidden="true"></i>{escape(t("ux.ca.estimate"))} '
         f"<b>≈ {format_decimal(estimate_km, 1)} km</b></p>"
         f'{"".join(bars)}</section>'
+    )
+
+
+def route_quality_html(rows: list[tuple[str, str, float, float, str, str]]) -> str:
+    """Dispatcher-acceptance panel. Rows are (label, hint, baseline, optimised,
+    baseline text, optimised text); lower is better for every measure."""
+    body = []
+    for label, hint, base, opt, base_text, opt_text in rows:
+        winner = "opt" if opt < base else ("base" if base < opt else "tie")
+        scale = max(base, opt) or 1
+        cells = "".join(
+            f'<td class="{"is-better" if winner == side else ""}">'
+            f'<span class="lm-rq-val">{escape(text)}</span>'
+            f'<span class="lm-rq-bar {cls}"><i style="width:{100 * value / scale:.0f}%"></i></span>'
+            "</td>"
+            for side, value, text, cls in (
+                ("base", base, base_text, "is-baseline"),
+                ("opt", opt, opt_text, "is-optimised"),
+            )
+        )
+        body.append(
+            f'<tr><th scope="row">{escape(label)}<small>{escape(hint)}</small></th>{cells}</tr>'
+        )
+    return (
+        '<section class="lm-rq">'
+        f'<div class="lm-insight"><h3>{escape(t("ux.rq.title"))}</h3>'
+        f'<p>{escape(t("ux.rq.body"))}</p></div>'
+        '<table class="lm-rq-table"><thead><tr>'
+        f'<th scope="col">{escape(t("ux.rq.measure"))}</th>'
+        f'<th scope="col">{escape(t("ux.baseline"))}</th>'
+        f'<th scope="col">{escape(t("ux.optimised.short"))}</th>'
+        f'</tr></thead><tbody>{"".join(body)}</tbody></table>'
+        f'<p class="lm-rq-note">{escape(t("ux.rq.note"))}</p></section>'
     )
 
 

@@ -27,6 +27,7 @@ known-first-party = [
     "insights",
     "inspector",
     "maps",
+    "route_quality",
     "scenario_builder",
     "state",
     "theme_layer",

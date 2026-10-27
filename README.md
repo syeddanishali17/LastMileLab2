@@ -160,13 +160,19 @@ The Plan capture at the top of this README is the live Streamlit UI. Walk every 
 
 ![Overview hero and routing-model explainer.](docs/screenshots/overview_vienna_standard_24.png)
 
-**Scenarios.** Presets, a live map preview and a solver-free distance estimate. While the comparison runs, a dispatch console advances a van one stop per planning stage and counts down the OR-Tools search budget.
+**Scenarios.** Presets, a live map preview and a solver-free distance estimate. While the comparison runs, a dispatch console drives a van one stop per planning stage, shows each stage's measured time, counts the OR-Tools search seconds while cycling its local-search moves, and ends on the found distance before opening Plan.
 
 ![Scenarios page with the continuum-approximation estimate.](docs/screenshots/scenarios_vienna_standard_24.png)
 
-**Plan, beyond the distance.** How guided local search improved the plan over time, the optimized plan on a shift clock, and a plausibility check of both plans against the continuum-approximation estimate.
+![Dispatch console mid-search: measured stage times, live search seconds and local-search moves.](docs/screenshots/dispatch_console.png)
 
-![Search convergence, shift timeline and continuum-approximation check.](docs/screenshots/plan_insights_vienna_standard_24.png)
+**Plan, beyond the distance.** How guided local search improved the plan over time, the optimized plan on a shift clock, a plausibility check against the continuum-approximation estimate, and whether a dispatcher would accept each plan as drawn.
+
+![Search convergence, shift timeline, continuum-approximation check and dispatcher-acceptance measures.](docs/screenshots/plan_insights_vienna_standard_24.png)
+
+**Route territories.** A toggle shades each van's convex hull: the baseline's territories overlap, the optimized plan's do not.
+
+![Route territories for both plans.](docs/screenshots/plan_territories_vienna_standard_24.png)
 
 ### Analytical read-outs
 
@@ -174,10 +180,11 @@ The Plan capture at the top of this README is the live Streamlit UI. Walk every 
 |---|---|---|
 | Search convergence | Best-so-far distance after each improving OR-Tools solution, on a log time axis | `search_trace` recorded by a `RoutingModel.AddAtSolutionCallback` (strict improvements only) |
 | Continuum-approximation estimate | Expected fleet distance **before** solving: `L ≈ c · (2·r̄·m + k·√(n·A))` | Daganzo (1984), k ≈ 0.57; circuity `c` measured from the scenario matrix after Merchán & Winkenbach, MIT CTL ([DSpace 1721.1/140763](https://dspace.mit.edu/handle/1721.1/140763), thesis [1721.1/119911](https://dspace.mit.edu/handle/1721.1/119911)) |
+| Dispatcher acceptance | Route crossings, territory (convex-hull) overlap, route spread and zone switches for both plans, plus a map overlay of each van's territory | Visual-attractiveness criteria reviewed by Rossit, Vigo, Tohmé & Frutos, *Computers & Operations Research* 103 (2019) ([repository copy](https://ri.conicet.gov.ar/handle/11336/103527)); zone-by-zone driver behaviour from the Amazon Last Mile Routing Research Challenge ([Wu et al., arXiv 2205.04001](https://arxiv.org/abs/2205.04001)) |
 | Shift timeline | Each van's drive legs and stops on a clock from 08:00 | Illustrative 25 km/h and 5 min per stop; the solver still minimizes distance only |
 | Driver time and CO₂e | Estimated hours and emissions saved versus the baseline | Illustrative 0.27 kg CO₂e per van-km for a diesel delivery van |
 
-On Vienna Standard 24 the estimate is **97.0 km** before any solving; OR-Tools returns 97.193 km (+0.2%) and the nearest-neighbour baseline 122.394 km (+26.2%). The estimate is a plausibility check, not a bound.
+On Vienna Standard 24 the optimized plan also scores better on every dispatcher measure (1 crossing vs 3, no territory overlap vs 3.2%, 1 zone switch vs 4), although OR-Tools only targets distance. The estimate is **97.0 km** before any solving; OR-Tools returns 97.193 km (+0.2%) and the nearest-neighbour baseline 122.394 km (+26.2%). The estimate is a plausibility check, not a bound.
 
 ![Architecture: Streamlit to FastAPI to core to DuckDB.](docs/screenshots/architecture.svg)
 

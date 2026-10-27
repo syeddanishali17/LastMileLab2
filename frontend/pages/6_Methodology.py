@@ -18,6 +18,18 @@ from i18n import t
 
 FURTHER_READING = (
     (
+        "Computers & Operations Research (2019)",
+        "Visual attractiveness in routing problems: a review",
+        "ux.method.reading.visual",
+        "https://ri.conicet.gov.ar/handle/11336/103527",
+    ),
+    (
+        "arXiv · Amazon routing challenge (2022)",
+        "Learning from drivers to tackle the Amazon Last Mile Routing Research Challenge",
+        "ux.method.reading.drivers",
+        "https://arxiv.org/abs/2205.04001",
+    ),
+    (
         "DSpace@MIT · Networks (2019)",
         "An empirical validation and data-driven extension of continuum approximation "
         "approaches for urban route distances",
@@ -67,6 +79,7 @@ st.markdown(
             ("baseline", t("ux.method.baseline.title")),
             ("solver", t("ux.method.solver.title")),
             ("continuum", t("ux.method.ca.title")),
+            ("attractiveness", t("ux.method.quality.title")),
             ("scope", t("ux.method.assumptions.title")),
             ("reading", t("ux.method.reading.title")),
         ],
@@ -146,6 +159,9 @@ section(t("ux.method.ca.title"), anchor="continuum")
 st.write(t("ux.method.ca"))
 st.code(t("ux.method.ca.formula"), language=None)
 st.caption(t("ux.method.ca.note"))
+
+section(t("ux.method.quality.title"), anchor="attractiveness")
+st.write(t("ux.method.quality"))
 
 section(t("ux.method.opensolver.title"))
 st.write(t("ux.method.opensolver"))

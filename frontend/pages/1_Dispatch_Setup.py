@@ -1,5 +1,6 @@
 """Scenario selection, guided demand editing, and a single comparison action."""
 
+import time
 from html import escape
 
 import streamlit as st
@@ -27,7 +28,13 @@ from components import (
     render_footer,
 )
 from continuum import estimate as continuum_estimate
-from display import scenario_caption, scenario_label
+from display import (
+    format_improvement,
+    format_km,
+    plans_comparable,
+    scenario_caption,
+    scenario_label,
+)
 from i18n import t
 from maps import PLOTLY_CHART_KWARGS, customer_map
 from scenario_builder import capacity_preview
@@ -36,6 +43,7 @@ from state import clear_planner_runs, set_scenario
 PRESETS = ["VIENNA_STANDARD_24", "VIENNA_TIGHT_24", "VIENNA_WIDE_24"]
 CUSTOM_DEFAULTS = {"n": 24, "vans": 4, "capacity": 30}
 CUSTOM_LOCATION = {"seed": 42, "detour": 1.25}
+READY_PAUSE_SECONDS = 1.4
 
 
 def _heading(title: str) -> None:
@@ -196,25 +204,41 @@ def compare(scenario_id: str, seconds: int, progress: DeltaGenerator) -> bool:
     clear_planner_runs()
     console = progress.empty()
     name = scenario_label(scenario_id)
+    timings: list[float] = []
+    clock = time.perf_counter()
 
-    def show(stage: int, *, error: bool = False) -> None:
+    def show(stage: int, *, error: bool = False, result: tuple[str, str] | None = None) -> None:
         console.markdown(
-            dispatch_console_html(stage, seconds=seconds, scenario_name=name, error=error),
+            dispatch_console_html(
+                stage,
+                seconds=seconds,
+                scenario_name=name,
+                error=error,
+                timings=timings,
+                result=result,
+            ),
             unsafe_allow_html=True,
         )
+
+    def advance(stage: int) -> None:
+        nonlocal clock
+        now = time.perf_counter()
+        timings.append(now - clock)
+        clock = now
+        show(stage)
 
     stage = 0
     try:
         show(stage)
         scenario = get_scenario(scenario_id)
         stage = 1
-        show(stage)
+        advance(stage)
         baseline = run_baseline(scenario_id)
         stage = 2
-        show(stage)
+        advance(stage)
         optimised = run_optimise(scenario_id, seconds)
         stage = 3
-        show(stage)
+        advance(stage)
         bundle = {"scenario": scenario}
         for kind, result in (("baseline", baseline), ("optimised", optimised)):
             run_id = result["run_id"]
@@ -224,12 +248,22 @@ def compare(scenario_id: str, seconds: int, progress: DeltaGenerator) -> bool:
                 "checks": get_checks(run_id),
             }
         stage = 4
-        show(stage)
+        advance(stage)
         st.session_state["_plan_bundle"] = bundle
         for kind, result in (("baseline", baseline), ("optimised", optimised)):
             st.session_state[f"{kind}_run_id"] = result["run_id"]
             st.session_state[f"_{kind}_summary"] = bundle[kind]["run"]
-        show(len(CONSOLE_STAGES))
+        timings.append(time.perf_counter() - clock)
+        summary = bundle["optimised"]["run"]
+        outcome = None
+        if plans_comparable(bundle["baseline"]["run"], summary):
+            outcome = (
+                format_km(summary["objective_distance_metres"]),
+                format_improvement(summary["distance_improvement_percentage"]),
+            )
+        show(len(CONSOLE_STAGES), result=outcome)
+        # Let the van park and the result land before the page changes.
+        time.sleep(READY_PAUSE_SECONDS)
         return True
     except ApiError as exc:
         show(stage, error=True)

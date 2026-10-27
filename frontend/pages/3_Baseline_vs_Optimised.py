@@ -15,6 +15,7 @@ from components import (
     render_footer,
     resolve_plan_bundle,
     result_banner_html,
+    route_quality_html,
     section,
     static_table,
     status_badge,
@@ -44,6 +45,7 @@ from insights import (
     timeline_figure,
 )
 from maps import PLOTLY_PLAN_CHART_KWARGS, route_map
+from route_quality import assess as assess_route_quality
 from state import summary_for_current
 
 PLAN_VIEWS = ("comparison", "baseline", "optimised")
@@ -391,7 +393,7 @@ def render_shift_timeline(shifts: dict) -> None:
     st.caption(t("ux.insight.co2.note", factor=f"{CO2E_KG_PER_KM:g}"))
 
 
-def render_insights(bundle: dict, shifts: dict) -> None:
+def render_insights(bundle: dict, shifts: dict, quality: dict) -> None:
     section(t("ux.insight.heading"), t("ux.insight.heading.cap"))
     with st.container(key="plan-insights"):
         left, right = st.columns([0.45, 0.55], gap="medium")
@@ -400,6 +402,48 @@ def render_insights(bundle: dict, shifts: dict) -> None:
         with right:
             render_shift_timeline(shifts)
     render_continuum_check(bundle)
+    render_route_quality(quality)
+
+
+def render_route_quality(quality: dict) -> None:
+    base, opt = quality.get("baseline"), quality.get("optimised")
+    if base is None or opt is None:
+        return
+    rows = [
+        (
+            t("ux.rq.crossings"),
+            t("ux.rq.crossings.hint"),
+            base.crossings,
+            opt.crossings,
+            str(base.crossings),
+            str(opt.crossings),
+        ),
+        (
+            t("ux.rq.overlap"),
+            t("ux.rq.overlap.hint"),
+            base.overlap_pct,
+            opt.overlap_pct,
+            f"{format_decimal(base.overlap_pct, 1)}%",
+            f"{format_decimal(opt.overlap_pct, 1)}%",
+        ),
+        (
+            t("ux.rq.compact"),
+            t("ux.rq.compact.hint"),
+            base.compactness_km,
+            opt.compactness_km,
+            f"{format_decimal(base.compactness_km, 2)} km",
+            f"{format_decimal(opt.compactness_km, 2)} km",
+        ),
+        (
+            t("ux.rq.zones"),
+            t("ux.rq.zones.hint"),
+            base.zone_switches,
+            opt.zone_switches,
+            str(base.zone_switches),
+            str(opt.zone_switches),
+        ),
+    ]
+    st.markdown(route_quality_html(rows), unsafe_allow_html=True)
 
 
 def render_continuum_check(bundle: dict) -> None:
@@ -421,7 +465,9 @@ def render_continuum_check(bundle: dict) -> None:
     st.markdown(continuum_check_html(ca.total_km, rows), unsafe_allow_html=True)
 
 
-def render_comparison(bundle: dict, figures: dict, comparable: bool) -> None:
+def render_comparison(
+    bundle: dict, figures: dict, comparable: bool, quality: dict
+) -> None:
     baseline = bundle["baseline"]["run"]
     optimised = bundle["optimised"]["run"]
     reduction = (
@@ -450,6 +496,7 @@ def render_comparison(bundle: dict, figures: dict, comparable: bool) -> None:
         )
     st.caption(t("ux.plan.map.guide"))
     with st.container(key="plan-pair"):
+        st.toggle(t("ux.rq.toggle"), key="plan_territories", help=t("ux.rq.toggle.help"))
         render_route_legend()
         left, right = st.columns(2, gap="large")
         with left:
@@ -467,7 +514,7 @@ def render_comparison(bundle: dict, figures: dict, comparable: bool) -> None:
                 map_key="map-optimised",
             )
     if comparable:
-        render_insights(bundle, shifts)
+        render_insights(bundle, shifts, quality)
     with st.container(key="plan-route-details"):
         section(t("ux.plan.routes"))
         with st.expander(t("ux.plan.view.baseline"), expanded=False):
@@ -554,17 +601,25 @@ if view not in PLAN_VIEWS:
     view = "comparison"
 
 comparable = plans_comparable(baseline, optimised)
+quality = {
+    kind: assess_route_quality(bundle["scenario"], bundle[kind]["routes"])
+    for kind in ("baseline", "optimised")
+}
+show_territories = bool(st.session_state.get("plan_territories"))
 figures = {
     kind: route_map(
         bundle["scenario"],
         bundle[kind]["routes"],
         unserved_ids=bundle[kind]["run"]["unserved_customer_ids"],
+        territories=(
+            quality[kind].territories if show_territories and quality[kind] else None
+        ),
     )
     for kind in ("baseline", "optimised")
 }
 
 if view == "comparison":
-    render_comparison(bundle, figures, comparable)
+    render_comparison(bundle, figures, comparable, quality)
 elif view == "baseline":
     render_detail(bundle, figures, "baseline", comparable)
 else:

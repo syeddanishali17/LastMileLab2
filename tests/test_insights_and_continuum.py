@@ -10,6 +10,7 @@ import continuum
 import insights
 from app.main import create_app
 from app.storage.duckdb_repo import DuckDBRepository
+from route_quality import assess, clip_convex, convex_hull, polygon_area, segments_cross
 
 
 @pytest.fixture(scope="module")
@@ -110,7 +111,7 @@ def test_dispatch_console_marks_stage_progress() -> None:
     assert "is-running" in running
     assert running.count('class="is-done"') == 2
     assert running.count('class="is-active"') == 1
-    assert "--lm-budget:5s" in running  # countdown only while OR-Tools searches
+    assert "lm-console-budget" in running and "lm-budget-5" in running  # countdown while searching
     done = components.dispatch_console_html(
         len(components.CONSOLE_STAGES), seconds=5, scenario_name="Vienna Standard"
     )
@@ -134,3 +135,90 @@ def test_continuum_check_places_estimate_marker() -> None:
     assert "+25.0%" in markup
     assert "−2.0%" in markup
     assert markup.count("<i style=") == 2
+
+
+def test_segments_cross_ignores_shared_endpoints() -> None:
+    assert segments_cross((0, 0), (2, 2), (0, 2), (2, 0))
+    assert not segments_cross((0, 0), (2, 2), (2, 2), (4, 0))  # touching at an endpoint
+    assert not segments_cross((0, 0), (1, 0), (0, 1), (1, 1))  # parallel
+
+
+def test_convex_overlap_of_two_squares() -> None:
+    a = convex_hull([(0, 0), (2, 0), (2, 2), (0, 2), (1, 1)])
+    b = convex_hull([(1, 1), (3, 1), (3, 3), (1, 3)])
+    assert len(a) == 4  # interior point dropped
+    assert polygon_area(clip_convex(a, b)) == pytest.approx(1.0)
+    far = convex_hull([(5, 5), (6, 5), (6, 6)])
+    assert polygon_area(clip_convex(a, far)) == pytest.approx(0.0)
+
+
+def _square_scenario() -> dict:
+    nodes = {"A": (0.00, 0.00), "B": (0.00, 0.02), "C": (0.02, 0.02), "D": (0.02, 0.00)}
+    return {
+        "depot": {"depot_id": "DEPOT_01", "latitude": 0.01, "longitude": -0.02},
+        "customers": [
+            {"customer_id": cid, "latitude": lat, "longitude": lon, "zone_id": f"Z{i % 2}"}
+            for i, (cid, (lat, lon)) in enumerate(nodes.items())
+        ],
+    }
+
+
+def test_route_quality_counts_crossings_and_zone_switches() -> None:
+    def plan(sequence: list[str]) -> dict:
+        return {
+            "vehicle_kpis": [
+                {
+                    "vehicle_id": "V01",
+                    "is_used": True,
+                    "sequence": ["DEPOT_01", *sequence, "DEPOT_01"],
+                }
+            ]
+        }
+
+    tangled = assess(_square_scenario(), plan(["A", "C", "B", "D"]))
+    tidy = assess(_square_scenario(), plan(["A", "B", "C", "D"]))
+    assert tangled.crossings > tidy.crossings
+    assert tidy.zone_switches == 3  # zones alternate Z0, Z1, Z0, Z1 around the square
+    assert tidy.overlap_pct == 0.0  # a single route cannot overlap itself
+    assert set(tidy.territories) == {"V01"}
+    assert assess(None, plan(["A"])) is None
+
+
+def test_route_quality_on_vienna_prefers_the_optimised_plan(
+    client: TestClient, vienna: dict
+) -> None:
+    def routes(path: str, body: dict) -> dict:
+        run_id = client.post(path, json=body).json()["run_id"]
+        return client.get(f"/api/v1/runs/{run_id}/routes").json()
+
+    baseline = assess(
+        vienna, routes("/api/v1/plans/baseline", {"scenario_id": "VIENNA_STANDARD_24"})
+    )
+    optimised = assess(
+        vienna,
+        routes(
+            "/api/v1/plans/optimise",
+            {"scenario_id": "VIENNA_STANDARD_24", "solver_time_limit_seconds": 1},
+        ),
+    )
+    assert optimised.crossings <= baseline.crossings
+    assert optimised.compactness_km < baseline.compactness_km
+    assert len(optimised.territories) == 4
+
+
+def test_dispatch_console_reports_timings_and_result() -> None:
+    done = components.dispatch_console_html(
+        len(components.CONSOLE_STAGES),
+        seconds=5,
+        scenario_name="Vienna Standard",
+        timings=[0.12, 0.05, 5.01, 0.2, 0.01],
+        result=("97.193 km", "20.6%"),
+    )
+    assert done.count('class="lm-step-time"') == 5
+    assert "5.01 s" in done
+    assert "97.193 km" in done and "20.6%" in done
+    assert "lm-console-check" in done
+    searching = components.dispatch_console_html(2, seconds=10, scenario_name="Vienna")
+    assert "lm-tick-10" in searching  # live seconds counter
+    assert all(move in searching for move in components.CONSOLE_MOVES)
+    assert "at-2" in searching and "lm-budget-10" in searching

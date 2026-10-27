@@ -401,6 +401,13 @@ COPY = {
     "ux.stepper.label": ("Planning workflow", "Planungsablauf"),
     "ux.console.title": ("Dispatching the morning wave", "Morgenwelle wird disponiert"),
     "ux.console.budget": ("Search budget {n} s", "Suchbudget {n} s"),
+    "ux.console.searching": ("Searching", "Suche"),
+    "ux.console.ready": ("Plan ready", "Plan bereit"),
+    "ux.console.result": (
+        "{km} · {pct} shorter than the baseline",
+        "{km} · {pct} kürzer als die Baseline",
+    ),
+    "ux.console.moves": ("Guided local search moves:", "Züge der geführten lokalen Suche:"),
     "ux.result.shorter": ("shorter", "kürzer"),
     "ux.result.saved": ("Distance saved", "Eingesparte Distanz"),
     "ux.result.hours": ("Driver time saved (est.)", "Eingesparte Fahrerzeit (geschätzt)"),
@@ -531,6 +538,90 @@ COPY = {
         "required delivery fleet by about 20%.",
         "MIT-Dissertation: Wird die lokale Umwegigkeit ignoriert, kann die benötigte "
         "Lieferflotte um rund 20% unterschätzt werden.",
+    ),
+    "ux.rq.title": ("Would a dispatcher accept it?", "Würde eine Disposition ihn akzeptieren?"),
+    "ux.rq.body": (
+        "Planners also judge routes by how they look on the map. Routing research scores "
+        "this as visual attractiveness: few crossings, separate territories and compact "
+        "routes. Real drivers also prefer to finish one delivery zone before the next.",
+        "Disponenten beurteilen Touren auch nach ihrem Kartenbild. Die Forschung misst das "
+        "als visuelle Attraktivität: wenige Kreuzungen, getrennte Gebiete und kompakte "
+        "Touren. Fahrer schließen zudem lieber eine Zone ab, bevor sie die nächste beginnen.",
+    ),
+    "ux.rq.measure": ("Measure (lower is better)", "Kennzahl (niedriger ist besser)"),
+    "ux.rq.crossings": ("Route crossings", "Tourkreuzungen"),
+    "ux.rq.crossings.hint": (
+        "Arcs that cut across one another, within or between routes",
+        "Kanten, die sich innerhalb oder zwischen Touren schneiden",
+    ),
+    "ux.rq.overlap": ("Territory overlap", "Gebietsüberlappung"),
+    "ux.rq.overlap.hint": (
+        "Share of route areas (convex hulls) claimed by more than one van",
+        "Anteil der Tourflächen (konvexe Hüllen), die mehrere Fahrzeuge beanspruchen",
+    ),
+    "ux.rq.compact": ("Route spread", "Tourstreuung"),
+    "ux.rq.compact.hint": (
+        "Mean distance from each stop to its route's centre",
+        "Mittlere Distanz jedes Stopps zum Zentrum seiner Tour",
+    ),
+    "ux.rq.zones": ("Zone switches", "Zonenwechsel"),
+    "ux.rq.zones.hint": (
+        "Times a route moves to a different delivery zone",
+        "Wie oft eine Tour in eine andere Lieferzone wechselt",
+    ),
+    "ux.rq.note": (
+        "Scored from the returned routes; OR-Tools optimizes distance only, so these are "
+        "side effects, not targets.",
+        "Aus den gelieferten Touren berechnet; OR-Tools optimiert nur die Distanz, diese "
+        "Werte sind also Nebeneffekte, keine Ziele.",
+    ),
+    "ux.rq.toggle": ("Show route territories", "Tourgebiete anzeigen"),
+    "ux.rq.toggle.help": (
+        "Shade each van's convex hull to see overlapping service areas.",
+        "Die konvexe Hülle jedes Fahrzeugs einfärben, um überlappende Gebiete zu sehen.",
+    ),
+    "ux.walk.label": ("From orders to improved routes", "Von Aufträgen zu verbesserten Touren"),
+    "ux.walk.assign": ("Assign orders to vans", "Aufträge Fahrzeugen zuordnen"),
+    "ux.walk.sequence": ("Sequence each route", "Jede Tour sequenzieren"),
+    "ux.walk.improve": ("Improve: 2-opt removes a crossing", "Verbessern: 2-opt löst eine Kreuzung"),
+    "ux.walk.capacity": ("Van capacity (totes)", "Fahrzeugkapazität (Totes)"),
+    "ux.walk.caption": (
+        "Illustrative: unsplit orders fill each van up to its capacity, routes are sequenced "
+        "from the depot, then a 2-opt move reverses a segment to remove a crossing and "
+        "shorten the route.",
+        "Illustrativ: Ungeteilte Aufträge füllen jedes Fahrzeug bis zur Kapazität, Touren "
+        "werden ab dem Depot sequenziert, dann kehrt ein 2-opt-Zug ein Teilstück um, löst "
+        "eine Kreuzung und verkürzt die Tour.",
+    ),
+    "ux.method.quality.title": ("Beyond distance: route attractiveness", "Jenseits der Distanz: Attraktivität von Touren"),
+    "ux.method.quality": (
+        "A distance-optimal plan can still be rejected if routes cross, territories overlap "
+        "or drivers zig-zag between neighbourhoods. Rossit, Vigo, Tohmé and Frutos review "
+        "these visual-attractiveness criteria (compactness, non-overlap, low complexity); "
+        "Poot, Kant and Wagelmans count arc crossings. The Amazon Last Mile Routing "
+        "Research Challenge showed that real drivers finish one zone before starting the "
+        "next. The Plan page scores both plans on crossings, territory overlap, route spread "
+        "and zone switches, and can shade each van's territory on the map.",
+        "Ein distanzoptimaler Plan kann trotzdem abgelehnt werden, wenn sich Touren kreuzen, "
+        "Gebiete überlappen oder Fahrer zwischen Vierteln hin- und herfahren. Rossit, Vigo, "
+        "Tohmé und Frutos fassen diese Kriterien visueller Attraktivität zusammen "
+        "(Kompaktheit, Überlappungsfreiheit, geringe Komplexität); Poot, Kant und Wagelmans "
+        "zählen Kantenkreuzungen. Die Amazon Last Mile Routing Research Challenge zeigte, "
+        "dass Fahrer eine Zone abschließen, bevor sie die nächste beginnen. Die Seite Plan "
+        "bewertet beide Pläne nach Kreuzungen, Gebietsüberlappung, Tourstreuung und "
+        "Zonenwechseln und kann das Gebiet jedes Fahrzeugs auf der Karte einfärben.",
+    ),
+    "ux.method.reading.visual": (
+        "Review of how routing research measures whether planners find a plan acceptable: "
+        "compactness, overlap and complexity.",
+        "Überblick, wie die Forschung misst, ob Disponenten einen Plan akzeptieren: "
+        "Kompaktheit, Überlappung und Komplexität.",
+    ),
+    "ux.method.reading.drivers": (
+        "A challenge entry that learns zone-by-zone sequences from real Amazon drivers "
+        "instead of minimizing distance alone.",
+        "Ein Challenge-Beitrag, der Zone-für-Zone-Abfolgen von echten Amazon-Fahrern lernt, "
+        "statt nur die Distanz zu minimieren.",
     ),
     "ux.method.toc": ("On this page", "Auf dieser Seite"),
     "ux.method.reading.title": ("Further reading", "Weiterführende Literatur"),

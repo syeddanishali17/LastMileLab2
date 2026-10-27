@@ -1,5 +1,6 @@
 """Presentation regressions, independent of mathematical expectations."""
 
+import re
 from pathlib import Path
 from unittest.mock import MagicMock
 
@@ -1072,8 +1073,16 @@ def test_term_placeholders_do_not_nest_inside_titles():
 def test_methodology_animation_shows_assignment_and_sequencing():
     markup = components.methodology_animation_html()
     assert "lm-assign" in markup
-    assert "Assignment and sequencing under capacity" in markup
-    assert "Spreadsheet formulation" in markup
+    assert "From orders to improved routes" in markup
+    for step in ("Assign orders to vans", "Sequence each route", "2-opt"):
+        assert step in markup
+    # Nine orders fill three 10-tote vans to 9, 9 and 10 totes.
+    assert markup.count('class="lm-walk-tote"') == 28
+    assert markup.count('class="lm-walk-node v') == 9
+    # The 2-opt move must actually shorten the illustrated route.
+    bad = re.search(r'lm-walk-km is-bad"[^>]*>V3 ([\d.]+) km', markup).group(1)
+    good = re.search(r'lm-walk-km is-good"[^>]*>V3 ([\d.]+) km', markup).group(1)
+    assert float(good) < float(bad)
     assert "lm-cons-grid .lm-card:nth-child(n+4)" in components.THEME_CSS
 
 
