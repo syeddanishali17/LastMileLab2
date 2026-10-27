@@ -398,6 +398,169 @@ COPY = {
         "Comparison could not be completed",
         "Vergleich konnte nicht abgeschlossen werden",
     ),
+    "ux.stepper.label": ("Planning workflow", "Planungsablauf"),
+    "ux.console.title": ("Dispatching the morning wave", "Morgenwelle wird disponiert"),
+    "ux.console.budget": ("Search budget {n} s", "Suchbudget {n} s"),
+    "ux.result.shorter": ("shorter", "kürzer"),
+    "ux.result.saved": ("Distance saved", "Eingesparte Distanz"),
+    "ux.result.hours": ("Driver time saved (est.)", "Eingesparte Fahrerzeit (geschätzt)"),
+    "ux.result.co2": ("CO₂e avoided (est.)", "Vermiedenes CO₂e (geschätzt)"),
+    "ux.insight.heading": ("Beyond the distance", "Mehr als die Distanz"),
+    "ux.insight.heading.cap": (
+        "How the search got there, and what the optimized plan means for the morning shift.",
+        "Wie die Suche zum Ergebnis kam und was der optimierte Plan für die Morgenschicht bedeutet.",
+    ),
+    "ux.insight.conv.title": (
+        "How the search improved the plan",
+        "Wie die Suche den Plan verbessert hat",
+    ),
+    "ux.insight.conv.body": (
+        "Each point is a new best plan. OR-Tools builds a first plan by cheapest arc, then "
+        "guided local search keeps trading stops between routes until the search limit. "
+        "The dashed line is the nearest-neighbour baseline.",
+        "Jeder Punkt ist ein neuer bester Plan. OR-Tools erstellt einen ersten Plan nach "
+        "günstigster Kante; danach tauscht die geführte lokale Suche Stopps zwischen Touren "
+        "bis zum Suchlimit. Die gestrichelte Linie ist die Nächster-Nachbar-Baseline.",
+    ),
+    "ux.insight.conv.baseline": ("Nearest-neighbour baseline", "Nächster-Nachbar-Baseline"),
+    "ux.insight.conv.hover": ("Improvement", "Verbesserung"),
+    "ux.insight.conv.x": ("Search time (log scale)", "Suchzeit (log. Skala)"),
+    "ux.insight.conv.y": ("Best route distance", "Beste Tourdistanz"),
+    "ux.insight.conv.first": ("First plan", "Erster Plan"),
+    "ux.insight.conv.best": ("Best plan", "Bester Plan"),
+    "ux.insight.conv.at": ("found after", "gefunden nach"),
+    "ux.insight.conv.count": ("Improvements", "Verbesserungen"),
+    "ux.insight.conv.missing": (
+        "The search history is not available for this run. Run the comparison again to "
+        "record it.",
+        "Für diesen Lauf ist kein Suchverlauf verfügbar. Führen Sie den Vergleich erneut "
+        "aus, um ihn aufzuzeichnen.",
+    ),
+    "ux.insight.time.title": ("Optimized plan on the clock", "Optimierter Plan im Tagesverlauf"),
+    "ux.insight.time.body": (
+        "An illustrative shift: vans leave the depot at {dep}, average {speed} km/h in the "
+        "city and spend {service} minutes at each stop. The solver itself minimizes "
+        "distance only.",
+        "Eine illustrative Schicht: Abfahrt am Depot um {dep}, im Mittel {speed} km/h im "
+        "Stadtverkehr und {service} Minuten je Stopp. Der Solver selbst minimiert nur "
+        "die Distanz.",
+    ),
+    "ux.insight.time.drive": ("Drive", "Fahrt"),
+    "ux.insight.time.service": ("Stop service", "Zustellung"),
+    "ux.insight.time.back": ("Last van back", "Letztes Fahrzeug zurück"),
+    "ux.insight.time.hours": ("Driver time", "Fahrerzeit"),
+    "ux.insight.time.vs": ("baseline {value}", "Baseline {value}"),
+    "ux.insight.co2.note": (
+        "CO₂e estimates use an illustrative {factor} kg per van-kilometre for a diesel "
+        "delivery van.",
+        "CO₂e-Schätzungen verwenden illustrativ {factor} kg je Fahrzeugkilometer für einen "
+        "Diesel-Lieferwagen.",
+    ),
+    "ux.ca.kicker": ("Before solving", "Vor dem Lösen"),
+    "ux.ca.title": ("Expected fleet distance", "Erwartete Flottendistanz"),
+    "ux.ca.body": (
+        "A closed-form continuum approximation (Daganzo) predicts the distance from four "
+        "numbers, without running a solver. MIT research on urban networks scales it by "
+        "road circuity, measured here from the distance matrix.",
+        "Eine geschlossene Kontinuumsapproximation (Daganzo) schätzt die Distanz aus vier "
+        "Kennzahlen, ohne Solver. MIT-Forschung zu städtischen Netzen skaliert sie mit der "
+        "Umwegigkeit, die hier aus der Distanzmatrix gemessen wird.",
+    ),
+    "ux.ca.linehaul": ("Line-haul to the area", "Anfahrt ins Gebiet"),
+    "ux.ca.local": ("Local tours", "Lokale Touren"),
+    "ux.ca.circuity": ("Circuity (measured)", "Umwegigkeit (gemessen)"),
+    "ux.ca.area": ("Service area", "Liefergebiet"),
+    "ux.ca.routes": ("Routes needed", "Benötigte Touren"),
+    "ux.ca.check.title": ("Does the result make sense?", "Ist das Ergebnis plausibel?"),
+    "ux.ca.check.body": (
+        "Both plans set against the solver-free continuum-approximation estimate. A plan far "
+        "above it usually leaves distance on the table; the estimate is not a lower bound.",
+        "Beide Pläne im Vergleich mit der solverfreien Schätzung der Kontinuumsapproximation. "
+        "Ein Plan deutlich darüber verschenkt meist Distanz; die Schätzung ist keine untere Schranke.",
+    ),
+    "ux.ca.estimate": ("Continuum estimate", "Kontinuumsschätzung"),
+    "ux.ca.gap": ("{gap} vs estimate", "{gap} ggü. Schätzung"),
+    "ux.method.ca.title": (
+        "Continuum approximation: a sanity check",
+        "Kontinuumsapproximation: eine Plausibilitätsprüfung",
+    ),
+    "ux.method.ca": (
+        "Before any routing, the expected fleet distance can be estimated in closed form. "
+        "Each of m routes pays a line-haul out to the delivery area and back (2·r̄ per route), "
+        "plus a local tour whose length grows with the square root of customers times area. "
+        "Daganzo (1984) gives k ≈ 0.57 for the local term. Merchán and Winkenbach (MIT Center "
+        "for Transportation & Logistics) validated the approach on real urban road networks and "
+        "showed that ignoring road circuity understates distances, so the estimate is scaled by "
+        "the circuity measured from this scenario's distance matrix.",
+        "Vor jeder Tourenplanung lässt sich die erwartete Flottendistanz geschlossen schätzen. "
+        "Jede der m Touren fährt ins Liefergebiet und zurück (2·r̄ je Tour), dazu eine lokale "
+        "Tour, deren Länge mit der Wurzel aus Kundenzahl mal Fläche wächst. Daganzo (1984) gibt "
+        "für den lokalen Term k ≈ 0,57 an. Merchán und Winkenbach (MIT Center for "
+        "Transportation & Logistics) haben den Ansatz auf realen städtischen Straßennetzen "
+        "validiert und gezeigt, dass das Ignorieren der Umwegigkeit Distanzen unterschätzt; "
+        "daher wird die Schätzung mit der aus der Distanzmatrix gemessenen Umwegigkeit skaliert.",
+    ),
+    "ux.method.ca.formula": (
+        "L ≈ c · ( 2 · r̄ · m  +  k · √(n · A) )\n\n"
+        "c   circuity: median road / straight-line distance\n"
+        "r̄   mean depot-to-customer distance (km)\n"
+        "m   routes = ⌈total demand / van capacity⌉\n"
+        "k   0.57 (Daganzo)\n"
+        "n   customers;  A  convex-hull service area (km²)",
+        "L ≈ c · ( 2 · r̄ · m  +  k · √(n · A) )\n\n"
+        "c   Umwegigkeit: Median Straßen- / Luftliniendistanz\n"
+        "r̄   mittlere Distanz Depot–Kunde (km)\n"
+        "m   Touren = ⌈Gesamtbedarf / Fahrzeugkapazität⌉\n"
+        "k   0,57 (Daganzo)\n"
+        "n   Kunden;  A  Fläche der konvexen Hülle (km²)",
+    ),
+    "ux.method.ca.note": (
+        "In this app the Plan page compares both route plans with the estimate. It is a "
+        "plausibility check, not a bound: a plan can legitimately beat it.",
+        "In dieser Anwendung vergleicht die Seite Plan beide Tourenpläne mit der Schätzung. "
+        "Sie ist eine Plausibilitätsprüfung, keine Schranke: Ein Plan darf sie unterbieten.",
+    ),
+    "ux.method.reading.circuity": (
+        "Validates continuum approximation on real urban road networks and extends it with "
+        "circuity, the basis of this app's distance estimate.",
+        "Validiert die Kontinuumsapproximation auf realen städtischen Straßennetzen und erweitert "
+        "sie um die Umwegigkeit; Grundlage der Distanzschätzung dieser Anwendung.",
+    ),
+    "ux.method.reading.thesis": (
+        "MIT PhD thesis showing that ignoring local road circuity can understate the "
+        "required delivery fleet by about 20%.",
+        "MIT-Dissertation: Wird die lokale Umwegigkeit ignoriert, kann die benötigte "
+        "Lieferflotte um rund 20% unterschätzt werden.",
+    ),
+    "ux.method.toc": ("On this page", "Auf dieser Seite"),
+    "ux.method.reading.title": ("Further reading", "Weiterführende Literatur"),
+    "ux.method.reading.cap": (
+        "Sources behind the model and the wider last-mile routing research it belongs to.",
+        "Quellen hinter dem Modell und der breiteren Forschung zur Tourenplanung auf der "
+        "letzten Meile.",
+    ),
+    "ux.method.reading.amazon": (
+        "Real Amazon delivery routes (9,184 of them) released for research; the benchmark "
+        "behind learning what drivers actually prefer beyond shortest distance.",
+        "Echte Amazon-Zustelltouren (9.184) für die Forschung veröffentlicht; Benchmark "
+        "dafür, was Fahrer jenseits der kürzesten Distanz tatsächlich bevorzugen.",
+    ),
+    "ux.method.reading.proceedings": (
+        "Technical papers from the MIT CTL challenge teams, archived on DSpace@MIT.",
+        "Technische Beiträge der Teams der MIT-CTL-Challenge, archiviert auf DSpace@MIT.",
+    ),
+    "ux.method.reading.ortools": (
+        "The routing library used here: model building, first-solution strategies and "
+        "local-search metaheuristics.",
+        "Die hier genutzte Routing-Bibliothek: Modellbau, Startlösungsstrategien und "
+        "Metaheuristiken der lokalen Suche.",
+    ),
+    "ux.method.reading.gls": (
+        "Google Research paper describing the OR-Tools vehicle routing solver behind the "
+        "optimized plan.",
+        "Paper von Google Research zum OR-Tools-Tourenplanungssolver hinter dem "
+        "optimierten Plan.",
+    ),
     "ux.plan.title": ("Route comparison", "Tourenvergleich"),
     "ux.plan.subtitle": (
         "Compare a reference route plan with an optimized route plan for the same "

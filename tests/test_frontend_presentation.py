@@ -53,7 +53,7 @@ def test_backend_url_avoids_windows_ipv6_localhost_delay(monkeypatch) -> None:
 
 
 def test_route_palette_and_camera_are_comparable():
-    assert VEHICLE_COLOURS[:4] == ["#2563EB", "#D8893B", "#6775C9", "#C026D3"]
+    assert VEHICLE_COLOURS[:4] == ["#2A78D6", "#EB6834", "#1BAF7A", "#EDA100"]
     assert len(set(VEHICLE_COLOURS[:4])) == 4
     camera = _map_camera([48.12, 48.30], [16.28, 16.55])
     assert camera == _map_camera([48.30, 48.12], [16.55, 16.28])
@@ -70,7 +70,7 @@ def test_route_palette_and_camera_are_comparable():
     assert 2.8 <= ROUTE_LINE_WIDTH <= 3.2
     assert 4.0 <= ROUTE_HALO_WIDTH <= 4.5
     assert CUSTOMER_FILL == "#64748B"
-    assert DEPOT_FILL == "#102F46"
+    assert DEPOT_FILL == "#0C1424"
 
 
 def _geo_scenario() -> dict:
@@ -306,7 +306,7 @@ def test_plan_comparison_maps_precede_route_details() -> None:
 
 def test_plan_comparison_divider_css() -> None:
     css = components.THEME_CSS
-    assert "--lm-border: #CCD9DF" in css
+    assert "--lm-border: #DCE2EE" in css
     pair_rule = css.split(
         '.st-key-plan-pair [data-testid="stHorizontalBlock"] {', 1
     )[1].split("}", 1)[0]
@@ -315,7 +315,7 @@ def test_plan_comparison_divider_css() -> None:
         '.st-key-plan-pair [data-testid="stHorizontalBlock"]::after {', 1
     )[1].split("}", 1)[0]
     assert "width: 1px" in divider
-    assert "background: #CCD9DF" in divider
+    assert "background: #DCE2EE" in divider
     assert "left: 50%" in divider
     assert "translateX(-50%)" in divider
     stacked = css.split("@media (max-width: 1220px)", 1)[1].split("@media", 1)[0]
@@ -327,7 +327,7 @@ def test_plan_comparison_divider_css() -> None:
     stacked_first = stacked.split(
         '.st-key-plan-pair [data-testid="stColumn"]:first-child {', 1
     )[1].split("}", 1)[0]
-    assert "border-bottom: 1px solid #CCD9DF" in stacked_first
+    assert "border-bottom: 1px solid #DCE2EE" in stacked_first
 
 
 def test_custom_scenario_label_is_friendly() -> None:
@@ -630,7 +630,7 @@ def test_overview_explainer_shows_instance_to_routes():
     plan_view_css = components.THEME_CSS.split(
         ".stApp:has(.lm-plan-flag) .st-key-plan_view", 1
     )[1]
-    assert "background: var(--lm-teal) !important" in plan_view_css
+    assert "background: var(--lm-primary) !important" in plan_view_css
     assert "min-height: 44px !important" in plan_view_css
     assert "outline: 3px solid var(--lm-focus) !important" in plan_view_css
     assert ".st-key-scenario-generate" in components.THEME_CSS
@@ -842,15 +842,15 @@ def test_p0g_overview_visual_locks():
     assert "97.2 km" not in markup
     assert components.CVRP_EXPLAINER_MS == 7500
     assert "lm-cvrp-running" not in markup
-    assert "--lm-surface-soft: #EAF1F3" in css
-    assert "--lm-well: #F7FAFB" in css
-    assert "--lm-border: #CCD9DF" in css
-    assert "--lm-teal-hover: #096864" in css
-    assert "background: var(--lm-teal) !important" in css
+    assert "--lm-surface-soft: #EEF1F8" in css
+    assert "--lm-well: #F8FAFD" in css
+    assert "--lm-border: #DCE2EE" in css
+    assert "--lm-primary-hover: #4338CA" in css
+    assert "background: var(--lm-primary) !important" in css
     assert "st-key-overview-cta" in css
     assert 'key="overview-cta"' in overview
-    assert "#184866" in css
-    assert "3px solid #62D6C8" in css
+    assert "#1B2A4A" in css
+    assert "3px solid #BEF264" in css
     assert "3px solid transparent" in css
     assert ".stApp:has(.lm-overview-flag) [data-testid=\"stSidebarNavLink\"][href$=\"/\"]" in css
     assert "[href*=\"/scenarios\"]" in css
@@ -859,7 +859,7 @@ def test_p0g_overview_visual_locks():
     assert "planning_availability()" in Path("frontend/components.py").read_text(encoding="utf-8")
     assert ".lm-api-status" in css
     assert ".lm-api-dot" in css
-    assert "#087A5A" in css
+    assert "#047857" in css
     concept_rule = css.split(".lm-concept {", 1)[1].split("}", 1)[0]
     assert "border-top" not in concept_rule
     assert "box-shadow: none" in concept_rule
@@ -890,15 +890,15 @@ def test_p0g_overview_visual_locks():
     assert 'class="lm-hero-mark"' in components.HERO_MARK_SVG
     assert "truck" not in brand.lower()
     assert "<rect width=\"32\" height=\"32\"" not in brand
-    assert "--lm-surface-soft: #EAF1F3" in css
-    assert "--lm-well: #F7FAFB" in css
-    assert "--lm-border: #CCD9DF" in css
-    assert "--lm-teal-hover: #096864" in css
-    assert "background: var(--lm-teal) !important" in css
+    assert "--lm-surface-soft: #EEF1F8" in css
+    assert "--lm-well: #F8FAFD" in css
+    assert "--lm-border: #DCE2EE" in css
+    assert "--lm-primary-hover: #4338CA" in css
+    assert "background: var(--lm-primary) !important" in css
     assert "st-key-overview-cta" in css
     assert 'key="overview-cta"' in overview
-    assert "#184866" in css
-    assert "3px solid #62D6C8" in css
+    assert "#1B2A4A" in css
+    assert "3px solid #BEF264" in css
     assert "3px solid transparent" in css
     assert ".stApp:has(.lm-overview-flag) [data-testid=\"stSidebarNavLink\"][href$=\"/\"]" in css
     assert "[href*=\"/scenarios\"]" in css
@@ -907,7 +907,7 @@ def test_p0g_overview_visual_locks():
     assert "planning_availability()" in Path("frontend/components.py").read_text(encoding="utf-8")
     assert ".lm-api-status" in css
     assert ".lm-api-dot" in css
-    assert "#087A5A" in css
+    assert "#047857" in css
     concept_rule = css.split(".lm-concept {", 1)[1].split("}", 1)[0]
     assert "border-top" not in concept_rule
     assert "box-shadow: none" in concept_rule
@@ -959,20 +959,20 @@ def test_p0g1_rhythm_motion_and_shared_primitives():
     assert "animation-name: lm-explainer-route-1;" in css
     assert components._CVRP_DEPOT == (320, 185)
     assert components._CVRP_OPT_ROUTES == [
-        ("#2563EB", [(200, 70), (140, 95), (175, 145)]),
-        ("#D8893B", [(445, 65), (520, 100), (485, 155)]),
-        ("#6775C9", [(500, 250), (545, 285), (430, 295)]),
-        ("#C026D3", [(200, 265), (125, 245), (155, 305)]),
+        ("#2A78D6", [(200, 70), (140, 95), (175, 145)]),
+        ("#EB6834", [(445, 65), (520, 100), (485, 155)]),
+        ("#1BAF7A", [(500, 250), (545, 285), (430, 295)]),
+        ("#EDA100", [(200, 265), (125, 245), (155, 305)]),
     ]
     assert "max-width: 1300px" in overview_width
-    assert "background: var(--lm-teal) !important" in primary_rule
-    assert "--lm-teal: #0B7A75" in css
-    assert "--lm-teal-hover: #096864" in css
+    assert "background: var(--lm-primary) !important" in primary_rule
+    assert "--lm-primary: #4F46E5" in css
+    assert "--lm-primary-hover: #4338CA" in css
     assert "font-size: 14.5px !important" in nav_rule
     assert "font-weight: 500 !important" in nav_rule
     assert "rgba(255, 255, 255, 0.06)" in hover_rule
-    assert "#184866" in active_rule
-    assert "3px solid #62D6C8" in active_rule
+    assert "#1B2A4A" in active_rule
+    assert "3px solid #BEF264" in active_rule
     assert "rgba(79, 209, 197, 0.10)" not in hover_rule
     assert ".stApp:has(.lm-overview-flag)" in css
     assert "lm-cvrp-section" not in Path("frontend/pages/1_Dispatch_Setup.py").read_text(

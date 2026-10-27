@@ -33,4 +33,11 @@ def plan_summary(stored: StoredRun) -> PlanSummaryResponse:
         partial_distance_metres=plan.run.partial_distance_metres,
         distance_improvement_percentage=(stored.scenario_kpis.distance_improvement_percentage),
         message=plan.message,
+        search_trace=[
+            {
+                "elapsed_seconds": float(point.elapsed_seconds),
+                "objective_distance_metres": point.objective_distance_metres,
+            }
+            for point in plan.run.search_trace
+        ],
     )

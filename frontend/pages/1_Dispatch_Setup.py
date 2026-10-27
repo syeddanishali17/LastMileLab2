@@ -16,14 +16,17 @@ from api_client import (
     run_optimise,
 )
 from components import (
+    CONSOLE_STAGES,
     call_api,
     comparison_ready,
+    continuum_card_html,
+    dispatch_console_html,
     fetch_preset_scenario,
     page_header,
     planning_offline_notice,
     render_footer,
-    search_pulse,
 )
+from continuum import estimate as continuum_estimate
 from display import scenario_caption, scenario_label
 from i18n import t
 from maps import PLOTLY_CHART_KWARGS, customer_map
@@ -191,38 +194,49 @@ def reset_custom_defaults() -> None:
 def compare(scenario_id: str, seconds: int, progress: DeltaGenerator) -> bool:
     # Publish the pair to session state only after both responses and audit data arrive.
     clear_planner_runs()
-    with progress, st.status(t("ux.stage.load"), expanded=True) as status:
-        try:
-            scenario = get_scenario(scenario_id)
-            st.write(t("ux.stage.load") + " ✓")
-            status.update(label=t("ux.stage.baseline"))
-            baseline = run_baseline(scenario_id)
-            st.write(t("ux.stage.baseline") + " ✓")
-            status.update(label=t("ux.stage.optimise"))
-            search_pulse()
-            st.write(t("ux.stage.optimise.detail", n=seconds))
-            optimised = run_optimise(scenario_id, seconds)
-            status.update(label=t("ux.stage.reconcile"))
-            bundle = {"scenario": scenario}
-            for kind, result in (("baseline", baseline), ("optimised", optimised)):
-                run_id = result["run_id"]
-                bundle[kind] = {
-                    "run": get_run(run_id),
-                    "routes": get_routes(run_id),
-                    "checks": get_checks(run_id),
-                }
-            status.update(label=t("ux.stage.prepare"))
-            st.session_state["_plan_bundle"] = bundle
-            for kind, result in (("baseline", baseline), ("optimised", optimised)):
-                st.session_state[f"{kind}_run_id"] = result["run_id"]
-                st.session_state[f"_{kind}_summary"] = bundle[kind]["run"]
-            status.update(label=t("ux.stage.done"), state="complete", expanded=False)
-            return True
-        except ApiError as exc:
-            status.update(label=t("ux.stage.failed"), state="error", expanded=True)
+    console = progress.empty()
+    name = scenario_label(scenario_id)
+
+    def show(stage: int, *, error: bool = False) -> None:
+        console.markdown(
+            dispatch_console_html(stage, seconds=seconds, scenario_name=name, error=error),
+            unsafe_allow_html=True,
+        )
+
+    stage = 0
+    try:
+        show(stage)
+        scenario = get_scenario(scenario_id)
+        stage = 1
+        show(stage)
+        baseline = run_baseline(scenario_id)
+        stage = 2
+        show(stage)
+        optimised = run_optimise(scenario_id, seconds)
+        stage = 3
+        show(stage)
+        bundle = {"scenario": scenario}
+        for kind, result in (("baseline", baseline), ("optimised", optimised)):
+            run_id = result["run_id"]
+            bundle[kind] = {
+                "run": get_run(run_id),
+                "routes": get_routes(run_id),
+                "checks": get_checks(run_id),
+            }
+        stage = 4
+        show(stage)
+        st.session_state["_plan_bundle"] = bundle
+        for kind, result in (("baseline", baseline), ("optimised", optimised)):
+            st.session_state[f"{kind}_run_id"] = result["run_id"]
+            st.session_state[f"_{kind}_summary"] = bundle[kind]["run"]
+        show(len(CONSOLE_STAGES))
+        return True
+    except ApiError as exc:
+        show(stage, error=True)
+        with progress:
             st.error(t("ux.error"))
             st.caption(str(exc))
-            return False
+        return False
 
 
 def custom_builder() -> tuple[dict | None, bool]:
@@ -395,7 +409,7 @@ def load_preset(selected: str) -> tuple[dict | None, bool]:
     return payload, comparison_ready(payload)
 
 
-page_header(t("ux.scenarios.title"), t("ux.scenarios.subtitle"))
+page_header(t("ux.scenarios.title"), t("ux.scenarios.subtitle"), step=2)
 st.markdown('<div class="lm-scenarios-flag"></div>', unsafe_allow_html=True)
 if "_custom_open" not in st.session_state:
     st.session_state["_custom_open"] = st.session_state.scenario_id.startswith("GEN_")
@@ -440,6 +454,9 @@ with preview_panel:
         if payload is not None:
             st.plotly_chart(customer_map(payload), key="scenario-map", **PLOTLY_CHART_KWARGS)
             preview_stats(payload)
+            ca = continuum_estimate(payload)
+            if ca is not None:
+                st.markdown(continuum_card_html(ca), unsafe_allow_html=True)
             with st.expander(t("ux.custom.orders")):
                 with st.container(key="demand-preview"):
                     st.dataframe(

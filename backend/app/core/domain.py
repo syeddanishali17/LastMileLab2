@@ -106,6 +106,15 @@ class Vehicle(BaseModel):
     capacity_totes: PositiveInt
 
 
+class SearchImprovement(BaseModel):
+    """One strictly better incumbent reported by the optimiser during search."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    elapsed_seconds: Decimal = Field(ge=0)
+    objective_distance_metres: int = Field(ge=0)
+
+
 class PlanningRun(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -121,6 +130,8 @@ class PlanningRun(BaseModel):
     solver_runtime_seconds: Decimal | None = None
     objective_distance_metres: int | None = None
     vehicles_used: int | None = None
+    # Best-so-far objective after each improving solution; empty for the baseline.
+    search_trace: list[SearchImprovement] = Field(default_factory=list)
     created_at: datetime
 
 

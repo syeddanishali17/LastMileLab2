@@ -11,11 +11,21 @@ from components import (
 )
 from i18n import t
 
+HERO_STACK = [
+    "OR-Tools · guided local search",
+    "Nearest-neighbour baseline",
+    "FastAPI",
+    "DuckDB",
+    "Streamlit",
+    "EN / DE",
+]
+
 st.markdown('<div class="lm-overview-flag"></div>', unsafe_allow_html=True)
 page_header(
     t("ux.over.title"),
     t("ux.over.intro"),
     kicker=t("ux.over.kicker"),
+    chips=HERO_STACK,
     compact=False,
 )
 

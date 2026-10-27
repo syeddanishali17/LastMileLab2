@@ -5,15 +5,16 @@ from __future__ import annotations
 from typing import Any
 
 VEHICLE_COLOURS = [
-    "#2563EB",
-    "#D8893B",
-    "#6775C9",
-    "#C026D3",
+    # Validated categorical order (colour-blind separation checked pairwise).
+    "#2A78D6",
+    "#EB6834",
+    "#1BAF7A",
+    "#EDA100",
+    "#E87BA4",
+    "#008300",
+    "#6250D6",
+    "#E34948",
     "#0891B2",
-    "#CA8A04",
-    "#0B7A75",
-    "#B42318",
-    "#4F46E5",
     "#64748B",
 ]
 

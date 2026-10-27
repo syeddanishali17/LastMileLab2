@@ -6,7 +6,7 @@ Static morning dispatch for a fictional last-mile operator: assign every unsplit
 
 > LastMile Lab is a fictional portfolio case study. ViennaCart is a fictional operator. All depots, customers, order demands, routes, distances, and operating assumptions are synthetic. The application does not use proprietary customer data or live Vienna traffic information.
 
-![Vienna Standard 24 on Overview: nearest-neighbour baseline versus OR-Tools.](docs/screenshots/overview_vienna_standard_24.png)
+![Route comparison for Vienna Standard 24: a 20.6% shorter OR-Tools plan next to the nearest-neighbour baseline.](docs/screenshots/plan_vienna_standard_24.png)
 
 *Vienna Standard 24 published comparison (4 September 2026): 122.394 km sequential nearest-neighbour versus 97.193 km OR-Tools in 5 seconds (20.6% shorter). The diagrams are an illustrative routing view, not road geometry or live traffic. Live app: [lastmilelab.streamlit.app](https://lastmilelab.streamlit.app/).*
 
@@ -31,9 +31,9 @@ Docker Compose publishes only Streamlit (`http://localhost:8501` by default). AP
 
 ### Application journey
 
-**Overview → Scenarios → Plan.** Overview teaches the routing instance → feasible vehicle routes. Scenarios offers three presets — Vienna Standard, Tight Capacity, and Wide Geography — plus a custom tote-demand editor with live capacity checks. **Run comparison** runs the nearest-neighbour baseline and OR-Tools search, then opens Plan. That page heading is **Route comparison**; it shows both maps, API KPIs (including the published Vienna Standard distances after a run), route tables, and JSON/CSV ZIP downloads.
+**Overview → Scenarios → Plan.** Overview teaches the routing instance → feasible vehicle routes. Scenarios offers three presets — Vienna Standard, Tight Capacity, and Wide Geography — plus a custom tote-demand editor with live capacity checks. **Run comparison** runs the nearest-neighbour baseline and OR-Tools search, then opens Plan. That page heading is **Route comparison**; it opens with the headline reduction, then both maps, the search-convergence chart, a shift timeline, a continuum-approximation plausibility check, route tables, and JSON/CSV ZIP downloads. Scenarios also shows a solver-free distance estimate for the selected preset before anything runs.
 
-Methodology and **Solution verification** (German: **Lösungsprüfung**) are secondary pages. The sidebar holds that navigation and the English/Deutsch control. The footer has LinkedIn, GitHub, and email. Start the UI with `streamlit run frontend/Home.py`.
+Methodology and **Solution verification** (German: **Lösungsprüfung**) are secondary pages. The collapsible sidebar holds that navigation and the English/Deutsch control. The footer has LinkedIn, GitHub, and email. Start the UI with `streamlit run frontend/Home.py`.
 
 ## Contents
 
@@ -154,7 +154,30 @@ V04 is loaded to capacity (30/30). That is reconstructed tote demand, not an MTZ
 
 ## Application screenshots
 
-The Overview capture at the top of this README is the live Streamlit UI. Walk the remaining pages — Scenarios, Plan, Methodology, and Solution verification — at [https://lastmilelab.streamlit.app/](https://lastmilelab.streamlit.app/).
+The Plan capture at the top of this README is the live Streamlit UI. Walk every page — Overview, Scenarios, Plan, Methodology, and Solution verification — at [https://lastmilelab.streamlit.app/](https://lastmilelab.streamlit.app/).
+
+**Overview.** An animated street-grid hero and the instance-to-routes explainer.
+
+![Overview hero and routing-model explainer.](docs/screenshots/overview_vienna_standard_24.png)
+
+**Scenarios.** Presets, a live map preview and a solver-free distance estimate. While the comparison runs, a dispatch console advances a van one stop per planning stage and counts down the OR-Tools search budget.
+
+![Scenarios page with the continuum-approximation estimate.](docs/screenshots/scenarios_vienna_standard_24.png)
+
+**Plan, beyond the distance.** How guided local search improved the plan over time, the optimized plan on a shift clock, and a plausibility check of both plans against the continuum-approximation estimate.
+
+![Search convergence, shift timeline and continuum-approximation check.](docs/screenshots/plan_insights_vienna_standard_24.png)
+
+### Analytical read-outs
+
+| Read-out | What it shows | Basis |
+|---|---|---|
+| Search convergence | Best-so-far distance after each improving OR-Tools solution, on a log time axis | `search_trace` recorded by a `RoutingModel.AddAtSolutionCallback` (strict improvements only) |
+| Continuum-approximation estimate | Expected fleet distance **before** solving: `L ≈ c · (2·r̄·m + k·√(n·A))` | Daganzo (1984), k ≈ 0.57; circuity `c` measured from the scenario matrix after Merchán & Winkenbach, MIT CTL ([DSpace 1721.1/140763](https://dspace.mit.edu/handle/1721.1/140763), thesis [1721.1/119911](https://dspace.mit.edu/handle/1721.1/119911)) |
+| Shift timeline | Each van's drive legs and stops on a clock from 08:00 | Illustrative 25 km/h and 5 min per stop; the solver still minimizes distance only |
+| Driver time and CO₂e | Estimated hours and emissions saved versus the baseline | Illustrative 0.27 kg CO₂e per van-km for a diesel delivery van |
+
+On Vienna Standard 24 the estimate is **97.0 km** before any solving; OR-Tools returns 97.193 km (+0.2%) and the nearest-neighbour baseline 122.394 km (+26.2%). The estimate is a plausibility check, not a bound.
 
 ![Architecture: Streamlit to FastAPI to core to DuckDB.](docs/screenshots/architecture.svg)
 
@@ -260,7 +283,7 @@ Interactive docs when the API is running locally: [http://127.0.0.1:8000/docs](h
 | `POST` | `/api/v1/scenarios/generate` | Synthetic geographic scenario |
 | `POST` | `/api/v1/scenarios/validate` | Pre-checks only |
 | `POST` | `/api/v1/plans/baseline` | Sequential nearest neighbour |
-| `POST` | `/api/v1/plans/optimise` | OR-Tools (`solver_time_limit_seconds` 1, 5, or 10) |
+| `POST` | `/api/v1/plans/optimise` | OR-Tools (`solver_time_limit_seconds` 1, 5, or 10); the summary includes `search_trace` |
 | `GET` | `/api/v1/runs/{run_id}` | Stored plan and KPIs |
 | `GET` | `/api/v1/runs/{run_id}/routes` | Sequences and stops |
 | `GET` | `/api/v1/runs/{run_id}/checks` | Reconstructed constraint checks |
@@ -274,6 +297,7 @@ Streamlit is a client of this API. It does not re-solve the CVRP.
 - Ordinary OR-Tools output is feasible within a time limit, not globally optimal.
 - No time windows, split deliveries, dropped customers, or heterogeneous fleet.
 - No public authentication; fixtures must stay synthetic.
+- Shift times, driver hours and CO₂e on the Plan page are display-side estimates from stated assumptions; they are not optimized.
 - The free demo stores planning runs on ephemeral Render disk; presets remain, stored custom runs may disappear after a backend restart.
 
 Full write-up and versioned extensions: [`docs/limitations.md`](docs/limitations.md).

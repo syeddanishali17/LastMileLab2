@@ -22,6 +22,18 @@ def test_vienna_optimiser_satisfies_invariants() -> None:
     assert plan.run.objective_distance_metres > 0
 
 
+def test_search_trace_records_strict_improvements_ending_at_objective() -> None:
+    plan = plan_optimise("VIENNA_STANDARD_24", time_limit_seconds=1)
+    trace = plan.run.search_trace
+    assert trace, "the optimiser must log at least its first solution"
+    objectives = [point.objective_distance_metres for point in trace]
+    elapsed = [point.elapsed_seconds for point in trace]
+    assert objectives == sorted(objectives, reverse=True)
+    assert len(set(objectives)) == len(objectives)
+    assert elapsed == sorted(elapsed)
+    assert objectives[-1] == plan.run.objective_distance_metres
+
+
 def test_timeout_is_not_mapped_to_infeasible() -> None:
     status, termination = map_ortools_status(
         pywrapcp.RoutingModel.ROUTING_FAIL_TIMEOUT,

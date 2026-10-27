@@ -5,6 +5,7 @@ from html import escape
 import streamlit as st
 
 from components import (
+    continuum_check_html,
     empty_state,
     expired_result_state,
     export_buttons,
@@ -13,13 +14,16 @@ from components import (
     page_header,
     render_footer,
     resolve_plan_bundle,
+    result_banner_html,
     section,
     static_table,
     status_badge,
 )
+from continuum import estimate as continuum_estimate
 from display import (
     VEHICLE_COLOURS,
     display_node,
+    format_decimal,
     format_improvement,
     format_km,
     format_sequence,
@@ -28,6 +32,17 @@ from display import (
     scenario_label,
 )
 from i18n import t
+from insights import (
+    CO2E_KG_PER_KM,
+    DEPARTURE_MINUTE,
+    SERVICE_MINUTES_PER_STOP,
+    URBAN_SPEED_KMH,
+    clock,
+    convergence_figure,
+    hours_label,
+    shift_summary,
+    timeline_figure,
+)
 from maps import PLOTLY_PLAN_CHART_KWARGS, route_map
 from state import summary_for_current
 
@@ -288,6 +303,124 @@ def render_plan_side(*, kind: str, run: dict, figure, map_key: str) -> None:
     st.plotly_chart(figure, key=map_key, **PLOTLY_PLAN_CHART_KWARGS)
 
 
+def chip_list(items: list[tuple[str, str]]) -> str:
+    chips = "".join(f"<li>{escape(label)} <b>{escape(value)}</b></li>" for label, value in items)
+    return f'<ul class="lm-insight-chips">{chips}</ul>'
+
+
+def render_result_banner(bundle: dict, lead: str, shifts: dict) -> None:
+    baseline = bundle["baseline"]["run"]
+    optimised = bundle["optimised"]["run"]
+    saved_m = baseline["objective_distance_metres"] - optimised["objective_distance_metres"]
+    saved_hours = shifts["baseline"].driver_hours - shifts["optimised"].driver_hours
+    saved_co2 = shifts["baseline"].co2e_kg - shifts["optimised"].co2e_kg
+    st.markdown(
+        result_banner_html(
+            baseline_m=baseline["objective_distance_metres"],
+            optimised_m=optimised["objective_distance_metres"],
+            reduction=format_improvement(optimised["distance_improvement_percentage"]),
+            lead=lead,
+            stats=[
+                (t("ux.result.saved"), format_km(saved_m)),
+                (t("ux.result.hours"), hours_label(max(saved_hours, 0.0))),
+                (t("ux.result.co2"), f"{format_decimal(max(saved_co2, 0.0), 1)} kg"),
+            ],
+        ),
+        unsafe_allow_html=True,
+    )
+
+
+def insight_intro(title: str, body: str) -> None:
+    st.markdown(
+        f'<div class="lm-insight"><h3>{escape(title)}</h3><p>{escape(body)}</p></div>',
+        unsafe_allow_html=True,
+    )
+
+
+def render_convergence(bundle: dict) -> None:
+    optimised = bundle["optimised"]["run"]
+    trace = optimised.get("search_trace") or []
+    insight_intro(t("ux.insight.conv.title"), t("ux.insight.conv.body"))
+    figure = convergence_figure(
+        trace,
+        baseline_m=bundle["baseline"]["run"].get("objective_distance_metres"),
+        time_limit_s=optimised.get("solver_time_limit_seconds"),
+    )
+    if figure is None:
+        st.caption(t("ux.insight.conv.missing"))
+        return
+    best = trace[-1]
+    found_ms = format_decimal(best["elapsed_seconds"] * 1000, 0)
+    st.markdown(
+        chip_list(
+            [
+                (t("ux.insight.conv.first"), format_km(trace[0]["objective_distance_metres"])),
+                (t("ux.insight.conv.best"), format_km(best["objective_distance_metres"])),
+                (t("ux.insight.conv.at"), f"{found_ms} ms"),
+                (t("ux.insight.conv.count"), str(len(trace))),
+            ]
+        ),
+        unsafe_allow_html=True,
+    )
+    st.plotly_chart(figure, key="chart-convergence", **PLOTLY_PLAN_CHART_KWARGS)
+
+
+def render_shift_timeline(shifts: dict) -> None:
+    optimised, baseline = shifts["optimised"], shifts["baseline"]
+    insight_intro(
+        t("ux.insight.time.title"),
+        t(
+            "ux.insight.time.body",
+            dep=clock(DEPARTURE_MINUTE),
+            speed=f"{URBAN_SPEED_KMH:g}",
+            service=f"{SERVICE_MINUTES_PER_STOP:g}",
+        ),
+    )
+    figure = timeline_figure(optimised)
+    if figure is None:
+        return
+    chips = [(t("ux.insight.time.hours"), hours_label(optimised.driver_hours))]
+    if optimised.return_minute is not None:
+        back = clock(optimised.return_minute)
+        if baseline.return_minute is not None:
+            back += f" ({t('ux.insight.time.vs', value=clock(baseline.return_minute))})"
+        chips.insert(0, (t("ux.insight.time.back"), back))
+    chips.append(("CO₂e", f"{format_decimal(optimised.co2e_kg, 1)} kg"))
+    st.markdown(chip_list(chips), unsafe_allow_html=True)
+    st.plotly_chart(figure, key="chart-timeline", **PLOTLY_PLAN_CHART_KWARGS)
+    st.caption(t("ux.insight.co2.note", factor=f"{CO2E_KG_PER_KM:g}"))
+
+
+def render_insights(bundle: dict, shifts: dict) -> None:
+    section(t("ux.insight.heading"), t("ux.insight.heading.cap"))
+    with st.container(key="plan-insights"):
+        left, right = st.columns([0.45, 0.55], gap="medium")
+        with left:
+            render_convergence(bundle)
+        with right:
+            render_shift_timeline(shifts)
+    render_continuum_check(bundle)
+
+
+def render_continuum_check(bundle: dict) -> None:
+    ca = continuum_estimate(bundle.get("scenario"))
+    if ca is None:
+        return
+    rows = [
+        (
+            t("ux.baseline"),
+            bundle["baseline"]["run"]["objective_distance_metres"] / 1000,
+            "is-baseline",
+        ),
+        (
+            t("ux.optimised.short"),
+            bundle["optimised"]["run"]["objective_distance_metres"] / 1000,
+            "is-optimised",
+        ),
+    ]
+    st.markdown(continuum_check_html(ca.total_km, rows), unsafe_allow_html=True)
+
+
 def render_comparison(bundle: dict, figures: dict, comparable: bool) -> None:
     baseline = bundle["baseline"]["run"]
     optimised = bundle["optimised"]["run"]
@@ -296,21 +429,25 @@ def render_comparison(bundle: dict, figures: dict, comparable: bool) -> None:
         if comparable
         else t("common.na")
     )
+    lead, detail = plan_comparison_summary(baseline, optimised)
+    shifts = {kind: shift_summary(bundle[kind]["routes"]) for kind in ("baseline", "optimised")}
+    if comparable:
+        render_result_banner(bundle, lead, shifts)
     heading_with_tip(t("ux.plan.why.title"), t("ux.plan.why.tip"))
     st.write(t("ux.plan.why.body"))
-    lead, detail = plan_comparison_summary(baseline, optimised)
-    render_plan_verdict(lead, detail, comparable)
-    kpi_cards(
-        [
-            (t("ux.plan.kpi.baseline"), km_or_na(baseline)),
-            (t("ux.plan.kpi.optimised"), km_or_na(optimised)),
-            (t("ux.plan.kpi.saving"), reduction),
-            (
-                t("ux.plan.kpi.served"),
-                f"{optimised['customers_served']} / {optimised['customers_total']}",
-            ),
-        ]
-    )
+    if not comparable:
+        render_plan_verdict(lead, detail, comparable)
+        kpi_cards(
+            [
+                (t("ux.plan.kpi.baseline"), km_or_na(baseline)),
+                (t("ux.plan.kpi.optimised"), km_or_na(optimised)),
+                (t("ux.plan.kpi.saving"), reduction),
+                (
+                    t("ux.plan.kpi.served"),
+                    f"{optimised['customers_served']} / {optimised['customers_total']}",
+                ),
+            ]
+        )
     st.caption(t("ux.plan.map.guide"))
     with st.container(key="plan-pair"):
         render_route_legend()
@@ -329,6 +466,8 @@ def render_comparison(bundle: dict, figures: dict, comparable: bool) -> None:
                 figure=figures["optimised"],
                 map_key="map-optimised",
             )
+    if comparable:
+        render_insights(bundle, shifts)
     with st.container(key="plan-route-details"):
         section(t("ux.plan.routes"))
         with st.expander(t("ux.plan.view.baseline"), expanded=False):
@@ -377,7 +516,7 @@ def render_detail(bundle: dict, figures: dict, kind: str, comparable: bool) -> N
         st.switch_page("pages/4_Model_Inspector.py")
 
 
-page_header(t("ux.plan.title"), t("ux.plan.subtitle"))
+page_header(t("ux.plan.title"), t("ux.plan.subtitle"), step=3)
 st.markdown('<div class="lm-plan-flag"></div>', unsafe_allow_html=True)
 baseline = summary_for_current("baseline")
 optimised = summary_for_current("optimised")

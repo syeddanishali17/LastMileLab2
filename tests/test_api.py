@@ -94,6 +94,7 @@ def test_optimisation_endpoint_returns_structured_output() -> None:
     assert body["objective_distance_metres"] == 31000
     assert body["total_distance_km"] == 31.0
     assert body["customers_served"] == 6
+    assert body["search_trace"][-1]["objective_distance_metres"] == 31000
 
 
 def test_infeasible_precheck_returns_http_200() -> None:

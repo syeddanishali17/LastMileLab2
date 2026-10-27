@@ -8,16 +8,74 @@ from components import (
     html_write,
     methodology_animation_html,
     page_header,
+    reading_cards_html,
     render_footer,
     section,
+    toc_html,
     with_terms,
 )
 from i18n import t
 
+FURTHER_READING = (
+    (
+        "DSpace@MIT · Networks (2019)",
+        "An empirical validation and data-driven extension of continuum approximation "
+        "approaches for urban route distances",
+        "ux.method.reading.circuity",
+        "https://dspace.mit.edu/handle/1721.1/140763",
+    ),
+    (
+        "DSpace@MIT · PhD thesis (2018)",
+        "Effects of road-network circuity on strategic decisions in urban logistics",
+        "ux.method.reading.thesis",
+        "https://dspace.mit.edu/handle/1721.1/119911",
+    ),
+    (
+        "MIT CTL · Transportation Science",
+        "2021 Amazon Last Mile Routing Research Challenge: Data Set",
+        "ux.method.reading.amazon",
+        "https://ctl.mit.edu/publications/2021-amazon-last-mile-routing-research-challenge-data-set",
+    ),
+    (
+        "DSpace@MIT",
+        "Technical Proceedings of the Amazon Last Mile Routing Research Challenge",
+        "ux.method.reading.proceedings",
+        "https://dspace.mit.edu/handle/1721.1/131235",
+    ),
+    (
+        "Google OR-Tools",
+        "Vehicle Routing Problem guide",
+        "ux.method.reading.ortools",
+        "https://developers.google.com/optimization/routing",
+    ),
+    (
+        "Google Research",
+        "OR-Tools' Vehicle Routing Solver: a generic constraint-programming solver "
+        "with heuristic search",
+        "ux.method.reading.gls",
+        "https://research.google/pubs/pub52024/",
+    ),
+)
+
 page_header(t("ux.method.title"), t("ux.method.subtitle"))
 st.markdown('<div class="lm-method-flag"></div>', unsafe_allow_html=True)
+st.markdown(
+    toc_html(
+        [
+            ("vrp", t("ux.method.vrp.title")),
+            ("constraints", t("ux.method.cons.title")),
+            ("baseline", t("ux.method.baseline.title")),
+            ("solver", t("ux.method.solver.title")),
+            ("continuum", t("ux.method.ca.title")),
+            ("scope", t("ux.method.assumptions.title")),
+            ("reading", t("ux.method.reading.title")),
+        ],
+        t("ux.method.toc"),
+    ),
+    unsafe_allow_html=True,
+)
 
-section(t("ux.method.vrp.title"))
+section(t("ux.method.vrp.title"), anchor="vrp")
 html_write(
     with_terms(
         t("ux.method.vrp"),
@@ -44,7 +102,7 @@ with st.expander(t("ux.method.obj.formula.title")):
     st.code(t("ux.method.obj.formula"), language=None)
     st.caption(t("ux.method.obj.formula.note"))
 
-section(t("ux.method.cons.title"))
+section(t("ux.method.cons.title"), anchor="constraints")
 constraint_cards(
     [
         (t("ux.method.cons.service.title"), t("ux.method.cons.service")),
@@ -57,7 +115,7 @@ constraint_cards(
 
 st.markdown(methodology_animation_html(), unsafe_allow_html=True)
 
-section(t("ux.method.baseline.title"))
+section(t("ux.method.baseline.title"), anchor="baseline")
 html_write(
     with_terms(
         t("ux.method.baseline"),
@@ -69,7 +127,7 @@ html_write(
 )
 st.write(t("ux.method.baseline.limit"))
 
-section(t("ux.method.solver.title"))
+section(t("ux.method.solver.title"), anchor="solver")
 st.write(t("ux.method.solver"))
 html_write(
     with_terms(
@@ -84,13 +142,18 @@ html_write(
 )
 st.write(t("ux.method.solver.none"))
 
+section(t("ux.method.ca.title"), anchor="continuum")
+st.write(t("ux.method.ca"))
+st.code(t("ux.method.ca.formula"), language=None)
+st.caption(t("ux.method.ca.note"))
+
 section(t("ux.method.opensolver.title"))
 st.write(t("ux.method.opensolver"))
 
 section(t("ux.method.impl.title"))
 st.write(t("ux.method.impl"))
 
-section(t("ux.method.assumptions.title"))
+section(t("ux.method.assumptions.title"), anchor="scope")
 html_write(
     with_terms(
         t("ux.method.assumptions"),
@@ -108,4 +171,12 @@ st.write(t("ux.method.audit"))
 with st.container(key="method-inspect"):
     if st.button(t("ux.method.inspect"), type="secondary"):
         st.switch_page("pages/4_Model_Inspector.py")
+
+section(t("ux.method.reading.title"), t("ux.method.reading.cap"), anchor="reading")
+st.markdown(
+    reading_cards_html(
+        [(source, title, t(why_key), url) for source, title, why_key, url in FURTHER_READING]
+    ),
+    unsafe_allow_html=True,
+)
 render_footer()

@@ -31,7 +31,7 @@ _VIENNA_COS_LAT = math.cos(math.radians(48.2))
 # equivalent and keeps Scattermapbox + center/zoom camera behaviour.
 BASE_MAP_STYLE = "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
 CUSTOMER_FILL = "#64748B"
-DEPOT_FILL = "#102F46"
+DEPOT_FILL = "#0C1424"
 DEPOT_RING = "#FFFFFF"
 ROUTE_HALO = "#FFFFFF"
 ROUTE_LINE_WIDTH = 3.0
@@ -43,7 +43,7 @@ STOP_MARKER_SIZE = 14
 STOP_HALO_SIZE = 17
 DEPOT_CORE_SIZE = 12
 DEPOT_RING_SIZE = 17
-UNSERVED_FILL = "#B42318"
+UNSERVED_FILL = "#DC2626"
 
 
 def _finite_coords(
@@ -117,8 +117,8 @@ def _geo_layout(
         "template": "none",
         "hoverlabel": {
             "bgcolor": "#FFFFFF",
-            "bordercolor": "#CCD9DF",
-            "font": {"size": 13, "color": "#172B3A"},
+            "bordercolor": "#DCE2EE",
+            "font": {"size": 13, "color": "#111A2E"},
         },
     }
 
@@ -129,10 +129,10 @@ def _legend_layout() -> dict[str, Any]:
         "y": 1.01,
         "x": 0,
         "yanchor": "bottom",
-        "bgcolor": "rgba(234,241,243,0.96)",
-        "bordercolor": "#CCD9DF",
+        "bgcolor": "rgba(238,241,248,0.96)",
+        "bordercolor": "#DCE2EE",
         "borderwidth": 0,
-        "font": {"size": 12, "color": "#172B3A"},
+        "font": {"size": 12, "color": "#111A2E"},
     }
 
 
@@ -581,8 +581,8 @@ def learning_schematic(
         height=460,
         margin={"l": 20, "r": 20, "t": 16, "b": 80},
         legend=_legend_layout(),
-        plot_bgcolor="#EAF1F3",
-        paper_bgcolor="#EAF1F3",
+        plot_bgcolor="#EEF1F8",
+        paper_bgcolor="#EEF1F8",
         template="none",
         uirevision="learning-schematic",
     )

@@ -29,6 +29,13 @@ class CheckPayload(BaseModel):
     message: str
 
 
+class SearchTracePoint(BaseModel):
+    """Best objective found so far, `elapsed_seconds` after the search started."""
+
+    elapsed_seconds: float
+    objective_distance_metres: int
+
+
 class PlanSummaryResponse(BaseModel):
     run_id: str
     run_type: str
@@ -50,3 +57,4 @@ class PlanSummaryResponse(BaseModel):
     partial_distance_metres: int | None = None
     distance_improvement_percentage: float | None = None
     message: str | None = None
+    search_trace: list[SearchTracePoint] = Field(default_factory=list)

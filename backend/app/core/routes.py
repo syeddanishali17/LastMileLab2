@@ -16,6 +16,7 @@ from app.core.domain import (
     RunStatus,
     RunType,
     ScenarioDataset,
+    SearchImprovement,
     SolverTermination,
     Vehicle,
 )
@@ -103,6 +104,7 @@ def assemble_plan(
     solver_termination: SolverTermination | None,
     solver_time_limit_seconds: int | None = None,
     solver_runtime_seconds: float | None = None,
+    search_trace: list[SearchImprovement] | None = None,
     message: str | None = None,
     run_id: str | None = None,
 ) -> PlanResult:
@@ -144,6 +146,7 @@ def assemble_plan(
             solver_runtime_seconds=runtime,
             objective_distance_metres=total_distance if complete else None,
             vehicles_used=len(used_routes),
+            search_trace=search_trace or [],
             created_at=datetime.now(UTC),
         ),
         routes=routes,

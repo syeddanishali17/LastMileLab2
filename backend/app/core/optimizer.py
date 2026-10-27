@@ -7,6 +7,7 @@ the RoutingModel and reconstructed into x/y/u-equivalent assignments.
 from __future__ import annotations
 
 import time
+from decimal import Decimal
 
 from ortools.constraint_solver import pywrapcp, routing_enums_pb2
 
@@ -16,6 +17,7 @@ from app.core.domain import (
     RunStatus,
     RunType,
     ScenarioDataset,
+    SearchImprovement,
     SolverTermination,
 )
 from app.core.loader import load_and_precheck
@@ -75,6 +77,33 @@ def _extract_sequences(
     return sequences
 
 
+def _record_improvements(routing: pywrapcp.RoutingModel) -> list[SearchImprovement]:
+    """Log the best objective after every strictly improving solution.
+
+    Register immediately before solving: elapsed time is measured from this call.
+    Guided local search also accepts worse neighbours to escape local optima, so
+    only new incumbents are kept and the trace is monotone decreasing.
+    """
+
+    trace: list[SearchImprovement] = []
+    origin = time.perf_counter()
+
+    def on_solution() -> None:
+        objective = int(routing.CostVar().Value())
+        if trace and objective >= trace[-1].objective_distance_metres:
+            return
+        elapsed = time.perf_counter() - origin
+        trace.append(
+            SearchImprovement(
+                elapsed_seconds=Decimal(str(round(elapsed, 4))),
+                objective_distance_metres=objective,
+            )
+        )
+
+    routing.AddAtSolutionCallback(on_solution)
+    return trace
+
+
 def _is_complete(sequences: dict[str, list[str]], dataset: ScenarioDataset) -> bool:
     served: list[str] = []
     depot_id = dataset.depot.depot_id
@@ -131,6 +160,7 @@ def run_ortools(
     search_parameters.local_search_metaheuristic = guided_search
     search_parameters.time_limit.FromSeconds(time_limit_seconds)
 
+    search_trace = _record_improvements(routing)
     started = time.perf_counter()
     try:
         solution = routing.SolveWithParameters(search_parameters)
@@ -210,6 +240,7 @@ def run_ortools(
         solver_termination=termination,
         solver_time_limit_seconds=time_limit_seconds,
         solver_runtime_seconds=runtime,
+        search_trace=search_trace,
         message=message,
         run_id=run_id,
     )
